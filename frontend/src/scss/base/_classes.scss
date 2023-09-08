@@ -1,6 +1,6 @@
 @use '../abstracts/variables' as v;
 
-.center {
+div.center {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -11,7 +11,7 @@ span.bold {
   font-weight: bold;
 }
 
-.link {
+a.link {
   color: v.$blue-200;
 
   &:hover {
