@@ -1,0 +1,87 @@
+:root {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+
+  * {
+    box-sizing: border-box;
+  }
+}
+
+a,
+button {
+  cursor: pointer;
+}
+
+button {
+  border: none;
+  user-select: none;
+
+  &::disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+a {
+  text-decoration: none;
+}
+
+hr {
+  border: none;
+  clear: both;
+  display: block;
+  width: 100%;
+  height: 1px;
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+input,
+textarea,
+select {
+  &:-webkit-autofill,
+  &:-webkit-autofill:hover,
+  &:-webkit-autofill:focus {
+    -webkit-text-fill-color: inherit;
+    transition: 5000s ease-in-out 0s;
+  }
+}
+
+input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+}

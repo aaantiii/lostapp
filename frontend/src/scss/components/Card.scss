@@ -1,0 +1,105 @@
+@use '../abstracts/variables' as v;
+
+.Card {
+  border-radius: v.$border-radius-medium;
+  background-color: v.$bright-fade-200;
+  position: relative;
+
+  &::before,
+  .border {
+    border-radius: inherit;
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    content: '';
+    opacity: 0;
+    transition: opacity 200ms;
+  }
+
+  &::before {
+    background: radial-gradient(650px circle at var(--mouse-x) var(--mouse-y), rgba(255, 255, 255, 0.04), transparent 40%);
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  &:hover::before {
+    opacity: 1;
+  }
+
+  .border {
+    background: radial-gradient(650px circle at var(--mouse-x) var(--mouse-y), rgba(255, 255, 255, 0.4), transparent 40%);
+  }
+
+  .content {
+    flex-direction: column;
+    display: flex;
+    padding: 1em 1.5em;
+    background-color: v.$gray-200;
+    border-radius: inherit;
+    margin: 1px;
+    width: calc(100% - 2px);
+    height: calc(100% - 2px);
+    z-index: 2;
+    position: relative;
+  }
+
+  .head {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .title {
+    margin: 0;
+  }
+
+  .description {
+    display: flex;
+    flex-direction: column;
+    font-style: italic;
+  }
+
+  .thumbnail {
+    width: 2.5em;
+    height: 2.5em;
+    overflow: hidden;
+
+    img {
+      height: 100%;
+    }
+  }
+
+  .fields {
+    margin-top: v.$gap-large;
+    display: flex;
+    flex-direction: column;
+    gap: v.$gap-tiny;
+  }
+
+  .buttons {
+    height: 100%;
+    display: flex;
+    gap: v.$gap-small;
+    align-content: flex-end;
+    flex-wrap: wrap;
+    margin-top: v.$gap-medium;
+  }
+}
+
+.CardList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: v.$gap-medium;
+
+  &.column {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  &:hover > .Card {
+    & > .border,
+    &::before {
+      opacity: 1;
+    }
+  }
+}

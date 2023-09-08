@@ -1,0 +1,103 @@
+@use '../abstracts/variables' as v;
+
+body {
+  font: v.$font-size-default 'Open Sans', sans-serif;
+  background-color: v.$gray-100;
+  color: v.$font-color;
+  width: 100vw;
+}
+
+.content-wrapper {
+  min-height: 80vh;
+  position: relative;
+}
+
+section {
+  padding-bottom: v.$gap-large;
+}
+
+h1,
+h2,
+h3 {
+  font-family: 'Rubik', sans-serif;
+  @supports (text-wrap: balance) {
+    text-wrap: balance;
+  }
+}
+
+h1,
+h2 {
+  text-align: center;
+}
+
+h1 {
+  text-transform: uppercase;
+  font-size: v.$font-size-heading-1;
+  color: v.$blue-300;
+  margin-block: 2em 1.75em;
+}
+
+h2 {
+  font-size: v.$font-size-heading-2;
+  margin-block: 2em 1.5em;
+}
+
+h3 {
+  font-size: v.$font-size-heading-3;
+  margin-block: 1.5em 1em;
+}
+
+h4 {
+  font-size: v.$font-size-heading-4;
+  margin-block: 1em 0.6em;
+}
+
+hgroup {
+  h2 {
+    margin-block: 1.5em 1em;
+  }
+  h3 {
+    margin-block: 1em 0.7em;
+  }
+  h4 {
+    margin-block: 0.5em 0.4em;
+  }
+}
+
+p {
+  margin-top: 1em;
+  text-align: center;
+}
+
+code {
+  background: v.$bright-fade-100;
+  border: 1px solid v.$gray-200;
+  padding: 2px;
+  border-radius: v.$border-radius-small;
+}
+
+hr {
+  background-color: v.$gray-400;
+}
+
+a,
+button {
+  &:hover {
+    cursor: pointer;
+  }
+}
+
+svg,
+img {
+  user-select: none;
+  color: inherit;
+}
+
+img {
+  pointer-events: none;
+}
+
+::selection {
+  color: v.$gray-100;
+  background-color: v.$font-color;
+}

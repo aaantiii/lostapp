@@ -1,0 +1,16 @@
+.Spacer {
+  width: 100%;
+  opacity: 0;
+
+  &.small {
+    height: 5vh;
+  }
+
+  &.medium {
+    height: 12vh;
+  }
+
+  &.large {
+    height: 20vh;
+  }
+}

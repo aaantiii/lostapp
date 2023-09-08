@@ -1,0 +1,38 @@
+@use '../abstracts/variables' as v;
+
+.ScrollUpButton {
+  $size: 2em;
+
+  display: flex;
+  height: $size;
+  width: $size;
+  position: fixed;
+  font-size: v.$icon-size-large;
+  bottom: 5vw;
+  right: 5vw;
+  justify-content: center;
+  align-items: center;
+  background-color: v.$gray-300;
+  border: 1px solid v.$gray-400;
+  border-radius: v.$border-radius-medium;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 250ms linear;
+  z-index: 10;
+
+  &.visible {
+    visibility: visible;
+    opacity: 0.75;
+  }
+
+  &:hover {
+    background-color: v.$font-color;
+    border-radius: v.$border-radius-full;
+    border: none;
+    opacity: 1;
+
+    svg {
+      color: v.$gray-300;
+    }
+  }
+}

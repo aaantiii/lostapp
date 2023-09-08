@@ -1,0 +1,105 @@
+@use '../abstracts/variables' as v;
+@use '../abstracts/mixins';
+
+.Navbar {
+  $toggle-transition: 0.3s ease;
+
+  user-select: none;
+  z-index: 10;
+
+  .hnav {
+    height: v.$hnav-height;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    padding: 5px 1em;
+    background: linear-gradient(90deg, v.$blue-100, v.$blue-400, v.$blue-100);
+    top: 0;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+    z-index: inherit;
+
+    & > .toggle-vnav {
+      font-size: v.$icon-size-large;
+      height: 30px;
+      width: 30px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  }
+
+  .vnav {
+    top: v.$hnav-height;
+    height: calc(100vh - v.$hnav-height);
+    width: 0;
+    padding-block: 1em;
+    position: fixed;
+    transition: width $toggle-transition, padding $toggle-transition;
+    background-color: v.$blue-200;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow-y: auto;
+    scrollbar-gutter: stable both-edges;
+    z-index: inherit;
+
+    &.open {
+      width: v.$vnav-width;
+      padding-inline: 1em;
+    }
+
+    & > .header {
+      padding: 1em 0.5em;
+      border-bottom: 1px solid v.$blue-100;
+      display: flex;
+      flex-direction: column;
+      gap: 1em;
+
+      & > .top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-transform: uppercase;
+        font-size: 0.9em;
+      }
+    }
+
+    & > .functions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    & > .items {
+      margin-block: 1em 10vh;
+
+      .toggle,
+      .item {
+        @include mixins.hover(v.$blue-200);
+        border-radius: v.$border-radius-small;
+      }
+
+      .toggle {
+        padding: 0.5em 0.75em;
+        font-weight: bold;
+      }
+
+      .item {
+        &.active {
+          background-color: v.$blue-100;
+        }
+
+        a {
+          padding: 0.75em;
+          text-transform: uppercase;
+
+          span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+        }
+      }
+    }
+  }
+}

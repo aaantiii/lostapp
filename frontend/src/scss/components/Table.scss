@@ -1,0 +1,64 @@
+@use '../abstracts/variables' as v;
+
+.Table {
+  & > .scrollable-wrapper {
+    overflow: auto;
+    max-height: 75vh;
+
+    & > table {
+      border-spacing: 0;
+      border-collapse: separate;
+      width: 100%;
+      white-space: nowrap;
+
+      & > thead > tr > th {
+        padding: v.$gap-small;
+        font-size: v.$font-size-larger;
+      }
+
+      & > tbody {
+        & > tr > td {
+          padding: v.$gap-small;
+
+          & > a {
+            font-weight: 600;
+
+            & > .icon {
+              font-size: v.$icon-size-tiny;
+            }
+          }
+        }
+
+        & > tr:nth-child(odd) {
+          background-color: v.$gray-300;
+        }
+      }
+
+      & > thead > tr,
+      & > tbody > tr {
+        & > th,
+        & > td {
+          text-align: right;
+          border-color: transparent;
+
+          &:first-child {
+            text-align: left;
+            border-left-style: solid;
+            border-top-left-radius: v.$border-radius-medium;
+            border-bottom-left-radius: v.$border-radius-medium;
+          }
+
+          &:nth-child(2) {
+            text-align: left;
+          }
+
+          &:last-child {
+            border-right-style: solid;
+            border-bottom-right-radius: v.$border-radius-medium;
+            border-top-right-radius: v.$border-radius-medium;
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+@use '../abstracts/variables' as v;
+@use '../abstracts/mixins';
+
+.Button {
+  @include mixins.hover(v.$blue-200);
+
+  max-height: 2.5em;
+  min-width: fit-content;
+  border-radius: 5px;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
+  background-color: v.$blue-200;
+  padding: 0.5em 1.5em;
+  color: inherit;
+  text-transform: uppercase;
+  font-weight: 600;
+  font-size: v.$font-size-smaller;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1 1 200px;
+}

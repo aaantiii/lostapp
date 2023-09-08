@@ -1,0 +1,46 @@
+@use '../abstracts/variables' as v;
+@use '../abstracts/mixins';
+
+$scrollbar-size-body: 3px;
+$scrollbar-size-rest: 2px;
+
+$scrollbar-thumb-color: v.$blue-600;
+$scrollbar-track-color: transparent;
+
+// Gecko based Browsers (Mozilla)
+html {
+  scrollbar-color: $scrollbar-thumb-color $scrollbar-track-color;
+  * {
+    scrollbar-width: thin;
+  }
+}
+
+// Webkit based Browsers (Chrome, Safari, ...)
+body {
+  &::-webkit-scrollbar {
+    width: $scrollbar-size-body;
+    height: $scrollbar-size-body;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border-radius: calc($scrollbar-size-body / 2);
+  }
+
+  ::-webkit-scrollbar {
+    width: $scrollbar-size-rest;
+    height: $scrollbar-size-rest;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border-radius: calc($scrollbar-size-rest / 2);
+  }
+}
+
+::-webkit-scrollbar-track {
+  background-color: $scrollbar-track-color;
+}
+
+::-webkit-scrollbar-thumb {
+  @include mixins.hover($scrollbar-thumb-color);
+  background: $scrollbar-thumb-color;
+}

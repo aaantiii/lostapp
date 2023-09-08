@@ -1,0 +1,39 @@
+@use '../abstracts/variables' as v;
+
+.Footer > .Content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  background: linear-gradient(to bottom, v.$gray-100, v.$gray-300);
+  margin-top: 30vh;
+
+  & > .content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1em;
+    margin-block: 1em;
+
+    & > p {
+      text-align: left;
+      margin: 0;
+    }
+  }
+
+  & > .credits {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding-block: v.$gap-medium;
+  }
+
+  @media (max-width: v.$breakpoint-mobile) {
+    align-items: flex-start;
+
+    & > .content {
+      align-items: flex-start;
+    }
+  }
+}

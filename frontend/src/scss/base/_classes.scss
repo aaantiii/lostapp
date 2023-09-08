@@ -1,0 +1,60 @@
+@use '../abstracts/variables' as v;
+
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+span.bold {
+  font-weight: bold;
+}
+
+.link {
+  color: v.$blue-200;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-row {
+  display: flex;
+}
+
+.emoji {
+  height: 1rem;
+  pointer-events: none;
+  user-select: none;
+}
+
+a.function {
+  font-size: v.$font-size-small;
+  text-transform: uppercase;
+}
+
+a.tooltip {
+  position: relative;
+
+  span {
+    display: none;
+  }
+
+  &:hover span {
+    display: block;
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    padding: 0.5rem;
+    border-radius: 5px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+  }
+}

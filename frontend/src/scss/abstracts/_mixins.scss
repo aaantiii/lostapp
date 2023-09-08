@@ -1,0 +1,35 @@
+@use './variables' as v;
+
+@mixin hover($color) {
+  transition: background-color 200ms;
+  &:hover {
+    background-color: darken($color, 5%);
+  }
+}
+
+@mixin input() {
+  width: 100%;
+  border-radius: 5em;
+  padding: 0.5em 1em;
+  font-size: v.$font-size-larger;
+  outline: none;
+  border: 1px solid v.$dark-fade-100;
+  background-color: v.$bright-fade-100;
+  caret-color: white;
+  color: white;
+  line-height: 1;
+  user-select: none;
+
+  &:focus {
+    box-shadow: 0 0 0 1px v.$blue-100;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  &::placeholder {
+    color: v.$gray-400;
+  }
+}

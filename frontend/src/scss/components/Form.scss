@@ -1,0 +1,50 @@
+@use '../abstracts/variables' as v;
+
+.Form {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+
+  & > .Root {
+    width: clamp(400px, 40vw, 550px);
+    gap: v.$gap-medium;
+    display: flex;
+    flex-direction: column;
+
+    @media screen and (max-width: v.$breakpoint-mobile) {
+      width: 100%;
+    }
+
+    & > .Field {
+      display: flex;
+      flex-direction: column;
+      gap: v.$gap-tiny;
+
+      & > .Label {
+        font-size: v.$font-size-smaller;
+        text-transform: uppercase;
+
+        &[data-invalid] {
+        }
+      }
+
+      & > .Message {
+        opacity: 0.8;
+        font-size: v.$font-size-smaller;
+      }
+
+      & .Control[data-invalid='true'] {
+        outline: 1px solid v.$red-100;
+      }
+    }
+
+    & > .SubmitButton {
+      margin-top: v.$gap-medium;
+
+      &.hidden {
+        display: none;
+      }
+    }
+  }
+}

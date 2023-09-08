@@ -1,0 +1,7 @@
+@use '../abstracts/variables' as v;
+
+.DataSearch {
+  display: flex;
+  flex-direction: column;
+  gap: v.$gap-medium;
+}

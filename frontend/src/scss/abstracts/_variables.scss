@@ -1,0 +1,59 @@
+$breakpoint-mobile: 480px;
+$breakpoint-tablet: 768px;
+$breakpoint-desktop: 1024px;
+
+$max-z-index: 100;
+$hnav-z-index: 10;
+
+$font-color: hsl(0, 0%, 90%);
+$font-size-small: 12px;
+$font-size-smaller: 14px;
+$font-size-default: 16px;
+$font-size-larger: 18px;
+$font-size-large: 21px;
+$font-size-huge: clamp(2.5em, 10vw, 7em);
+$font-size-heading-1: 32px;
+$font-size-heading-2: 25px;
+$font-size-heading-3: 22px;
+$font-size-heading-4: 20px;
+
+$icon-size-tiny: 13px;
+$icon-size-small: 16px;
+$icon-size-medium: 20px;
+$icon-size-large: 24px;
+
+$gap-tiny: 5px;
+$gap-small: 10px;
+$gap-medium: 20px;
+$gap-large: 40px;
+
+$blue-100: hsl(210, 99%, 30%);
+$blue-200: hsl(205, 99%, 33%);
+$blue-300: hsl(200, 99%, 36%);
+$blue-400: hsl(195, 99%, 41%);
+$blue-500: hsl(190, 99%, 45%);
+$blue-600: hsl(180, 99%, 45%);
+
+$gray-100: hsl(0, 0%, 7.8%);
+$gray-200: hsl(0, 0%, 9%);
+$gray-300: hsl(0, 0%, 11%);
+$gray-400: hsl(0, 0%, 18%);
+$gray-500: hsl(0, 0%, 40%);
+$gray-600: hsl(0, 0%, 60%);
+$gray-700: hsl(0, 0%, 80%);
+
+$red-100: hsl(0, 100%, 50%);
+
+$bright-fade-100: hsl(0, 0%, 100%, 0.02);
+$bright-fade-200: hsl(0, 0%, 100%, 0.1);
+$dark-fade-100: hsl(0, 0%, 0%, 0.1);
+$dark-fade-200: hsl(0, 0%, 0%, 0.2);
+
+$border-radius-small: 5px;
+$border-radius-medium: 10px;
+$border-radius-large: 15px;
+$border-radius-full: 50%;
+
+// component sizes
+$hnav-height: 60px;
+$vnav-width: clamp(220px, 70vw, 275px);

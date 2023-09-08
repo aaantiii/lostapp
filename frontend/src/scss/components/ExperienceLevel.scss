@@ -1,0 +1,15 @@
+.ExperienceLevel {
+  display: grid;
+  place-items: center;
+  color: white;
+  height: 100%;
+  width: 100%;
+  background-size: cover;
+  background-repeat: no-repeat;
+  user-select: none;
+  font-weight: bold;
+
+  span {
+    text-shadow: 0 2px 1px black;
+  }
+}

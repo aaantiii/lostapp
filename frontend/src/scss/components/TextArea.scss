@@ -1,0 +1,12 @@
+@use '../abstracts/variables' as v;
+@use '../abstracts/mixins';
+
+.TextArea {
+  @include mixins.input();
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+  width: 100%;
+  height: 40vh;
+}

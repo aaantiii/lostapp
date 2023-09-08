@@ -1,0 +1,10 @@
+.p-error {
+  display: flex;
+  flex-direction: column;
+  gap: 2em;
+  align-items: center;
+
+  img {
+    width: clamp(200px, 100%, 350px);
+  }
+}

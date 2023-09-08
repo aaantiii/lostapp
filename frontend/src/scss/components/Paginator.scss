@@ -1,0 +1,25 @@
+@use '../abstracts/variables' as v;
+
+.Paginator {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 1em;
+
+  & > .total-items {
+    font-size: v.$font-size-larger;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  @media screen and (max-width: v.$breakpoint-tablet) {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1em;
+
+    & > * {
+      width: 100%;
+    }
+  }
+}

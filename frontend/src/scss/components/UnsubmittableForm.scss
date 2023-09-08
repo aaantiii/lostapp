@@ -1,0 +1,13 @@
+@use '../abstracts/variables' as v;
+
+.UnsubmittableForm {
+  display: flex;
+  justify-content: center;
+
+  & > form {
+    width: clamp(400px, 40vw, 550px);
+    gap: v.$gap-medium;
+    display: flex;
+    flex-direction: column;
+  }
+}
