@@ -41,8 +41,9 @@ export default function ClanSettings() {
   useEffect(() => {
     if (!updatedSettings || !clanSettings || !clan) return
 
-    for (const key in updatedSettings) {
-      if (updatedSettings[key as keyof UpdatedClanSettings] !== clanSettings[key as keyof UpdatedClanSettings]) {
+    for (const k in updatedSettings) {
+      const key = k as keyof UpdatedClanSettings
+      if (updatedSettings[key] !== clanSettings[key]) {
         saveClanSettings()
         return
       }
