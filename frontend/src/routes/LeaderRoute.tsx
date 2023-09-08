@@ -40,7 +40,7 @@ export default function LeaderRoute() {
 
   return (
     <ProtectedRoute requiredRole={AuthRole.Leader}>
-      <Outlet context={{ leadingClans, clan, clanSettings, refreshClanSettings, player } satisfies LeaderOutletContext} />
+      <Outlet context={{ leadingClans, clan, clanSettings, player, refreshClanSettings } satisfies LeaderOutletContext} />
     </ProtectedRoute>
   )
 }
