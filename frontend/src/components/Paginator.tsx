@@ -5,7 +5,7 @@ import { Pagination } from '../api/types/pagination'
 
 export interface PaginatorProps {
   pagination?: Pagination
-  onPageChange: (page: number) => void
+  onPageChange?: (page: number) => void
 }
 
 export default function Paginator({ pagination, onPageChange }: PaginatorProps) {
@@ -29,7 +29,7 @@ export default function Paginator({ pagination, onPageChange }: PaginatorProps) 
             {pagination.totalItems} Ergebniss{pagination.totalItems > 1 ? 'e' : ''}
           </span>
           {pagination.totalPages > 1 && (
-            <Select onChange={(value) => onPageChange(Number(value))} value={pagination.page.toString()} optionGroups={[optionGroup]} />
+            <Select onChange={(value) => onPageChange?.(Number(value))} value={pagination.page.toString()} optionGroups={[optionGroup]} />
           )}
         </>
       )}
