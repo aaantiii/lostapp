@@ -12,9 +12,8 @@ const authContext = createContext({} as AuthContext)
 export function AuthProvider({ children }: any) {
   const navigate = useNavigate()
   const [sessionData, setSessionData] = useState<Session>()
-  const [isLoading, setIsLoading] = useState(true)
 
-  const { refetch: refreshSession } = useQuery<Session, AxiosError>({
+  const { refetch: refreshSession, isLoading } = useQuery<Session, AxiosError>({
     queryKey: [routes.auth.session],
     staleTime: 1000 * 60 * 2,
     retry: false,
@@ -39,7 +38,6 @@ export function AuthProvider({ children }: any) {
           break
       }
     },
-    onSettled: () => setIsLoading(false),
   })
 
   const { refetch: fetchLogout } = useQuery({
