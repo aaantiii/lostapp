@@ -1,2 +1,2 @@
-# lostapp
-LOST-CLANS.DE
+# Lost Web App
+*LOST-CLANS.DE*
