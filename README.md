@@ -1,0 +1,2 @@
+# lostapp
+LOST-CLANS.DE
