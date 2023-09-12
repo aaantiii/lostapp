@@ -1,4 +1,4 @@
-import '../scss/components/CenteredContent.scss'
+import '@styles/components/CenteredContent.scss'
 
 interface CenteredContentProps {
   children?: JSX.Element | JSX.Element[]

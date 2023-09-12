@@ -1,4 +1,4 @@
-import '../scss/components/Button.scss'
+import '@styles/components/Button.scss'
 import { useNavigate } from 'react-router-dom'
 import { MouseEventHandler, forwardRef, useCallback } from 'react'
 

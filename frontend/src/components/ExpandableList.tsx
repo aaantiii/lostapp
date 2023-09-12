@@ -1,4 +1,4 @@
-import '../scss/components/ExpandableList.scss'
+import '@styles/components/ExpandableList.scss'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useCallback, useRef } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'

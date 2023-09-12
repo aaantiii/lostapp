@@ -2,8 +2,7 @@ import LeaderIndex from './Index'
 import Notify from './Notify'
 import ClanSettings from './clans/ClanSettings'
 import ClanMemberIndex from './clans/members/Index'
-import ManageClanMembers from './clans/members/Manage'
-import MemberKickpoints from './clans/members/Kickpoints'
+import MemberKickpoints from './clans/members/kickpoints/Index'
 
 export default {
   Index: LeaderIndex,
@@ -12,7 +11,6 @@ export default {
     ClanSettings,
     members: {
       Index: ClanMemberIndex,
-      Manage: ManageClanMembers,
       Kickpoints: MemberKickpoints,
     },
   },

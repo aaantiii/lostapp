@@ -1,10 +1,10 @@
-import '../scss/pages/Error.scss'
-import errors from '../assets/content/errors.json'
+import '@styles/pages/Error.scss'
+import errors from '@assets/content/errors.json'
 import { useParams } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
-import useDocumentTitle from '../hooks/useDocumentTitle'
-import Button from '../components/Button'
-import Spacer from '../components/Spacer'
+import useDocumentTitle from '@hooks/useDocumentTitle'
+import Button from '@components/Button'
+import Spacer from '@components/Spacer'
 
 interface Error {
   title: string

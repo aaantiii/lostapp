@@ -1,5 +1,5 @@
-import useDocumentTitle from '../hooks/useDocumentTitle'
-import useNotImplemented from '../hooks/useNotImplemented'
+import useDocumentTitle from '@hooks/useDocumentTitle'
+import useNotImplemented from '@hooks/useNotImplemented'
 
 export default function RequestFeature() {
   useDocumentTitle('Feature vorschlagen')

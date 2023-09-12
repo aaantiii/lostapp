@@ -1,14 +1,14 @@
 import { Outlet, useParams } from 'react-router-dom'
-import { AuthRole } from '../api/types/auth'
+import { AuthRole } from '@api/types/auth'
 import ProtectedRoute from './ProtectedRoute'
 import { useQuery } from '@tanstack/react-query'
-import routes from '../api/routes'
-import LoadingScreen from '../components/LoadingScreen'
-import { LeaderOutletContext } from '../types/context'
-import { urlDecodeTag } from '../fmt/cocFormatter'
-import { ClanSettings } from '../api/types/clanSettings'
-import { Clan } from '../api/types/clan'
-import { Player } from '../api/types/player'
+import routes from '@api/routes'
+import LoadingScreen from '@components/LoadingScreen'
+import { LeaderOutletContext } from '@context/types'
+import { urlDecodeTag } from '@fmt/cocFormatter'
+import { ClanSettings } from '@api/types/clanSettings'
+import { Clan } from '@api/types/clan'
+import { Player } from '@api/types/player'
 
 export default function LeaderRoute() {
   const { clanTag, memberTag } = useParams()

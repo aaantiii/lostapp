@@ -1,4 +1,4 @@
-import '../scss/components/Content.scss'
+import '@styles/components/Content.scss'
 
 interface ContentProps {
   children: JSX.Element[] | JSX.Element

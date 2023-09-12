@@ -1,7 +1,9 @@
-import useDocumentTitle from '../../hooks/useDocumentTitle'
+import useDocumentTitle from '@hooks/useDocumentTitle'
+import useNotImplemented from '@hooks/useNotImplemented'
 
 export default function OneVersusOne() {
   const heading = useDocumentTitle('1 vs 1')
+  useNotImplemented()
 
   return (
     <main>

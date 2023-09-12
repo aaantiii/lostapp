@@ -1,4 +1,4 @@
-import '../scss/components/UnsubmittableForm.scss'
+import '@styles/components/UnsubmittableForm.scss'
 
 interface UnsubmittableFormProps {
   children: JSX.Element[] | JSX.Element

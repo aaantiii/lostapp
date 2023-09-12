@@ -1,2 +1,63 @@
-.Dialog {
+@use '../abstracts/variables' as v;
+
+$z-index: 10;
+
+.DialogOverlay {
+  background: v.$gray-400;
+  position: fixed;
+  inset: 0;
+  animation: show-dialog 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  z-index: $z-index;
+
+  @keyframes show-dialog {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 0.5;
+    }
+  }
+}
+
+.DialogContent {
+  z-index: $z-index + 1;
+  background: v.$gray-300;
+  border-radius: v.$border-radius-medium;
+  box-shadow: hsl(0, 0%, 10%, 1) 10px 10px 18px -10px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  width: 90vw;
+  max-width: 450px;
+  max-height: 85vh;
+  padding: 25px;
+  animation: show-content 500ms cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid v.$gray-400;
+
+  @keyframes show-content {
+    from {
+      opacity: 0;
+      translate: -50% -47%;
+      scale: 0.94;
+    }
+    to {
+      opacity: 1;
+      translate: -50% -50%;
+      scale: 1;
+    }
+  }
+
+  & > .title {
+    margin-block: v.$gap-medium;
+  }
+
+  & > .close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    color: inherit;
+    font-size: v.$icon-size-medium;
+  }
 }

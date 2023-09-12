@@ -1,4 +1,4 @@
-import '../scss/components/ScrollUpButton.scss'
+import '@styles/components/ScrollUpButton.scss'
 import { faChevronUp } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useEffect, useRef } from 'react'

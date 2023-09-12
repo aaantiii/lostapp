@@ -5,8 +5,11 @@ export interface Kickpoint {
   amount: number
   date: string
   reason: string
-  description: string
 }
+
+export type CreateKickpoint = Omit<Kickpoint, 'id'>
+
+export type UpdateKickpoint = Partial<CreateKickpoint>
 
 export interface ClanMemberKickpoints {
   tag: string

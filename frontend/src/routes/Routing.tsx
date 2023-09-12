@@ -1,5 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
-import pages from '../pages/pages'
+import pages from '@pages/pages'
 import LeaderRoute from './LeaderRoute'
 import MemberRoute from './MemberRoute'
 import UserRoute from './UserRoute'
@@ -53,7 +53,6 @@ export default function Routing() {
             <Route path="members">
               <Route index element={<pages.leader.clans.members.Index />} />
               <Route path=":memberTag">
-                <Route index element={<pages.leader.clans.members.Manage />} />
                 <Route path="kickpoints" element={<pages.leader.clans.members.Kickpoints />} />
               </Route>
             </Route>

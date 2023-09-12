@@ -1,11 +1,11 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import LoadingScreen from '../components/LoadingScreen'
+import LoadingScreen from '@components/LoadingScreen'
 import { AxiosError, HttpStatusCode } from 'axios'
-import { AuthContext } from '../types/context'
-import { Session } from '../api/types/auth'
-import routes from '../api/routes'
+import { AuthContext } from './types'
+import { Session } from '@api/types/auth'
+import routes from '@api/routes'
 
 const authContext = createContext({} as AuthContext)
 

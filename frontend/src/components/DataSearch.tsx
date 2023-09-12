@@ -1,7 +1,7 @@
-import '../scss/components/DataSearch.scss'
+import '@styles/components/DataSearch.scss'
 import { useEffect, useState } from 'react'
 import Input from './Input'
-import useDebouncedValue from '../hooks/useDebouncedValue'
+import useDebouncedValue from '@hooks/useDebouncedValue'
 
 interface DataSearchProps {
   data: any[]

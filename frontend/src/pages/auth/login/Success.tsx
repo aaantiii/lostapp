@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
-import useDocumentTitle from '../../../hooks/useDocumentTitle'
-import useDashboardNavigate from '../../../hooks/useDashboardNavigate'
-import LoadingScreen from '../../../components/LoadingScreen'
-import { useMessage } from '../../../context/messageContext'
-import { useAuth } from '../../../context/authContext'
+import useDocumentTitle from '@hooks/useDocumentTitle'
+import useDashboardNavigate from '@hooks/useDashboardNavigate'
+import LoadingScreen from '@components/LoadingScreen'
+import { useMessage } from '@context/messageContext'
+import { useAuth } from '@context/authContext'
 import { useNavigate } from 'react-router-dom'
 
 export default function LoginSuccess() {

@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { useMessage } from '../context/messageContext'
-import '../scss/components/Messages.scss'
+import { useMessage } from '@context/messageContext'
+import '@styles/components/Messages.scss'
 import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import { faXmark } from '@fortawesome/free-solid-svg-icons'
 

@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react'
-import { CardList, Card } from '../../../components/Card'
-import Button from '../../../components/Button'
-import useDocumentTitle from '../../../hooks/useDocumentTitle'
-import { urlEncodeTag } from '../../../fmt/cocFormatter'
+import { CardList, Card } from '@components/Card'
+import Button from '@components/Button'
+import useDocumentTitle from '@hooks/useDocumentTitle'
+import { urlEncodeTag } from '@fmt/cocFormatter'
 import { useQuery } from '@tanstack/react-query'
-import { useAuth } from '../../../context/authContext'
-import routes from '../../../api/routes'
-import LoadingScreen from '../../../components/LoadingScreen'
-import { Clan } from '../../../api/types/clan'
-import { useMessage } from '../../../context/messageContext'
+import { useAuth } from '@context/authContext'
+import routes from '@api/routes'
+import LoadingScreen from '@components/LoadingScreen'
+import { Clan } from '@api/types/clan'
+import { useMessage } from '@context/messageContext'
 
 export default function Index() {
   const heading = useDocumentTitle('Lost Family')

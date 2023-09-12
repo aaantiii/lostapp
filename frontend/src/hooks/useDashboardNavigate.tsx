@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/authContext'
-import { AuthRole } from '../api/types/auth'
+import { useAuth } from '@context/authContext'
+import { AuthRole } from '@api/types/auth'
 
 export default function useDashboardNavigate() {
   const navigate = useNavigate()

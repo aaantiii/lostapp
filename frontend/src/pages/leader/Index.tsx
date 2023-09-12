@@ -1,11 +1,10 @@
-import { useQuery } from '@tanstack/react-query'
-import useDocumentTitle from '../../hooks/useDocumentTitle'
-import { Card, CardList } from '../../components/Card'
-import Button from '../../components/Button'
+import useDocumentTitle from '@hooks/useDocumentTitle'
+import { Card, CardList } from '@components/Card'
+import Button from '@components/Button'
 import { useOutletContext } from 'react-router-dom'
-import { LeaderOutletContext } from '../../types/context'
-import { useAuth } from '../../context/authContext'
-import { urlEncodeTag } from '../../fmt/cocFormatter'
+import { LeaderOutletContext } from '@context/types'
+import { useAuth } from '@context/authContext'
+import { urlEncodeTag } from '@fmt/cocFormatter'
 
 export default function LeaderIndex() {
   const heading = useDocumentTitle('Anführer Übersicht')

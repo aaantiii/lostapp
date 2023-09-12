@@ -1,6 +1,6 @@
-import '../scss/components/Footer.scss'
+import '@styles/components/Footer.scss'
 import { useNavigate } from 'react-router-dom'
-import imgRedHeart from '../assets/img/emojies/red_heart.svg'
+import imgRedHeart from '@assets/img/emojies/red_heart.svg'
 import Logo from './Logo'
 import Content from './Content'
 
@@ -13,8 +13,8 @@ export default function Footer() {
         <div className="content">
           <p>
             <span>Fehler gefunden? </span>
-            <a className="link" onClick={() => navigate('/report-bug')}>
-              Hier melden
+            <a className="link" href="https://github.com/aaantiii/lostapp/issues/new" target="_blank">
+              Auf GitHub melden
             </a>
           </p>
           <p>

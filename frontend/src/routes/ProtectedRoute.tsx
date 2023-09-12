@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/authContext'
-import { AuthRole } from '../api/types/auth'
-import LoadingScreen from '../components/LoadingScreen'
-import Spacer from '../components/Spacer'
-import Content from '../components/Content'
-import useScreenSize, { ScreenSize } from '../hooks/useScreenSize'
+import { useAuth } from '@context/authContext'
+import { AuthRole } from '@api/types/auth'
+import LoadingScreen from '@components/LoadingScreen'
+import Spacer from '@components/Spacer'
+import Content from '@components/Content'
+import useScreenSize, { ScreenSize } from '@hooks/useScreenSize'
 
 interface ProtectedRouteProps {
   requiredRole: AuthRole

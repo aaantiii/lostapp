@@ -1,4 +1,4 @@
-import '../scss/components/Spacer.scss'
+import '@styles/components/Spacer.scss'
 
 interface SpacerProps {
   size: 'small' | 'medium' | 'large'

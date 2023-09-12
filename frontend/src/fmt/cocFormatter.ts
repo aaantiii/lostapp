@@ -1,5 +1,5 @@
-import { ClanMemberRoleTranslated } from '../api/types/clan'
-import { Player } from '../api/types/player'
+import { ClanMemberRoleTranslated } from '@api/types/clan'
+import { Player } from '@api/types/player'
 
 export function formatPlayerClanRoles(player: Player): string[] {
   if (!player.clans || player.clans.length === 0) return ['kein Clan']

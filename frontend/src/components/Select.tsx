@@ -1,8 +1,9 @@
-import '../scss/components/Select.scss'
+import '@styles/components/Select.scss'
 import * as s from '@radix-ui/react-select'
 import { faAngleDown, faCheck, faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { forwardRef, useState } from 'react'
+import Input from './Input'
 
 interface SelectProps {
   optionGroups: SelectOptionGroup[]
@@ -45,7 +46,7 @@ export default function Select({ onChange, defaultValue, value, placeholder, opt
                 <s.Group key={title ?? i}>
                   <s.Label className="SelectLabel">{title ?? 'Auswählen'}</s.Label>
                   {options.map(({ value, displayText }) => (
-                    <s.Item value={value} key={value} className="SelectItem">
+                    <s.Item value={value} key={displayText} className="SelectItem">
                       <s.ItemText>{displayText}</s.ItemText>
                       <s.ItemIndicator className="SelectItemIndicator">
                         <FontAwesomeIcon icon={faCheck} />
@@ -66,24 +67,47 @@ export default function Select({ onChange, defaultValue, value, placeholder, opt
   )
 }
 
-export const SelectFormWrapper = forwardRef<HTMLInputElement, SelectProps & { name?: string }>((props, ref) => {
+type SelectFormWrapperProps = SelectProps & {
+  name?: string
+  type?: string
+  inputMode?: 'numeric'
+  inputPlaceholder?: string
+}
+
+export const selectOtherOption: SelectOption = { value: 'other', displayText: 'Sonstiges' }
+
+export const SelectFormWrapper = forwardRef<HTMLInputElement, SelectFormWrapperProps>((props, ref) => {
   const [value, setValue] = useState(props.defaultValue ?? '')
+  const [showInput, setShowInput] = useState(false)
 
   function handleChange(value: string) {
+    if (value === selectOtherOption.value) {
+      setShowInput(true)
+      setValue('')
+      return
+    }
+
+    setShowInput(false)
     setValue(value)
     props.onChange?.(value)
   }
 
   return (
     <div className="SelectFormWrapper">
-      <input name={props.name} ref={ref} type="hidden" value={value} />
       <Select
         optionGroups={props.optionGroups}
         defaultValue={props.defaultValue}
-        value={value}
         id={props.id}
         placeholder={props.placeholder}
         onChange={handleChange}
+      />
+      <Input
+        name={props.name}
+        ref={ref}
+        type={showInput ? props.type : 'hidden'}
+        value={value}
+        inputMode={props.inputMode}
+        placeholder={props.inputPlaceholder}
       />
     </div>
   )

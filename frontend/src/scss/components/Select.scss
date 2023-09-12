@@ -7,13 +7,24 @@
   gap: 0.25em;
 }
 
+.SelectFormWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+}
+
 .SelectTrigger {
   @include mixins.input();
 
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: space-between;
+  height: 2em;
   gap: 0.5rem;
+
+  .SelectIcon {
+    font-size: v.$icon-size-medium;
+  }
 }
 
 .SelectContent {

@@ -2,7 +2,7 @@
 @use '../abstracts/mixins';
 
 .Navbar {
-  $toggle-transition: 0.3s ease;
+  $toggle-transition: 0.2s ease;
 
   user-select: none;
   z-index: 10;

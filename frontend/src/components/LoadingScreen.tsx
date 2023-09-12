@@ -1,4 +1,4 @@
-import '../scss/components/LoadingScreen.scss'
+import '@styles/components/LoadingScreen.scss'
 import LoadingSpinner from './LoadingSpinner'
 
 export default function LoadingScreen() {

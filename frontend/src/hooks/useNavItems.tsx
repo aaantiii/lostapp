@@ -1,6 +1,6 @@
-import ExpandableList, { ExpandableListItem } from '../components/ExpandableList'
-import { AuthRole } from '../api/types/auth'
-import { useAuth } from '../context/authContext'
+import ExpandableList, { ExpandableListItem } from '@components/ExpandableList'
+import { AuthRole } from '@api/types/auth'
+import { useAuth } from '@context/authContext'
 import { useMemo } from 'react'
 import {
   faAddressCard,
@@ -51,7 +51,7 @@ export default function useNavItems() {
           <ExpandableListItem title="Member suchen" href="/member/find" icon={faSearch} />
           <ExpandableListItem disabled title="Statistiken" href="/member/stats" icon={faChartLine} />
           <ExpandableListItem title="Leaderboard" href="/member/leaderboard" icon={faRankingStar} />
-          <ExpandableListItem title="1v1 Vergleich" href="/member/1v1" icon={faChess} />
+          <ExpandableListItem disabled title="1v1 Vergleich" href="/member/1v1" icon={faChess} />
           <ExpandableListItem title="Lost Clans" href="/member/clans" icon={faShieldHalved} />
         </ExpandableList>
       )

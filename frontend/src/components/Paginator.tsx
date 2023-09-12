@@ -1,7 +1,7 @@
-import '../scss/components/Paginator.scss'
+import '@styles/components/Paginator.scss'
 import { useEffect, useState } from 'react'
 import Select, { SelectOption, SelectOptionGroup } from './Select'
-import { Pagination } from '../api/types/pagination'
+import { Pagination } from '@api/types/pagination'
 
 export interface PaginatorProps {
   pagination?: Pagination

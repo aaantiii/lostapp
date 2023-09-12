@@ -1,9 +1,9 @@
-import '../scss/components/UserAvatar.scss'
-import { useAuth } from '../context/authContext'
+import '@styles/components/UserAvatar.scss'
+import { useAuth } from '@context/authContext'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUser } from '@fortawesome/free-solid-svg-icons'
 import { useNavigate } from 'react-router-dom'
-import useDashboardNavigate from '../hooks/useDashboardNavigate'
+import useDashboardNavigate from '@hooks/useDashboardNavigate'
 
 interface UserAvatarProps {
   onClick?: () => void

@@ -33,13 +33,13 @@ namespace FormMessages {
 
   export const minMaxLength = (min: number, max?: number): FormMessageProps => ({
     id: 'minMaxText',
-    match: (value: string) => value.length < min || (max !== undefined && value.length > max),
+    match: (value: string) => value.length !== 0 && (value.length < min || (max !== undefined && value.length > max)),
     children: `Wert muss zwischen ${min} und ${max} Zeichen lang sein.`,
   })
 
   export const fixedLength = (length: number): FormMessageProps => ({
     id: 'fixedLength',
-    match: (value: string) => value.length !== length,
+    match: (value: string) => value.length !== 0 && value.length !== length,
     children: `Wert muss ${length} Zeichen lang sein.`,
   })
 }

@@ -1,5 +1,5 @@
-import '../scss/components/ExperienceLevel.scss'
-import experienceLevel from '../assets/img/components/experience_level.webp'
+import '@styles/components/ExperienceLevel.scss'
+import experienceLevel from '@assets/img/components/experience_level.webp'
 
 interface ExperienceLevelProps {
   level: number

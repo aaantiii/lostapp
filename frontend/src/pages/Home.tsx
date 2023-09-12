@@ -1,15 +1,14 @@
-import useDocumentTitle from '../hooks/useDocumentTitle'
-import imgMaxCapital from '../assets/img/pages/home/max_capital.webp'
-import ParallaxEffect from '../components/ParallaxEffect'
-import Button from '../components/Button'
+import useDocumentTitle from '@hooks/useDocumentTitle'
+import imgMaxCapital from '@assets/img/pages/home/max_capital.webp'
+import ParallaxEffect from '@components/ParallaxEffect'
+import Button from '@components/Button'
 import { useNavigate } from 'react-router-dom'
-import useDashboardNavigate from '../hooks/useDashboardNavigate'
-import Spacer from '../components/Spacer'
-import Content from '../components/Content'
+import useDashboardNavigate from '@hooks/useDashboardNavigate'
+import Spacer from '@components/Spacer'
+import Content from '@components/Content'
 
 export default function Home() {
-  useDocumentTitle('Startseite')
-  const navigate = useNavigate()
+  const heading = useDocumentTitle('Startseite')
   const dashboardRedirect = useDashboardNavigate()
 
   return (
@@ -25,7 +24,7 @@ export default function Home() {
       <Spacer size="large" />
       <Content>
         <main>
-          <h1>Lost Family</h1>
+          {heading}
           <section>
             <article>
               <h2>Clandorf Weltrekord</h2>

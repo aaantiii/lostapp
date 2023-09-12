@@ -1,15 +1,15 @@
-import '../scss/components/Form.scss'
+import '@styles/components/Form.scss'
 import * as f from '@radix-ui/react-form'
 import Button from './Button'
 
-interface FormProps {
+export interface FormProps {
   fields: FormField[]
   submitText: string
-  isLoading: boolean
+  isLoading?: boolean
   onSubmit: (data: any) => void
 }
 
-interface FormField {
+export interface FormField {
   label: string
   messages?: Pick<f.FormMessageProps, 'match' | 'children' | 'id'>[]
   name: string

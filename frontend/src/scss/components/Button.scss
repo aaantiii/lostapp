@@ -18,4 +18,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
   flex: 1 1 200px;
+
+  &.red {
+    background-color: v.$red-100;
+  }
 }

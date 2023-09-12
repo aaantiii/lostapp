@@ -1,13 +1,13 @@
 import { useLocation } from 'react-router-dom'
-import '../scss/components/Navbar.scss'
+import '@styles/components/Navbar.scss'
 import Logo from './Logo'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBars, faXmark } from '@fortawesome/free-solid-svg-icons'
 import UserAvatar from './UserAvatar'
-import useNavItems from '../hooks/useNavItems'
+import useNavItems from '@hooks/useNavItems'
 import Notifications from './Notifications'
-import { useAuth } from '../context/authContext'
+import { useAuth } from '@context/authContext'
 
 export default function Navbar() {
   const { discordUser, logout } = useAuth()

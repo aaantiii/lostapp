@@ -1,6 +1,6 @@
 import { createContext, useContext, useState } from 'react'
-import { MessageProps } from '../components/Messages'
-import { MessageContext } from '../types/context'
+import { MessageProps } from '@components/Messages'
+import { MessageContext } from './types'
 
 const messageContext = createContext({} as MessageContext)
 

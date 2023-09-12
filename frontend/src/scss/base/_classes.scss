@@ -1,13 +1,13 @@
 @use '../abstracts/variables' as v;
 
-div.center {
+.center {
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100%;
 }
 
-span.bold {
+.bold {
   font-weight: bold;
 }
 

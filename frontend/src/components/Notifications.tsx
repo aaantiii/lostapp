@@ -1,9 +1,9 @@
-import '../scss/components/Notifications.scss'
-import { useCallback, useRef, useState } from 'react'
+import '@styles/components/Notifications.scss'
+import { useCallback, useRef } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBell, faXmark } from '@fortawesome/free-solid-svg-icons'
 import { useQuery } from '@tanstack/react-query'
-import routes from '../api/routes'
+import routes from '@api/routes'
 
 export default function Notifications() {
   const contentRef = useRef<HTMLDivElement>(null)

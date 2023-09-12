@@ -1,13 +1,13 @@
 import { useNavigate, useOutletContext } from 'react-router-dom'
-import Button from '../../components/Button'
-import { CardList, Card } from '../../components/Card'
-import ExperienceLevel from '../../components/ExperienceLevel'
-import { useAuth } from '../../context/authContext'
-import useDocumentTitle from '../../hooks/useDocumentTitle'
-import { formatPlayerClanRoles, urlEncodeTag } from '../../fmt/cocFormatter'
-import { MemberOutletContext } from '../../types/context'
-import { useMessage } from '../../context/messageContext'
-import { Player } from '../../api/types/player'
+import Button from '@components/Button'
+import { CardList, Card } from '@components/Card'
+import ExperienceLevel from '@components/ExperienceLevel'
+import { useAuth } from '@context/authContext'
+import useDocumentTitle from '@hooks/useDocumentTitle'
+import { formatPlayerClanRoles, urlEncodeTag } from '@fmt/cocFormatter'
+import { MemberOutletContext } from '@context/types'
+import { useMessage } from '@context/messageContext'
+import { Player } from '@api/types/player'
 
 export default function Index() {
   const heading = useDocumentTitle('Member Übersicht')
@@ -15,7 +15,7 @@ export default function Index() {
   const navigate = useNavigate()
   const { sendMessage } = useMessage()
   const { discordUser } = useAuth()
-  const { userPlayers: cocAccounts } = useOutletContext<MemberOutletContext>()
+  const { userPlayers } = useOutletContext<MemberOutletContext>()
 
   function handleCopyTag(player: Player) {
     navigator.clipboard.writeText(player.tag)
@@ -32,10 +32,9 @@ export default function Index() {
         <h2>Willkommen {discordUser?.username} 👋</h2>
         <h4>Deine Accounts</h4>
       </hgroup>
-
-      {cocAccounts ? (
+      {userPlayers ? (
         <CardList>
-          {cocAccounts.map((account) => (
+          {userPlayers.map((account) => (
             <Card
               title={account.name}
               description={formatPlayerClanRoles(account)}

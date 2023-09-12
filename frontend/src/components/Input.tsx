@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import '../scss/components/Input.scss'
+import '@styles/components/Input.scss'
 import { forwardRef } from 'react'
 import { faSearch } from '@fortawesome/free-solid-svg-icons'
 

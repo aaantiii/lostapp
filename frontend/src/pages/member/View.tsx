@@ -1,12 +1,12 @@
 import { useOutletContext } from 'react-router-dom'
-import Button from '../../components/Button'
-import { CardList, Card } from '../../components/Card'
-import ExperienceLevel from '../../components/ExperienceLevel'
-import useDocumentTitle from '../../hooks/useDocumentTitle'
-import { formatPlayerClanRoles, urlEncodeTag } from '../../fmt/cocFormatter'
-import { MemberOutletContext } from '../../types/context'
-import { useMessage } from '../../context/messageContext'
-import { Player } from '../../api/types/player'
+import Button from '@components/Button'
+import { CardList, Card } from '@components/Card'
+import ExperienceLevel from '@components/ExperienceLevel'
+import useDocumentTitle from '@hooks/useDocumentTitle'
+import { formatPlayerClanRoles, urlEncodeTag } from '@fmt/cocFormatter'
+import { MemberOutletContext } from '@context/types'
+import { useMessage } from '@context/messageContext'
+import { Player } from '@api/types/player'
 
 export default function ViewMember() {
   const heading = useDocumentTitle('Member Details')

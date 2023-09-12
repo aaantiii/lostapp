@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
-import Button from '../../../components/Button'
-import { useAuth } from '../../../context/authContext'
-import useDashboardNavigate from '../../../hooks/useDashboardNavigate'
-import routes from '../../../api/routes'
-import CenteredContent from '../../../components/CenteredContent'
-import useDocumentTitle from '../../../hooks/useDocumentTitle'
-import Spacer from '../../../components/Spacer'
+import Button from '@components/Button'
+import { useAuth } from '@context/authContext'
+import useDashboardNavigate from '@hooks/useDashboardNavigate'
+import routes from '@api/routes'
+import CenteredContent from '@components/CenteredContent'
+import useDocumentTitle from '@hooks/useDocumentTitle'
+import Spacer from '@components/Spacer'
 
 const width = 400
 const height = 600

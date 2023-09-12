@@ -1,4 +1,4 @@
-import useNotImplemented from '../../hooks/useNotImplemented'
+import useNotImplemented from '@hooks/useNotImplemented'
 
 export default function Privacy() {
   useNotImplemented()

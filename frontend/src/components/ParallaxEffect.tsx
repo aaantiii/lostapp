@@ -1,4 +1,4 @@
-import '../scss/components/ParallaxEffect.scss'
+import '@styles/components/ParallaxEffect.scss'
 import { Background, BlurProp, Parallax } from 'react-parallax'
 
 interface ParallaxEffectProps {

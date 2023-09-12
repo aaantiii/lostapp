@@ -24,9 +24,6 @@
       & > .Label {
         font-size: v.$font-size-smaller;
         text-transform: uppercase;
-
-        &[data-invalid] {
-        }
       }
 
       & > .Message {
@@ -34,8 +31,8 @@
         font-size: v.$font-size-smaller;
       }
 
-      & .Control[data-invalid='true'] {
-        outline: 1px solid v.$red-100;
+      & .Control[data-invalid] {
+        border: 1px solid v.$red-100;
       }
     }
 

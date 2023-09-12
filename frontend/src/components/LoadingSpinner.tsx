@@ -1,4 +1,4 @@
-import '../scss/components/LoadingSpinner.scss'
+import '@styles/components/LoadingSpinner.scss'
 
 export default function LoadingSpinner() {
   return (

@@ -1,5 +1,5 @@
-import '../scss/components/Logo.scss'
-import lostLogo from '../assets/img/lost_logo.webp'
+import '@styles/components/Logo.scss'
+import lostLogo from '@assets/img/lost_logo.webp'
 import { useNavigate } from 'react-router-dom'
 
 export default function Logo() {

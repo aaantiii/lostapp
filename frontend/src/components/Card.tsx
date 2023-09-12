@@ -1,4 +1,4 @@
-import '../scss/components/Card.scss'
+import '@styles/components/Card.scss'
 import { useRef, useEffect, CSSProperties } from 'react'
 
 interface CardProps {

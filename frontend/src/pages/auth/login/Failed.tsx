@@ -1,7 +1,7 @@
-import useDocumentTitle from '../../../hooks/useDocumentTitle'
-import CenteredContent from '../../../components/CenteredContent'
-import Spacer from '../../../components/Spacer'
-import Button from '../../../components/Button'
+import useDocumentTitle from '@hooks/useDocumentTitle'
+import CenteredContent from '@components/CenteredContent'
+import Spacer from '@components/Spacer'
+import Button from '@components/Button'
 import { useNavigate } from 'react-router-dom'
 
 export default function LoginFailed() {
