@@ -90,5 +90,10 @@ func (controller *PlayersController) GETLeaderboard(c *gin.Context) {
 }
 
 func (controller *PlayersController) GETComparableStats(c *gin.Context) {
+	if types.ComparableStats == nil {
+		c.AbortWithStatus(http.StatusNotFound)
+		return
+	}
+
 	c.JSON(http.StatusOK, types.ComparableStats)
 }

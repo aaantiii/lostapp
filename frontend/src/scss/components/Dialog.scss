@@ -6,7 +6,7 @@ $z-index: 10;
   background: v.$gray-400;
   position: fixed;
   inset: 0;
-  animation: show-dialog 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: show-dialog 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
   z-index: $z-index;
 
   @keyframes show-dialog {
@@ -34,6 +34,7 @@ $z-index: 10;
   padding: 25px;
   animation: show-content 500ms cubic-bezier(0.16, 1, 0.3, 1);
   border: 1px solid v.$gray-400;
+  overflow-y: auto;
 
   @keyframes show-content {
     from {
@@ -50,6 +51,18 @@ $z-index: 10;
 
   & > .title {
     margin-block: v.$gap-medium;
+  }
+
+  & > .buttons {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: v.$gap-medium;
+    gap: v.$gap-small;
+    flex-wrap: wrap;
+
+    & > button {
+      flex: auto;
+    }
   }
 
   & > .close {

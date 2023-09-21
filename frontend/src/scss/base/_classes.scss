@@ -11,14 +11,6 @@
   font-weight: bold;
 }
 
-a.link {
-  color: v.$blue-200;
-
-  &:hover {
-    text-decoration: underline;
-  }
-}
-
 .flex-col {
   display: flex;
   flex-direction: column;

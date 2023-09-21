@@ -1,0 +1,24 @@
+@use '../abstracts/variables' as v;
+
+.DataList {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  & > dl {
+    margin: 0;
+    width: clamp(300px, 70%, 550px);
+    & > dt {
+      font-weight: bold;
+      font-size: v.$font-size-larger;
+
+      &::after {
+        content: ':';
+      }
+    }
+
+    & > dd {
+      margin: 0 0 v.$gap-medium 0;
+      font-style: italic;
+    }
+  }
+}

@@ -90,6 +90,9 @@ func (service *PlayersService) runPlayersFilter(players []*types.Player, params 
 			return nil, errors.New("no players found with the given name")
 		}
 
+		sort.SliceStable(filteredPlayers, func(i, j int) bool {
+			return strings.HasPrefix(filteredPlayers[i].Name, params.Name)
+		})
 		players = filteredPlayers
 	}
 

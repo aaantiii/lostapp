@@ -4,6 +4,7 @@
   border-radius: v.$border-radius-medium;
   background-color: v.$bright-fade-200;
   position: relative;
+  transition: all 2000ms linear;
 
   &::before,
   .border {

@@ -6,7 +6,7 @@
   flex-wrap: wrap;
   justify-content: center;
 
-  & > .Root {
+  & > .root {
     width: clamp(400px, 40vw, 550px);
     gap: v.$gap-medium;
     display: flex;
@@ -16,27 +16,32 @@
       width: 100%;
     }
 
-    & > .Field {
+    & > .field {
       display: flex;
       flex-direction: column;
       gap: v.$gap-tiny;
 
-      & > .Label {
+      & > .label {
         font-size: v.$font-size-smaller;
         text-transform: uppercase;
+        width: fit-content;
+
+        &::after {
+          content: ':';
+        }
       }
 
-      & > .Message {
+      & > .message {
         opacity: 0.8;
         font-size: v.$font-size-smaller;
       }
 
-      & .Control[data-invalid] {
+      & .control[data-invalid] {
         border: 1px solid v.$red-100;
       }
     }
 
-    & > .SubmitButton {
+    & > .submit-button {
       margin-top: v.$gap-medium;
 
       &.hidden {

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import imgRedHeart from '@assets/img/emojies/red_heart.svg'
 import Logo from './Logo'
 import Content from './Content'
+import Link from './Link'
 
 export default function Footer() {
   const navigate = useNavigate()
@@ -13,25 +14,21 @@ export default function Footer() {
         <div className="content">
           <p>
             <span>Fehler gefunden? </span>
-            <a className="link" href="https://github.com/aaantiii/lostapp/issues/new" target="_blank">
+            <Link href="https://github.com/aaantiii/lostapp/issues/new" newWindow>
               Auf GitHub melden
-            </a>
+            </Link>
           </p>
           <p>
             <span>Ideen für neue Funktionen? </span>
-            <a className="link" onClick={() => navigate('/request-feature')}>
+            <Link to="/request-feature" newWindow>
               Feature vorschlagen
-            </a>
+            </Link>
           </p>
           <p>
             <span>Rechtliches: </span>
-            <a className="link" onClick={() => navigate('/legal/imprint')}>
-              Impressum
-            </a>
+            <Link to="/legal/imprint">Impressum</Link>
             <span> | </span>
-            <a className="link" onClick={() => navigate('/legal/privacy')}>
-              Datenschutz
-            </a>
+            <Link to="/legal/privacy">Datenschutz</Link>
           </p>
           <div className="center">
             <Logo />

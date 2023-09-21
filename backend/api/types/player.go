@@ -7,7 +7,8 @@ import (
 )
 
 type Player struct {
-	ComparableStatsByName map[string]int `json:"-"` // maps stat name to value
+	ComparableStatsByName map[string]int `json:"-"` // maps a stat name to value
+	DiscordID             string         `json:"discordId"`
 	Clans                 []PlayerClan   `json:"clans"`
 	Name                  string         `json:"name"`
 	Tag                   string         `json:"tag"`

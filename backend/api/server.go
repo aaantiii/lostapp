@@ -25,9 +25,9 @@ func Init() error {
 	}
 
 	corsConfig := cors.Config{
-		AllowOrigins:     []string{env.FRONTEND_URL.Value()},
-		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		ExposeHeaders:    []string{"Content-Length", "Content-Type: application/xml", "Origin"},
+		AllowOrigins:     []string{env.FRONTEND_URL.Value(), "http://localhost:4173"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		ExposeHeaders:    []string{"Content-Length", "Content-Type", "Origin"},
 		AllowHeaders:     []string{"Content-Length", "Content-Type", "Origin"},
 		AllowCredentials: true,
 	}

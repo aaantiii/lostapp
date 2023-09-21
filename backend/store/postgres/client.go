@@ -7,6 +7,7 @@ import (
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 
 	"backend/env"
 	"backend/store/postgres/models"
@@ -21,13 +22,14 @@ func NewClient() (*gorm.DB, error) {
 	}
 
 	if err = client.AutoMigrate(
-		&models.LostClan{},
-		&models.Member{},
+		&models.Guild{},
 		&models.Kickpoint{},
 		&models.LostClan{},
 		&models.LostClanSettings{},
+		&models.Member{},
 		&models.Notification{},
 		&models.NotificationReceiver{},
+		&models.User{},
 	); err != nil {
 		return nil, err
 	}
@@ -38,9 +40,15 @@ func NewClient() (*gorm.DB, error) {
 
 func newGormClient(dbName string) (client *gorm.DB, err error) {
 	dsn := env.POSTGRES_URL.Value() + dbName
+	loggerMode := logger.Silent
+	if env.DEBUG.Value() != "false" {
+		loggerMode = logger.Warn
+	}
 
 	for i := 0; i < maxRetries; i++ {
-		if client, err = gorm.Open(postgres.Open(dsn), &gorm.Config{}); err != nil {
+		if client, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
+			Logger: logger.Default.LogMode(loggerMode),
+		}); err != nil {
 			log.Printf("Failed to connect to database '%s': %v\nRetrying in %s...", dbName, err, retryTimeout.String())
 			time.Sleep(retryTimeout)
 			continue

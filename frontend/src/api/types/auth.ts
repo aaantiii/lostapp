@@ -1,12 +1,8 @@
+import { DiscordUser } from './user'
+
 export interface Session {
   discordUser?: DiscordUser
   userRole?: AuthRole
-}
-
-export interface DiscordUser {
-  id: string
-  username: string
-  avatarUrl: string
 }
 
 export enum AuthRole {

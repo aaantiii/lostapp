@@ -1,12 +1,12 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useMessage } from '@context/messageContext'
 import '@styles/components/Messages.scss'
-import { useCallback, useLayoutEffect, useRef, useState } from 'react'
-import { faXmark } from '@fortawesome/free-solid-svg-icons'
+import { useEffect, useRef, useState } from 'react'
+import { faWarning, faXmark } from '@fortawesome/free-solid-svg-icons'
 
 export interface MessageProps {
   message: string
-  type: 'error' | 'success'
+  type: 'error' | 'success' | 'warning'
   id: number
 }
 
@@ -27,7 +27,7 @@ function Message({ message, type, id }: MessageProps) {
   const [open, setOpen] = useState(true)
   const { removeMessage } = useMessage()
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (!messageRef.current) return
 
     messageRef.current.addEventListener('animationend', closeMessage)
@@ -39,18 +39,21 @@ function Message({ message, type, id }: MessageProps) {
     }
   }, [])
 
-  const closeMessage = useCallback(() => {
+  function closeMessage() {
     setOpen(false)
-  }, [setOpen])
+  }
 
-  const handleTransitionEnd = useCallback(() => {
+  function handleTransitionEnd() {
     removeMessage(id)
-  }, [removeMessage, id])
+  }
 
   return (
     <div ref={messageRef} className={`Message ${type}${open ? ' open' : ''}`}>
-      <div className="content">
-        <span>{message}</span>
+      <div className="body">
+        <div className="content">
+          {(type === 'warning' || type === 'error') && <FontAwesomeIcon icon={faWarning} className="icon" />}
+          <span>{message}</span>
+        </div>
         <a className="close-button" onClick={closeMessage}>
           <FontAwesomeIcon icon={faXmark} />
         </a>

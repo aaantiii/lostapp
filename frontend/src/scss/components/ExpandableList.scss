@@ -14,13 +14,13 @@
 
     svg {
       rotate: 90deg;
-      transition: rotate 0.2s linear;
+      transition: rotate 200ms linear;
     }
   }
 
   ul {
     overflow: hidden;
-    transition: font-size 0.3s ease-out;
+    transition: font-size 200ms ease-out;
     font-size: 0;
     white-space: nowrap;
     text-overflow: ellipsis;

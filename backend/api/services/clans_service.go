@@ -91,6 +91,7 @@ func (service *ClansService) UpdateClanSettings(tag string, payload *types.Updat
 		KickpointsRaidMissed:      payload.KickpointsRaidMissed,
 		KickpointsRaidFail:        payload.KickpointsRaidFail,
 		KickpointsClanGames:       payload.KickpointsClanGames,
+		UpdatedByDiscordID:        &payload.UpdatedByDiscordID,
 	})
 }
 

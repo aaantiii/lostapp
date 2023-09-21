@@ -4,64 +4,60 @@ import { CardList, Card } from '@components/Card'
 import ExperienceLevel from '@components/ExperienceLevel'
 import { useAuth } from '@context/authContext'
 import useDocumentTitle from '@hooks/useDocumentTitle'
-import { formatPlayerClanRoles, urlEncodeTag } from '@fmt/cocFormatter'
+import { urlEncodeTag } from '@fmt/cocFormatter'
 import { MemberOutletContext } from '@context/types'
-import { useMessage } from '@context/messageContext'
-import { Player } from '@api/types/player'
+import { ClanMemberRoleTranslated } from '@api/types/clan'
 
 export default function Index() {
   const heading = useDocumentTitle('Member Übersicht')
-
   const navigate = useNavigate()
-  const { sendMessage } = useMessage()
   const { discordUser } = useAuth()
   const { userPlayers } = useOutletContext<MemberOutletContext>()
-
-  function handleCopyTag(player: Player) {
-    navigator.clipboard.writeText(player.tag)
-    sendMessage({
-      message: `Tag von ${player.name} kopiert!`,
-      type: 'success',
-    })
-  }
 
   return (
     <main>
       <hgroup>
         {heading}
-        <h2>Willkommen {discordUser?.username} 👋</h2>
-        <h4>Deine Accounts</h4>
+        <h2>Willkommen {discordUser?.name} 👋</h2>
+        <h4>Deine Member Accounts</h4>
       </hgroup>
-      {userPlayers ? (
-        <CardList>
-          {userPlayers.map((account) => (
-            <Card
-              title={account.name}
-              description={formatPlayerClanRoles(account)}
-              thumbnail={<ExperienceLevel level={account.expLevel} />}
-              key={`card-${account.tag}`}
-              fields={[
-                {
-                  title: 'Season wins',
-                  value: account.attackWins,
-                  style: { color: account.attackWins >= 80 ? 'green' : 'red' },
-                  key: `season-wins`,
-                },
-              ]}
-              buttons={[
-                <Button key="show-player-details" onClick={() => navigate(`/member/${urlEncodeTag(account.tag)}`)}>
-                  Details
-                </Button>,
-                <Button key="copy-tag" onClick={() => handleCopyTag(account)}>
-                  Tag kopieren
-                </Button>,
-              ]}
-            />
-          ))}
-        </CardList>
-      ) : (
-        <p>Du hast noch keine Clash of Clans Accounts verknüpft.</p>
-      )}
+      <section>
+        {userPlayers ? (
+          <CardList>
+            {userPlayers.map((account) => [
+              ...account.clans.map((clan) => (
+                <Card
+                  title={account.name}
+                  description={`${ClanMemberRoleTranslated.get(clan.role)} in ${clan.name}`}
+                  thumbnail={<ExperienceLevel level={account.expLevel} />}
+                  key={`${account.tag}${clan.tag}`}
+                  fields={[
+                    {
+                      title: 'Season wins',
+                      value: account.attackWins,
+                      style: { color: account.attackWins >= 80 ? 'green' : 'red' },
+                      key: `season-wins`,
+                    },
+                  ]}
+                  buttons={[
+                    <Button
+                      key="member-details"
+                      onClick={() => navigate(`/member/clans/${urlEncodeTag(clan.tag)}/members/${urlEncodeTag(account.tag)}`)}
+                    >
+                      Details
+                    </Button>,
+                    <Button key="clan-details" onClick={() => navigate(`/member/clans/${urlEncodeTag(clan.tag)}`)}>
+                      Clan Details
+                    </Button>,
+                  ]}
+                />
+              )),
+            ])}
+          </CardList>
+        ) : (
+          <p>Du hast noch keine Clash of Clans Accounts verknüpft.</p>
+        )}
+      </section>
     </main>
   )
 }

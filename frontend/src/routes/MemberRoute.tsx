@@ -16,7 +16,7 @@ export default function MemberRoute() {
   const { clanTag, memberTag } = useParams()
   const { discordUser } = useAuth()
 
-  const { data: userPlayers, isLoading: cocAccountsLoading } = useQuery<Player[]>({
+  const { data: userPlayers, isLoading: userPlayersLoading } = useQuery<Player[]>({
     queryKey: [routes.players.all, null, { discordID: discordUser?.id }],
     enabled: discordUser !== undefined,
   })
@@ -27,11 +27,13 @@ export default function MemberRoute() {
   })
 
   const [player, setPlayer] = useState<Player>()
-  const { refetch: fetchMember, isFetching: memberFetching } = useQuery<Player>({
+  const {
+    data: fetchedPlayer,
+    refetch: fetchMember,
+    isFetching: memberFetching,
+  } = useQuery<Player>({
     queryKey: [routes.players.byTag, { tag: memberTag }],
     enabled: false,
-    onSuccess: setPlayer,
-    onError: () => setPlayer(undefined),
   })
 
   const { data: clanSettings, isFetching: clanSettingsFetching } = useQuery<ClanSettings>({
@@ -47,7 +49,12 @@ export default function MemberRoute() {
     else fetchMember()
   }, [memberTag, userPlayers])
 
-  if (cocAccountsLoading || clanFetching || memberFetching || clanSettingsFetching) return <LoadingScreen />
+  useEffect(() => {
+    if (!fetchedPlayer) return
+    setPlayer(fetchedPlayer)
+  }, [fetchedPlayer])
+
+  if (userPlayersLoading || clanFetching || memberFetching || clanSettingsFetching) return <LoadingScreen />
 
   return (
     <ProtectedRoute requiredRole={AuthRole.Member}>

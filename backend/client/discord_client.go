@@ -16,9 +16,9 @@ type DiscordClient struct {
 type DiscordApiRoute string
 
 const (
-	DiscordUserRoute  DiscordApiRoute = "/users/@me"
-	DiscordAuthRoute  DiscordApiRoute = "/oauth2/authorize"
-	DiscordTokenRoute DiscordApiRoute = "/oauth2/token"
+	DiscordGuildMemberRoute DiscordApiRoute = "/users/@me/guilds/733857906117574717/member"
+	DiscordAuthRoute        DiscordApiRoute = "/oauth2/authorize"
+	DiscordTokenRoute       DiscordApiRoute = "/oauth2/token"
 )
 
 func (route DiscordApiRoute) URL() string {
@@ -31,16 +31,16 @@ func NewDiscordClient() *DiscordClient {
 	}
 }
 
-func (client *DiscordClient) FetchUser(token string) (*types.DiscordUser, error) {
-	var res *types.DiscordUserResponse
-	if err := client.fetch(token, DiscordUserRoute, &res); err != nil {
+func (client *DiscordClient) FetchDiscordUser(token string) (*types.DiscordUser, error) {
+	var res *types.DiscordGuildMember
+	if err := client.fetch(token, DiscordGuildMemberRoute, &res); err != nil {
 		return nil, err
 	}
 
 	return res.DiscordUser(), nil
 }
 
-// fetch fetches data from the DiscordClient API and stores the response body in the variable pointed to by dest.
+// fetch fetches data from the Discord-API and stores the response body in the variable pointed to by dest.
 func (client *DiscordClient) fetch(token string, route DiscordApiRoute, dest interface{}) error {
 	req, err := http.NewRequest("GET", route.URL(), nil)
 	if err != nil {

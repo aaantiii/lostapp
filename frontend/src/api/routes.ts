@@ -19,6 +19,7 @@ export default {
       kickpoints: {
         all: 'clans/:clanTag/members/kickpoints',
         byTag: 'clans/:clanTag/members/:memberTag/kickpoints',
+        byId: 'clans/:clanTag/members/:memberTag/kickpoints/:kickpointId',
       },
     },
   },

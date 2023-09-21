@@ -21,7 +21,7 @@ export default function Leaderboard() {
   const [page, setPage] = useState(1)
   const pageSize = usePageSize(20, 30)
   const [clansSelectOptions, setClanOptionGroup] = useState({ options: [] } as SelectOptionGroup)
-  const [statisticsSelectOptions, setAchievementOptionGroup] = useState({ options: [] } as SelectOptionGroup)
+  const [statisticsSelectOptions, setStatisticsOptionGroup] = useState({ options: [] } as SelectOptionGroup)
   const [selectedClan, setSelectedClan] = useState(clanTagFilterAll.value)
   const [selectedStatistic, setSelectedStatistic] = useState<ComparableStatistic>()
 
@@ -64,7 +64,7 @@ export default function Leaderboard() {
   useEffect(() => {
     if (!comparableStatistics) return
 
-    setAchievementOptionGroup({
+    setStatisticsOptionGroup({
       title: 'Achievement wählen',
       options: comparableStatistics.map((achievement) => ({
         value: achievement.name,

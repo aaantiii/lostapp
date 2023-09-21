@@ -18,7 +18,7 @@ export default function LoginSuccess() {
     if (!discordUser) return
 
     sendMessage({
-      message: `Hey ${discordUser.username}, deine Anmeldung war erfolgreich!`,
+      message: `Hey ${discordUser.name}, deine Anmeldung war erfolgreich!`,
       type: 'success',
     })
     navigateToDashboard()
@@ -29,5 +29,5 @@ export default function LoginSuccess() {
     return () => clearTimeout(timeoutId)
   }, [])
 
-  return <LoadingScreen></LoadingScreen>
+  return <LoadingScreen />
 }

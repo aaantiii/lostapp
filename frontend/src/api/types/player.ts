@@ -1,6 +1,7 @@
 import { ClanMemberRole } from './clan'
 
 export interface Player {
+  discordId: string
   clans: PlayerClan[]
   name: string
   tag: string

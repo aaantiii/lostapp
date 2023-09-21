@@ -1,10 +1,11 @@
 import { ClanMemberRole } from './clan'
+import { CreatedByUser, DiscordUser, UpdatedByUser } from './user'
 
-export interface Kickpoint {
+export interface Kickpoint extends CreatedByUser, UpdatedByUser {
   id: number
   amount: number
   date: string
-  reason: string
+  description: string
 }
 
 export type CreateKickpoint = Omit<Kickpoint, 'id'>

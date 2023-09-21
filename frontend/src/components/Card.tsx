@@ -16,7 +16,7 @@ interface CardProps {
 }
 
 interface CardListProps {
-  children?: JSX.Element | JSX.Element[]
+  children?: JSX.Element | JSX.Element[] | JSX.Element[][]
   flexDirection?: 'row' | 'column'
 }
 

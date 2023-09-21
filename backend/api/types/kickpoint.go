@@ -9,20 +9,20 @@ import (
 )
 
 type Kickpoint struct {
-	ID          uint                   `json:"id"`
-	Amount      int                    `json:"amount"`
-	Date        time.Time              `json:"date"`
-	Reason      models.KickpointReason `json:"reason"`
-	Description string                 `json:"description"`
+	ID            uint        `json:"id"`
+	Amount        int         `json:"amount"`
+	Date          time.Time   `json:"date"`
+	Description   string      `json:"description"`
+	CreatedByUser models.User `json:"createdByUser"`
 }
 
 func NewKickpoint(kickpoint *models.Kickpoint) *Kickpoint {
 	return &Kickpoint{
-		ID:          kickpoint.ID,
-		Amount:      kickpoint.Amount,
-		Date:        kickpoint.Date,
-		Reason:      kickpoint.Reason,
-		Description: kickpoint.Description,
+		ID:            kickpoint.ID,
+		Date:          kickpoint.Date,
+		Amount:        kickpoint.Amount,
+		Description:   kickpoint.Description,
+		CreatedByUser: kickpoint.CreatedByUser,
 	}
 }
 
@@ -34,12 +34,17 @@ type ClanMemberKickpoints struct {
 }
 
 type CreateKickpointPayload struct {
-	PlayerTag   string                 `json:"playerTag" binding:"-"`
-	ClanTag     string                 `json:"clanTag" binding:"-"`
-	Date        time.Time              `json:"date" binding:"required"`
-	Amount      int                    `json:"amount" binding:"required,min=1"`
-	Reason      models.KickpointReason `json:"reason" binding:"required"`
-	Description string                 `json:"description" binding:"required"`
+	Date             time.Time `json:"date" binding:"required"`
+	Amount           int       `json:"amount" binding:"required,min=1,max=10"`
+	Description      string    `json:"description" binding:"required"`
+	PlayerTag        string    `binding:"-"`
+	ClanTag          string    `binding:"-"`
+	AddedByDiscordID string    `binding:"-"`
 }
 
-type UpdateKickpointPayload CreateKickpointPayload
+type UpdateKickpointPayload struct {
+	Date               time.Time `json:"date" binding:"required"`
+	Amount             int       `json:"amount" binding:"required,min=1,max=10"`
+	Description        string    `json:"description" binding:"required"`
+	UpdatedByDiscordID string    `binding:"-"`
+}

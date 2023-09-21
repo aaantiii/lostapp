@@ -24,6 +24,7 @@ $icon-size-large: 24px;
 
 $gap-tiny: 5px;
 $gap-small: 10px;
+$gap-default: 15px;
 $gap-medium: 20px;
 $gap-large: 40px;
 
@@ -43,6 +44,7 @@ $gray-600: hsl(0, 0%, 60%);
 $gray-700: hsl(0, 0%, 80%);
 
 $red-100: hsl(0, 100%, 50%);
+$red-200: hsl(0, 100%, 35%);
 
 $bright-fade-100: hsl(0, 0%, 100%, 0.02);
 $bright-fade-200: hsl(0, 0%, 100%, 0.1);
@@ -54,6 +56,6 @@ $border-radius-medium: 10px;
 $border-radius-large: 15px;
 $border-radius-full: 50%;
 
-// component sizes
+// nav sizes
 $hnav-height: 60px;
 $vnav-width: clamp(230px, 70vw, 270px);

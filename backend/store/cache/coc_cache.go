@@ -70,7 +70,7 @@ func (cache *CocCache) refresh() error {
 	var lostClans models.LostClans
 	go func() {
 		defer wg.Done()
-		errs[0] = cache.db.Find(&lostClans).Error
+		errs[0] = cache.db.Order("id").Find(&lostClans).Error
 	}()
 
 	var lostMembers models.Members
@@ -110,7 +110,7 @@ func (cache *CocCache) refresh() error {
 		return err
 	}
 
-	log.Printf("Successfully fetched %d clans and %d players from COC-API within %s.", len(clans), len(players), time.Since(start).Round(time.Millisecond).String())
+	log.Printf("Successfully fetched %d clans and %d players from COC-API in %s.", len(clans), len(players), time.Since(start).Round(time.Millisecond).String())
 
 	playersByTag := make(map[string]*coc.Player)
 	for _, player := range players {
@@ -193,7 +193,7 @@ func (cache *CocCache) setClans(cocClans []*coc.Clan, playersByTag map[string]*c
 	cache.ClanByTag = clanByTag
 }
 
-// setPlayers sets the clan and role of each player as they are in the store.
+// setPlayers sets the clan and role of each player as they are in the members table.
 func (cache *CocCache) setPlayers(cocPlayers []*coc.Player, members models.Members) {
 	players := make([]*types.Player, len(cocPlayers))
 	playerByTag := make(map[string]*types.Player)
@@ -206,11 +206,10 @@ func (cache *CocCache) setPlayers(cocPlayers []*coc.Player, members models.Membe
 	}
 
 	playerByClanTag := make(map[string][]*types.Player)
-	playersByDiscordID := make(map[string][]*types.Player)
 	for _, member := range members {
 		if player, playerFound := playerByTag[member.PlayerTag]; playerFound {
+			player.DiscordID = member.DiscordLink.DiscordID
 			if clan, clanFound := cache.ClanByTag[member.ClanTag]; clanFound {
-				playersByDiscordID[member.DiscordLink.DiscordID] = append(playersByDiscordID[member.DiscordLink.DiscordID], player)
 				player.Clans = append(player.Clans, types.PlayerClan{
 					Name: clan.Name,
 					Tag:  clan.Tag,
@@ -221,12 +220,17 @@ func (cache *CocCache) setPlayers(cocPlayers []*coc.Player, members models.Membe
 		}
 	}
 
+	playersByDiscordID := make(map[string][]*types.Player)
+	for _, player := range players {
+		playersByDiscordID[player.DiscordID] = append(playersByDiscordID[player.DiscordID], player)
+	}
+
 	cache.Players = players
 	cache.PlayerByTag = playerByTag
 	cache.PlayersByClanTag = playerByClanTag
 	cache.PlayersByDiscordID = playersByDiscordID
-}
 
+}
 func (cache *CocCache) comparableStatsByName(player *coc.Player) map[string]int {
 	res := make(map[string]int, len(player.Achievements))
 

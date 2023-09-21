@@ -9,7 +9,7 @@ import (
 func CocMaintenanceMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if clansService.IsMaintenance() {
-			c.AbortWithStatus(http.StatusServiceUnavailable)
+			c.String(http.StatusServiceUnavailable, "Die Clash of Clans API ist momentan unter Wartungsarbeiten. Bitte versuche es später erneut.")
 			return
 		}
 		defer c.Next()

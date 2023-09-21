@@ -28,11 +28,6 @@ button {
 button {
   border: none;
   user-select: none;
-
-  &::disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
-  }
 }
 
 a {

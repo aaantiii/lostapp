@@ -90,6 +90,7 @@ button {
 svg,
 img {
   user-select: none;
+  pointer-events: none;
   color: inherit;
 }
 

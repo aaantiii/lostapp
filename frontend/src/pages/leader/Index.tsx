@@ -15,7 +15,7 @@ export default function LeaderIndex() {
     <main>
       <hgroup>
         {heading}
-        <h2>Willkommen {discordUser?.username} 👋</h2>
+        <h2>Willkommen {discordUser?.name} 👋</h2>
         <h4>Deine Clans</h4>
       </hgroup>
 

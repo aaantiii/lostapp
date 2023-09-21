@@ -14,6 +14,7 @@ import (
 	"backend/api/types"
 	"backend/client"
 	"backend/env"
+	"backend/store/postgres/models"
 )
 
 type IAuthService interface {
@@ -24,12 +25,15 @@ type IAuthService interface {
 	DeleteSession(token string) error
 	AuthCodeURL(state string) string
 	ExchangeCode(code string) (*oauth2.Token, error)
+	Guild(clanTag string) (*models.Guild, error)
 }
 
 type AuthService struct {
-	membersRepo        repos.IMembersRepo
+	guildsRepo repos.IGuildsRepo
+	usersRepo  repos.IUsersRepo
+
 	config             AuthServiceConfig
-	discordOAuthConfig *oauth2.Config
+	discordOAuthConfig oauth2.Config
 	sessions           types.Sessions
 	httpClient         *http.Client
 	discordClient      *client.DiscordClient
@@ -40,18 +44,19 @@ type AuthServiceConfig struct {
 	MaxSessionDataAge  time.Duration // MaxSessionDataAge is the time after which a session is considered outdated. The data will be refetched when the session is used.
 }
 
-func NewAuthService(membersRepo repos.IMembersRepo) *AuthService {
+func NewAuthService(guildsRepo repos.IGuildsRepo, usersRepo repos.IUsersRepo) *AuthService {
 	service := &AuthService{
-		membersRepo: membersRepo,
+		guildsRepo: guildsRepo,
+		usersRepo:  usersRepo,
 		config: AuthServiceConfig{
-			MaxSessionIdleTime: 12 * time.Hour,
+			MaxSessionIdleTime: 4 * time.Hour,
 			MaxSessionDataAge:  15 * time.Minute,
 		},
-		discordOAuthConfig: &oauth2.Config{
+		discordOAuthConfig: oauth2.Config{
 			ClientID:     env.DISCORD_CLIENT_ID.Value(),
 			ClientSecret: env.DISCORD_CLIENT_SECRET.Value(),
 			RedirectURL:  env.DISCORD_OAUTH_REDIRECT_URL.Value(),
-			Scopes:       []string{"identify"},
+			Scopes:       []string{"guilds.members.read"},
 			Endpoint: oauth2.Endpoint{
 				AuthURL:   client.DiscordAuthRoute.URL(),
 				TokenURL:  client.DiscordTokenRoute.URL(),
@@ -84,8 +89,13 @@ func (service *AuthService) CreateSession(token string) (*types.Session, error) 
 		return nil, errors.New("session with provided token already exists")
 	}
 
-	discordUser, err := service.discordClient.FetchUser(token)
+	discordUser, err := service.discordClient.FetchDiscordUser(token)
 	if err != nil {
+		return nil, err
+	}
+
+	user := &models.User{DiscordID: discordUser.ID, AvatarURL: discordUser.AvatarURL, Name: discordUser.Name}
+	if err = service.usersRepo.CreateOrUpdateUser(user); err != nil {
 		return nil, err
 	}
 
@@ -106,7 +116,7 @@ func (service *AuthService) RefreshSession(token string) (*types.Session, error)
 		return nil, errors.New("session not found")
 	}
 
-	discordUser, err := service.discordClient.FetchUser(token)
+	discordUser, err := service.discordClient.FetchDiscordUser(token)
 	if err != nil {
 		return nil, err
 	}
@@ -119,17 +129,17 @@ func (service *AuthService) RefreshSession(token string) (*types.Session, error)
 	return session, nil
 }
 
-// DeleteSession revokes a user's access token at discordClient and deletes the session from cache.
+// DeleteSession revokes a user's access token at discord and deletes the session from cache.
 // An error is returned if the request fails or the response status is not http.StatusOK.
 func (service *AuthService) DeleteSession(token string) error {
-	body := fmt.Sprintf(
+	bodyBuf := bytes.NewBuffer([]byte(fmt.Sprintf(
 		"client_id=%s&client_secret=%s&token=%s",
 		env.DISCORD_CLIENT_ID.Value(),
 		env.DISCORD_CLIENT_SECRET.Value(),
 		token,
-	)
+	)))
 
-	req, err := http.NewRequest("POST", service.discordOAuthConfig.Endpoint.TokenURL+"/revoke", bytes.NewBuffer([]byte(body)))
+	req, err := http.NewRequest("POST", service.discordOAuthConfig.Endpoint.TokenURL+"/revoke", bodyBuf)
 	if err != nil {
 		return err
 	}
@@ -158,27 +168,32 @@ func (service *AuthService) ExchangeCode(code string) (*oauth2.Token, error) {
 func (service *AuthService) grantRoleToSession(session *types.Session) error {
 	session.AuthRole = types.AuthRoleUser
 
-	members, err := service.membersRepo.MembersByDiscordID(session.DiscordUser.ID)
+	if isAdmin, err := service.usersRepo.UserIsAdmin(session.DiscordUser.ID); isAdmin && err == nil {
+		session.AuthRole = types.AuthRoleAdmin
+		return nil
+	}
+
+	guilds, err := service.guildsRepo.Guilds()
 	if err != nil {
 		return err
 	}
 
-	for _, member := range members {
-		if member.IsAdmin {
-			session.AuthRole = types.AuthRoleAdmin
-			break
-		}
-
-		if session.AuthRole < types.AuthRoleMember && (member.ClanRole.IsElder() || member.ClanRole.IsMember()) {
-			session.AuthRole = types.AuthRoleMember
-		}
-
-		if member.ClanRole.IsLeader() || member.ClanRole.IsCoLeader() {
+	for _, guild := range guilds {
+		if guild.IsLeader(session.DiscordUser.Roles) || guild.IsCoLeader(session.DiscordUser.Roles) {
 			session.AuthRole = types.AuthRoleLeader
+			return nil
+		}
+
+		if guild.IsElder(session.DiscordUser.Roles) || guild.IsMember(session.DiscordUser.Roles) {
+			session.AuthRole = types.AuthRoleMember
 		}
 	}
 
 	return nil
+}
+
+func (service *AuthService) Guild(clanTag string) (*models.Guild, error) {
+	return service.guildsRepo.Guild(clanTag)
 }
 
 // handleUnusedSessions deletes all sessions from cache that have not been used for longer than services.MaxSessionIdleTime.

@@ -11,6 +11,17 @@ export default ({ mode }) => {
     server: {
       port: parseInt(env.PORT),
       https: env.HTTPS === 'true',
+      proxy: {
+        '/api': {
+          target: env.VITE_API_URL,
+          changeOrigin: true,
+        },
+      },
+    },
+    build: {
+      outDir: 'build',
+      assetsDir: 'assets',
+      emptyOutDir: true,
     },
     resolve: {
       alias: {

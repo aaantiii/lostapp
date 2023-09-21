@@ -1,5 +1,10 @@
 import '@styles/components/TextArea.scss'
+import { forwardRef } from 'react'
 
-export default function TextArea() {
-  return <textarea className="TextArea" />
-}
+type TextAreaProps = React.InputHTMLAttributes<HTMLTextAreaElement>
+
+const TextArea = forwardRef((props: TextAreaProps, ref: React.Ref<HTMLTextAreaElement>) => (
+  <textarea ref={ref} {...props} className={`TextArea ${props.className}`} />
+))
+
+export default TextArea

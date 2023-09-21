@@ -13,13 +13,13 @@ export default function useDashboardNavigate() {
         navigate('/auth/login')
         break
       case AuthRole.User:
-        navigate('/user')
+        navigate('/apply')
         break
       case AuthRole.Member:
         navigate('/member')
         break
       case AuthRole.Leader:
-      case AuthRole.Admin: // admin not implemented
+      case AuthRole.Admin:
         navigate('/leader')
         break
     }

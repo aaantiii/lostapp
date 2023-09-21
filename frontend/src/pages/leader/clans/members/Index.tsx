@@ -17,6 +17,7 @@ export default function ClanMembersIndex() {
   const { data: clanMemberKickpoints } = useQuery<ClanMemberKickpoints[]>({
     queryKey: [routes.clans.members.kickpoints.all, { clanTag: urlEncodeTag(clan?.tag) }],
     enabled: clan !== undefined,
+    refetchOnMount: 'always',
   })
 
   const membersWithMaxKickpoints = clanMemberKickpoints?.filter((member) => member.amount >= (clanSettings?.maxKickpoints ?? Infinity))
@@ -26,7 +27,7 @@ export default function ClanMembersIndex() {
       {heading}
       {membersWithMaxKickpoints && membersWithMaxKickpoints.length > 0 && (
         <section>
-          <h2>Kickpunkte-Limit überschritten</h2>
+          <h2>&#9888; Kickpunkte-Limit überschritten &#9888;</h2>
           <p>Die maximale Anzahl von {clanSettings?.maxKickpoints ?? 0} Kickpunkten wurde von folgenden Mitgliedern erreicht:</p>
           <CardList>
             {membersWithMaxKickpoints.map((member) => (
@@ -73,9 +74,6 @@ export default function ClanMembersIndex() {
                         },
                       ]}
                       buttons={[
-                        <Button key="manage" to={`/leader/clans/${urlEncodeTag(clan.tag)}/members/${urlEncodeTag(member.tag)}/manage`}>
-                          Mitglied verwalten
-                        </Button>,
                         <Button key="kickpoints" to={`/leader/clans/${urlEncodeTag(clan.tag)}/members/${urlEncodeTag(member.tag)}/kickpoints`}>
                           Kickpunkte
                         </Button>,

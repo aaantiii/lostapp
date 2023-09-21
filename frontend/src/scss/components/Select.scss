@@ -1,16 +1,10 @@
 @use '../abstracts/variables' as v;
 @use '../abstracts/mixins';
 
-.Select {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25em;
-}
-
 .SelectFormWrapper {
   display: flex;
   flex-direction: column;
-  gap: 0.25em;
+  gap: v.$gap-tiny;
 }
 
 .SelectTrigger {
@@ -19,8 +13,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 2em;
-  gap: 0.5rem;
+  gap: v.$gap-small;
 
   .SelectIcon {
     font-size: v.$icon-size-medium;
@@ -32,7 +25,7 @@
   background-color: v.$gray-100;
   border: 1px solid v.$bright-fade-200;
   border-radius: v.$border-radius-medium;
-  box-shadow: 0px 10px 38px -10px rgba(22, 23, 24, 0.35), 0px 10px 20px -15px rgba(22, 23, 24, 0.2);
+  box-shadow: 0px 10px 38px -10px rgb(22, 23, 24, 0.35), 0px 10px 20px -15px rgb(22, 23, 24, 0.2);
   z-index: v.$max-z-index;
 }
 
@@ -43,7 +36,7 @@
 .SelectItem {
   font-size: v.$font-size-larger;
   line-height: 1;
-  border-radius: 3px;
+  border-radius: v.$border-radius-small;
   display: flex;
   align-items: center;
   height: 2rem;

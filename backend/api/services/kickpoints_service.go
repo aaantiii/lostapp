@@ -5,14 +5,16 @@ import (
 
 	"backend/api/repos"
 	"backend/api/types"
+	"backend/api/util"
 	"backend/store/postgres/models"
 )
 
 type IKickpointsService interface {
-	ActiveClanKickpoints(clanTag string) ([]*types.ClanMemberKickpoints, error)
+	ActiveClanMemberKickpoints(clanTag string) ([]*types.ClanMemberKickpoints, error)
 	ActivePlayerKickpoints(playerTag, clanTag string) ([]*types.Kickpoint, error)
-	CreateKickpoint(addedByDiscordID string, kickpoint *types.CreateKickpointPayload) error
-	UpdateKickpoint(updatedByDiscordID string, kickpoint *types.UpdateKickpointPayload) error
+	FuturePlayerKickpoints(playerTag, clanTag string) ([]*types.Kickpoint, error)
+	CreateKickpoint(payload *types.CreateKickpointPayload) error
+	UpdateKickpoint(id uint, payload *types.UpdateKickpointPayload) error
 	DeleteKickpoint(id uint) error
 }
 
@@ -30,13 +32,13 @@ func NewKickpointsService(kickpointsRepo repos.IKickpointsRepo, playersRepo repo
 	}
 }
 
-func (service *KickpointsService) ActiveClanKickpoints(clanTag string) ([]*types.ClanMemberKickpoints, error) {
+func (service *KickpointsService) ActiveClanMemberKickpoints(clanTag string) ([]*types.ClanMemberKickpoints, error) {
 	clanSettings, err := service.clanSettingsRepo.ClanSettings(clanTag)
 	if err != nil {
 		return nil, err
 	}
 
-	return service.kickpointsRepo.ActiveClanKickpoints(clanTag, clanSettings)
+	return service.kickpointsRepo.ActiveClanMemberKickpoints(clanTag, clanSettings)
 }
 
 func (service *KickpointsService) ActivePlayerKickpoints(playerTag, clanTag string) ([]*types.Kickpoint, error) {
@@ -58,7 +60,26 @@ func (service *KickpointsService) ActivePlayerKickpoints(playerTag, clanTag stri
 	return kickpoints, nil
 }
 
-func (service *KickpointsService) CreateKickpoint(addedByDiscordID string, payload *types.CreateKickpointPayload) error {
+func (service *KickpointsService) FuturePlayerKickpoints(playerTag, clanTag string) ([]*types.Kickpoint, error) {
+	clanSettings, err := service.clanSettingsRepo.ClanSettings(clanTag)
+	if err != nil {
+		return nil, err
+	}
+
+	playerKickpoints, err := service.kickpointsRepo.FuturePlayerKickpoints(playerTag, clanTag, clanSettings)
+	if err != nil {
+		return nil, err
+	}
+
+	kickpoints := make([]*types.Kickpoint, len(playerKickpoints))
+	for i, playerKickpoint := range playerKickpoints {
+		kickpoints[i] = types.NewKickpoint(playerKickpoint)
+	}
+
+	return kickpoints, nil
+}
+
+func (service *KickpointsService) CreateKickpoint(payload *types.CreateKickpointPayload) error {
 	player, err := service.playersRepo.PlayerByTag(payload.PlayerTag)
 	if err != nil {
 		return err
@@ -76,31 +97,29 @@ func (service *KickpointsService) CreateKickpoint(addedByDiscordID string, paylo
 	}
 
 	newKickpoint := &models.Kickpoint{
-		PlayerTag:              payload.PlayerTag,
-		ClanTag:                payload.ClanTag,
-		Date:                   payload.Date,
-		Amount:                 payload.Amount,
-		Reason:                 payload.Reason,
-		Description:            payload.Description,
-		AddedByDiscordID:       addedByDiscordID,
-		LastUpdatedByDiscordID: addedByDiscordID,
+		PlayerTag:          payload.PlayerTag,
+		ClanTag:            payload.ClanTag,
+		Date:               util.TruncateToDay(payload.Date),
+		Amount:             payload.Amount,
+		Description:        payload.Description,
+		CreatedByDiscordID: payload.AddedByDiscordID,
 	}
 
 	return service.kickpointsRepo.CreateKickpoint(newKickpoint)
 }
 
-func (service *KickpointsService) UpdateKickpoint(updatedByDiscordID string, payload *types.UpdateKickpointPayload) error {
-	updatedKickpoint := &models.Kickpoint{
-		PlayerTag:              payload.PlayerTag,
-		ClanTag:                payload.ClanTag,
-		Date:                   payload.Date,
-		Amount:                 payload.Amount,
-		Reason:                 payload.Reason,
-		Description:            payload.Description,
-		LastUpdatedByDiscordID: updatedByDiscordID,
+func (service *KickpointsService) UpdateKickpoint(id uint, payload *types.UpdateKickpointPayload) error {
+	kickpoint, err := service.kickpointsRepo.Kickpoint(id)
+	if err != nil {
+		return err
 	}
 
-	return service.kickpointsRepo.UpdateKickpoint(updatedKickpoint)
+	kickpoint.Date = util.TruncateToDay(payload.Date)
+	kickpoint.Amount = payload.Amount
+	kickpoint.Description = payload.Description
+	kickpoint.UpdatedByDiscordID = &payload.UpdatedByDiscordID
+
+	return service.kickpointsRepo.UpdateKickpoint(kickpoint)
 }
 
 func (service *KickpointsService) DeleteKickpoint(id uint) error {

@@ -21,5 +21,29 @@
 
   &.red {
     background-color: v.$red-100;
+    &:hover {
+      background-color: v.$red-200;
+    }
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  & > .loading-spinner {
+    font-size: v.$icon-size-medium;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+    transition: all 1s linear;
+
+    @keyframes spin {
+      from {
+        rotate: 0deg;
+      }
+      to {
+        rotate: 360deg;
+      }
+    }
   }
 }

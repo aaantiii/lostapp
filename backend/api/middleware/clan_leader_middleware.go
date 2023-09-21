@@ -3,19 +3,18 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/amaanq/coc.go"
 	"github.com/gin-gonic/gin"
 
 	"backend/api/types"
 	"backend/api/util"
 )
 
-// ClanLeaderMiddleware is a middleware that checks if the user is the leader of the clan.
-func ClanLeaderMiddleware(clanTagKey string) gin.HandlerFunc {
+// ClanLeaderMiddleware is a middleware that checks if the user is a leader of the clan.
+func ClanLeaderMiddleware(clanTagKey string, allowCoLeaders bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		session := util.SessionFromContext(c)
 		if session.AuthRole == types.AuthRoleAdmin {
-			c.Next()
+			defer c.Next()
 			return
 		}
 
@@ -25,29 +24,17 @@ func ClanLeaderMiddleware(clanTagKey string) gin.HandlerFunc {
 			return
 		}
 
-		clanMembers, err := clansService.ClanMembers(clanTag)
+		guild, err := authService.Guild(clanTag)
 		if err != nil {
 			c.AbortWithStatus(http.StatusNotFound)
 			return
 		}
 
-		players, err := playersService.PlayersByDiscordID(session.DiscordUser.ID)
-		if err != nil {
-			c.AbortWithStatus(http.StatusInternalServerError)
+		if guild.IsLeader(session.DiscordUser.Roles) || (allowCoLeaders && guild.IsCoLeader(session.DiscordUser.Roles)) {
+			defer c.Next()
 			return
 		}
 
-		for _, member := range clanMembers {
-			for _, player := range players {
-				if member.Tag != player.Tag {
-					continue
-				}
-				if member.Role != coc.Leader {
-					break
-				}
-				c.Next()
-				return
-			}
-		}
+		c.AbortWithStatus(http.StatusForbidden)
 	}
 }

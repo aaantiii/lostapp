@@ -3,7 +3,9 @@ import '@styles/components/Input.scss'
 import { forwardRef } from 'react'
 import { faSearch } from '@fortawesome/free-solid-svg-icons'
 
-type InputProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'title'> & { onChange?: (value: string) => void }
+type InputProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'title'> & {
+  onChange?: (value: string) => void
+}
 
 const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
   return (

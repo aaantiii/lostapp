@@ -25,12 +25,17 @@ func NewMembersRepo(db *gorm.DB) *MembersRepo {
 
 func (repo *MembersRepo) MembersByID(playerTag, clanTag string) (models.Members, error) {
 	var members models.Members
-	err := repo.db.Preload("DiscordLink").Find(&members, "player_tag = ? AND clan_tag = ?", playerTag, clanTag).Error
+	err := repo.db.
+		Preload("DiscordLink").
+		Find(&members, "player_tag = ? AND clan_tag = ?", playerTag, clanTag).Error
 	return members, err
 }
 
-func (repo *MembersRepo) MembersByDiscordID(discordID string) (members models.Members, err error) {
-	err = repo.db.Raw("SELECT * FROM clan_member WHERE player_tag IN (SELECT coc_tag FROM player WHERE discord_id LIKE ?) ORDER BY ?;", discordID, cache.MemberOrder).Scan(&members).Error
+func (repo *MembersRepo) MembersByDiscordID(discordID string) (models.Members, error) {
+	var members models.Members
+	err := repo.db.
+		Raw("SELECT * FROM clan_member WHERE player_tag IN (SELECT coc_tag FROM player WHERE discord_id LIKE ?) ORDER BY ?;", discordID, cache.MemberOrder).
+		Scan(&members).Error
 	return members, err
 }
 

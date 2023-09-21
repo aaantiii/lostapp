@@ -27,8 +27,7 @@ export default function useNavItems() {
     if (userRole === undefined || userRole === AuthRole.User) {
       items.push(
         <ExpandableList title="Bewerbung" key="user">
-          <ExpandableListItem disabled title="Übersicht" href="/user" icon={faDashboard} />
-          <ExpandableListItem disabled title="Mitglied werden" href="/user/apply" icon={faAddressCard} />
+          <ExpandableListItem title="Mitglied werden" href="/apply" icon={faAddressCard} />
         </ExpandableList>
       )
 

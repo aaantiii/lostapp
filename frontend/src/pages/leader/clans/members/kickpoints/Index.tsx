@@ -5,19 +5,19 @@ import routes from '@api/routes'
 import useDocumentTitle from '@hooks/useDocumentTitle'
 import { Kickpoint } from '@api/types/kickpoint'
 import { Card, CardList } from '@components/Card'
-import { addDaysToDate, dateTimeFormatter, timeUntil } from '@fmt/intlFormatter'
-import Button from '@components/Button'
+import { addDaysToDate, dateFormatter, timeUntil } from '@fmt/intlFormatter'
 import DialogNew from './DialogNew'
-import DialogEdit from './DialogEdit'
+import { useMemo } from 'react'
+import { SelectOptionGroup, selectOptionOther } from '@components/Select'
 import DialogDelete from './DialogDelete'
-import { useState } from 'react'
+import DialogEdit from './DialogEdit'
 
 export default function Kickpoints() {
-  const heading = useDocumentTitle('Kickpunkte')
   const { clanTag, memberTag } = useParams()
   const { player, clanSettings } = useOutletContext<LeaderOutletContext>()
+  const heading = useDocumentTitle(player ? `${player.name}'s Kickpunkte` : 'Kickpunkte')
 
-  const { data: kickpoints } = useQuery<Kickpoint[]>({
+  const { data: kickpoints, refetch: refreshKickpoints } = useQuery<Kickpoint[]>({
     queryKey: [routes.clans.members.kickpoints.byTag, { clanTag, memberTag }],
     enabled: clanTag !== undefined && memberTag !== undefined,
   })
@@ -38,10 +38,10 @@ export default function Kickpoints() {
         <h2>Mitglied</h2>
         <CardList>
           <Card
-            title={player.name}
             key={player.tag}
+            title={player.name}
             description={`Kickpunkte: ${kickpoints.reduce((prev, kickpoint) => prev + kickpoint.amount, 0)} von ${clanSettings.maxKickpoints}`}
-            buttons={[<DialogNew />]}
+            buttons={[<DialogNew key="new" onSuccess={refreshKickpoints} />]}
           />
         </CardList>
       </section>
@@ -53,7 +53,7 @@ export default function Kickpoints() {
               <Card
                 key={kickpoint.id}
                 title={`Kickpunkt #${kickpoint.id}`}
-                description={kickpoint.reason}
+                description={kickpoint.description}
                 fields={[
                   {
                     title: 'Anzahl Punkte',
@@ -62,7 +62,7 @@ export default function Kickpoints() {
                   },
                   {
                     title: 'Erhalten am',
-                    value: dateTimeFormatter.format(new Date(kickpoint.date)),
+                    value: dateFormatter.format(new Date(kickpoint.date)),
                     key: 'date',
                   },
                   {
@@ -70,12 +70,15 @@ export default function Kickpoints() {
                     value: timeUntil(addDaysToDate(new Date(kickpoint.date), clanSettings.kickpointsExpireAfterDays)),
                     key: 'expires',
                   },
+                  {
+                    title: 'Erstellt von',
+                    value: kickpoint.createdByUser.name,
+                    key: 'createdBy',
+                  },
                 ]}
                 buttons={[
-                  <Button key="edit">Kickpunkt bearbeiten</Button>,
-                  <Button className="red" key="delete">
-                    Kickpunkt löschen
-                  </Button>,
+                  <DialogEdit key="edit" kickpoint={kickpoint} onSuccess={refreshKickpoints} />,
+                  <DialogDelete key="delete" kickpointId={kickpoint.id} onSuccess={refreshKickpoints} />,
                 ]}
               />
             ))}

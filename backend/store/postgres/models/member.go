@@ -9,9 +9,9 @@ type Member struct {
 	ClanRole         coc.Role `gorm:"not null"`
 	IsAdmin          bool     `gorm:"not null;default:false"`
 
-	LostClan    *LostClan    `gorm:"foreignKey:ClanTag;references:Tag;onUpdate:CASCADE;onDelete:CASCADE"`
-	DiscordLink *DiscordLink `gorm:"foreignKey:PlayerTag;references:CocTag;onUpdate:CASCADE;onDelete:CASCADE"`
-	Kickpoints  []*Kickpoint `gorm:"foreignKey:PlayerTag,ClanTag;references:PlayerTag,ClanTag;onUpdate:CASCADE;onDelete:CASCADE"`
+	LostClan    LostClan     `gorm:"foreignKey:ClanTag;references:Tag;onUpdate:CASCADE;onDelete:CASCADE"`
+	DiscordLink DiscordLink  `gorm:"foreignKey:PlayerTag;references:CocTag"`
+	Kickpoints  *[]Kickpoint `gorm:"foreignKey:PlayerTag,ClanTag;references:PlayerTag,ClanTag;onUpdate:CASCADE;onDelete:CASCADE"`
 }
 
 func (*Member) TableName() string {

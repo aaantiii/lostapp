@@ -1,12 +1,16 @@
-import { useOutletContext } from 'react-router-dom'
+import { useOutletContext, useParams } from 'react-router-dom'
 import useDocumentTitle from '@hooks/useDocumentTitle'
 import { CardList, Card } from '@components/Card'
 import { MemberOutletContext } from '@context/types'
 import DataSearch from '@components/DataSearch'
 import { ClanMember, ClanMemberRoleTranslated } from '@api/types/clan'
 import DataList from '@components/DataList'
+import DataChangelog from '@components/DataChangelog'
+import Button from '@components/Button'
+import { urlEncodeTag } from '@fmt/cocFormatter'
 
 export default function ViewClan() {
+  const { clanTag, memberTag } = useParams()
   const { clan, clanSettings } = useOutletContext<MemberOutletContext>()
   const heading = useDocumentTitle(clan?.name ?? 'Clan Details')
 
@@ -23,56 +27,57 @@ export default function ViewClan() {
     <main>
       {heading}
       <section>
-        <h2>Kickpunkte</h2>
+        <h2>Kickpunkte-Einstellungen</h2>
+        <DataChangelog data={clanSettings} type="updated" />
         <DataList
           data={[
             {
               title: 'Kickpunkte bis zum Kick',
-              value: clanSettings.maxKickpoints,
+              value: `${clanSettings.maxKickpoints} Kickpunkte`,
             },
             {
               title: 'Minimale Season Wins',
-              value: clanSettings.minSeasonWins,
+              value: `${clanSettings.minSeasonWins} Siege`,
             },
             {
-              title: 'Tage bis zum Abbau',
-              value: clanSettings.kickpointsExpireAfterDays,
+              title: 'Dauer bis zum Abbau',
+              value: `${clanSettings.kickpointsExpireAfterDays} Tage`,
             },
             {
-              title: 'Kickpunkte für Season Wins',
-              value: clanSettings.kickpointsSeasonWins,
+              title: 'Bestrafung für Season Wins',
+              value: `${clanSettings.kickpointsSeasonWins} Kickpunkte`,
             },
             {
-              title: 'Kickpunkte für verpassten CK-Angriff',
-              value: clanSettings.kickpointsCWMissed,
+              title: 'Bestrafung für verpassten CK-Angriff',
+              value: `${clanSettings.kickpointsCWMissed} Kickpunkte`,
             },
             {
-              title: 'Kickpunkte für CK-Fail',
-              value: clanSettings.kickpointsCWFail,
+              title: 'Bestrafung für CK-Fail',
+              value: `${clanSettings.kickpointsCWFail} Kickpunkte`,
             },
             {
-              title: 'Kickpunkte für verpassten CKL-Angriff',
-              value: clanSettings.kickpointsCWLMissed,
+              title: 'Bestrafung für verpassten CKL-Angriff',
+              value: `${clanSettings.kickpointsCWLMissed} Kickpunkte`,
             },
             {
-              title: 'Kickpunkte für CKL 0-Sterne Angriff',
-              value: clanSettings.kickpointsCWLZeroStars,
+              title: 'Bestrafung für CKL 0-Sterne Angriff',
+              value: `${clanSettings.kickpointsCWLZeroStars} Kickpunkte`,
             },
             {
-              title: 'Kickpunkte für CKL 1-Stern Angriff',
-              value: clanSettings.kickpointsCWLOneStar,
+              title: 'Bestrafung für CKL 1-Stern Angriff',
+              value: `${clanSettings.kickpointsCWLOneStar} Kickpunkte`,
             },
             {
-              title: 'Kickpunkte für verpassten Raid',
-              value: clanSettings.kickpointsRaidMissed,
+              title: 'Bestrafung für verpassten Raid',
+              value: `${clanSettings.kickpointsRaidMissed} Kickpunkte`,
             },
             {
-              title: 'Kickpunkte für Raid-Fail',
-              value: clanSettings.kickpointsRaidFail,
+              title: 'Bestrafung für Raid-Fail',
+              value: `${clanSettings.kickpointsRaidFail} Kickpunkte`,
             },
             {
-              title: 'Kickpunkte für Clan Spiele',
-              value: clanSettings.kickpointsClanGames,
+              title: 'Bestrafung für Clan Spiele',
+              value: `${clanSettings.kickpointsClanGames} Kickpunkte`,
             },
           ]}
         />
@@ -85,7 +90,16 @@ export default function ViewClan() {
               return results && results.length > 0 ? (
                 <CardList>
                   {results.map((member) => (
-                    <Card key={member.tag} title={member.name} description={ClanMemberRoleTranslated.get(member.role)} />
+                    <Card
+                      key={member.tag}
+                      title={member.name}
+                      description={ClanMemberRoleTranslated.get(member.role)}
+                      buttons={[
+                        <Button to={`/member/clans/${clanTag}/members/${urlEncodeTag(member.tag)}`} key="view">
+                          Mitglied ansehen
+                        </Button>,
+                      ]}
+                    />
                   ))}
                 </CardList>
               ) : (

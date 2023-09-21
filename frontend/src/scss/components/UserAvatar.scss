@@ -4,17 +4,20 @@
 .UserAvatar {
   $size: clamp(50px, 5vh, 60px);
 
-  @include mixins.hover(v.$blue-200);
+  @include mixins.hover(v.$bright-fade-200);
 
   display: flex;
   align-items: center;
   gap: 0.75em;
-  width: 100%;
   white-space: nowrap;
   border-radius: 5px;
 
   &.noauth {
     padding: 10px;
+  }
+
+  &.reverse {
+    flex-direction: row-reverse;
   }
 
   img {

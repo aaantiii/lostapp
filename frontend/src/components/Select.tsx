@@ -21,15 +21,17 @@ export interface SelectOptionGroup {
 
 export interface SelectOption {
   value: string
+  realValue?: any
   displayText: string
 }
 
-export const selectOptionNone: SelectOption = { value: '', displayText: '' }
+const selectOptionValueOther = 'other'
+export const selectOptionOther = (displayText: string): SelectOption => ({ value: selectOptionValueOther, displayText })
 
 export default function Select({ onChange, defaultValue, value, placeholder, optionGroups, id }: SelectProps) {
   return (
     <div className="Select">
-      <s.Root onValueChange={onChange} defaultValue={defaultValue} value={value}>
+      <s.Root onValueChange={onChange} defaultValue={defaultValue?.toString()} value={value}>
         <s.Trigger className="SelectTrigger" id={id}>
           <s.Value placeholder={placeholder} />
           <s.Icon className="SelectIcon">
@@ -46,7 +48,7 @@ export default function Select({ onChange, defaultValue, value, placeholder, opt
                 <s.Group key={title ?? i}>
                   <s.Label className="SelectLabel">{title ?? 'Auswählen'}</s.Label>
                   {options.map(({ value, displayText }) => (
-                    <s.Item value={value} key={displayText} className="SelectItem">
+                    <s.Item value={value.toString()} key={displayText} className="SelectItem">
                       <s.ItemText>{displayText}</s.ItemText>
                       <s.ItemIndicator className="SelectItemIndicator">
                         <FontAwesomeIcon icon={faCheck} />
@@ -70,25 +72,13 @@ export default function Select({ onChange, defaultValue, value, placeholder, opt
 type SelectFormWrapperProps = SelectProps & {
   name?: string
   type?: string
-  inputMode?: 'numeric'
-  inputPlaceholder?: string
 }
 
-export const selectOtherOption: SelectOption = { value: 'other', displayText: 'Sonstiges' }
-
 export const SelectFormWrapper = forwardRef<HTMLInputElement, SelectFormWrapperProps>((props, ref) => {
-  const [value, setValue] = useState(props.defaultValue ?? '')
-  const [showInput, setShowInput] = useState(false)
+  const [currentValue, setCurrentValue] = useState(props.defaultValue ?? '')
 
   function handleChange(value: string) {
-    if (value === selectOtherOption.value) {
-      setShowInput(true)
-      setValue('')
-      return
-    }
-
-    setShowInput(false)
-    setValue(value)
+    setCurrentValue(value)
     props.onChange?.(value)
   }
 
@@ -101,14 +91,7 @@ export const SelectFormWrapper = forwardRef<HTMLInputElement, SelectFormWrapperP
         placeholder={props.placeholder}
         onChange={handleChange}
       />
-      <Input
-        name={props.name}
-        ref={ref}
-        type={showInput ? props.type : 'hidden'}
-        value={value}
-        inputMode={props.inputMode}
-        placeholder={props.inputPlaceholder}
-      />
+      <Input name={props.name} ref={ref} type="hidden" value={currentValue} />
     </div>
   )
 })

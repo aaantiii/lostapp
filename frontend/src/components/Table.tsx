@@ -2,9 +2,10 @@ import '@styles/components/Table.scss'
 import { useNavigate } from 'react-router-dom'
 import Paginator, { PaginatorProps } from './Paginator'
 import { urlEncodeTag } from '@fmt/cocFormatter'
-import { numberFormatter, dateTimeFormatter } from '@fmt/intlFormatter'
+import { numberFormatter, dateFormatter } from '@fmt/intlFormatter'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUpRightFromSquare } from '@fortawesome/free-solid-svg-icons'
+import { useEffect, useRef } from 'react'
 
 interface TableProps extends PaginatorProps {
   rowCountColumn?: boolean
@@ -23,6 +24,11 @@ export interface TableColumn {
 
 export function Table({ pagination, data, columns, rowCountColumn, width, onPageChange }: TableProps) {
   const navigate = useNavigate()
+  const wrapperRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    wrapperRef.current?.scrollTo(0, 0)
+  }, [data])
 
   function formatCellData(row: any, col: TableColumn): string | JSX.Element {
     let value = row[col.prop]
@@ -30,7 +36,7 @@ export function Table({ pagination, data, columns, rowCountColumn, width, onPage
     if (col.type === 'number') {
       value = numberFormatter.format(value)
     } else if (col.type === 'date') {
-      value = dateTimeFormatter.format(value)
+      value = dateFormatter.format(value)
     }
 
     if (col.link) {
@@ -51,7 +57,7 @@ export function Table({ pagination, data, columns, rowCountColumn, width, onPage
   return (
     <div className="Table" style={width ? { width } : {}}>
       <Paginator pagination={pagination} onPageChange={onPageChange} />
-      <div className="scrollable-wrapper">
+      <div className="scrollable-wrapper" ref={wrapperRef}>
         <table>
           <thead>
             <tr>

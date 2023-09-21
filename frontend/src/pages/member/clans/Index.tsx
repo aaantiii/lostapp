@@ -34,7 +34,7 @@ export default function Index() {
     navigator.clipboard.writeText(clan.tag)
     sendMessage({
       message: `Tag von ${clan.name} kopiert!`,
-      type: 'success',
+      type: 'warning',
     })
   }
 
@@ -58,7 +58,7 @@ export default function Index() {
                 thumbnail={<img src={clan.badgeUrl} alt={`${clan.name} Clan Badge`} />}
                 buttons={[
                   <Button to={`/member/clans/${urlEncodeTag(clan.tag)}`} key="link">
-                    Clan Details
+                    Clan ansehen
                   </Button>,
                   <Button onClick={() => handleCopyTag(clan)} key="copy-tag">
                     Tag kopieren

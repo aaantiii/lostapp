@@ -2,19 +2,21 @@ package repos
 
 import (
 	"errors"
-	"log"
 	"time"
 
 	"gorm.io/gorm"
 
 	"backend/api/types"
+	"backend/api/util"
 	"backend/store/cache"
 	"backend/store/postgres/models"
 )
 
 type IKickpointsRepo interface {
-	ActiveClanKickpoints(clanTag string, settings *models.LostClanSettings) ([]*types.ClanMemberKickpoints, error)
+	Kickpoint(id uint) (*models.Kickpoint, error)
+	ActiveClanMemberKickpoints(clanTag string, settings *models.LostClanSettings) ([]*types.ClanMemberKickpoints, error)
 	ActivePlayerKickpoints(playerTag, clanTag string, settings *models.LostClanSettings) ([]*models.Kickpoint, error)
+	FuturePlayerKickpoints(playerTag, clanTag string, settings *models.LostClanSettings) ([]*models.Kickpoint, error)
 	CreateKickpoint(kickpoint *models.Kickpoint) error
 	UpdateKickpoint(kickpoint *models.Kickpoint) error
 	DeleteKickpoint(id uint) error
@@ -29,17 +31,22 @@ func NewKickpointsRepo(db *gorm.DB, cache *cache.CocCache) *KickpointsRepo {
 	return &KickpointsRepo{db: db, cache: cache}
 }
 
-func (repo *KickpointsRepo) ActiveClanKickpoints(clanTag string, settings *models.LostClanSettings) ([]*types.ClanMemberKickpoints, error) {
+func (repo *KickpointsRepo) Kickpoint(id uint) (*models.Kickpoint, error) {
+	var kickpoint *models.Kickpoint
+	err := repo.db.First(&kickpoint, id).Error
+	return kickpoint, err
+}
+
+func (repo *KickpointsRepo) ActiveClanMemberKickpoints(clanTag string, settings *models.LostClanSettings) ([]*types.ClanMemberKickpoints, error) {
 	minDate := time.Now().AddDate(0, 0, -int(settings.KickpointsExpireAfterDays))
 
 	var kickpoints []*models.Kickpoint
-	err := repo.db.Select("SUM(amount) as amount, player_tag").Group("player_tag").Find(&kickpoints, "clan_tag = ? AND date > ?", clanTag, minDate).Error
+	err := repo.db.
+		Select("SUM(amount) as amount, player_tag").
+		Group("player_tag").
+		Find(&kickpoints, "clan_tag = ? AND date > ? AND date <= ?", clanTag, minDate, time.Now()).Error
 	if err != nil {
 		return nil, err
-	}
-
-	for _, kickpoint := range kickpoints {
-		log.Println(kickpoint.PlayerTag, kickpoint.Amount)
 	}
 
 	clan, found := repo.cache.ClanByTag[clanTag]
@@ -67,7 +74,19 @@ func (repo *KickpointsRepo) ActiveClanKickpoints(clanTag string, settings *model
 func (repo *KickpointsRepo) ActivePlayerKickpoints(playerTag, clanTag string, settings *models.LostClanSettings) ([]*models.Kickpoint, error) {
 	minDate := time.Now().AddDate(0, 0, -int(settings.KickpointsExpireAfterDays))
 	var kickpoints []*models.Kickpoint
-	err := repo.db.Find(&kickpoints, "player_tag = ? AND clan_tag = ? AND date > ?", playerTag, clanTag, minDate).Error
+	err := repo.db.
+		Preload("CreatedByUser").
+		Preload("UpdatedByUser").
+		Order("id").
+		Find(&kickpoints, "player_tag = ? AND clan_tag = ? AND date > ? AND date <= ?", playerTag, clanTag, minDate, time.Now()).Error
+
+	return kickpoints, err
+}
+
+func (repo *KickpointsRepo) FuturePlayerKickpoints(playerTag, clanTag string, settings *models.LostClanSettings) ([]*models.Kickpoint, error) {
+	timestamp := util.TruncateToDay(time.Now()).AddDate(0, 0, 1)
+	var kickpoints []*models.Kickpoint
+	err := repo.db.Find(&kickpoints, "player_tag = ? AND clan_tag = ? AND date > ?", playerTag, clanTag, timestamp).Error
 	return kickpoints, err
 }
 

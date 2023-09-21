@@ -1,4 +1,6 @@
-export interface ClanSettings {
+import { UpdatedByUser } from './user'
+
+export interface ClanSettings extends UpdatedByUser {
   minSeasonWins: number
   maxKickpoints: number
   kickpointsExpireAfterDays: number
@@ -13,4 +15,4 @@ export interface ClanSettings {
   kickpointsClanGames: number
 }
 
-export type UpdatedClanSettings = Omit<ClanSettings, 'clanTag'>
+export type UpdateClanSettings = Omit<ClanSettings, 'clanTag' | 'updatedAt' | 'updatedByUser'>

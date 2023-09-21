@@ -36,7 +36,7 @@ export default function ErrorPage() {
     <main className="p-error">
       <Spacer size="medium" />
       {heading}
-      <div ref={contentRef} className="content"></div>
+      <div ref={contentRef}></div>
       {error.gif && <img src={error.gif} alt="Error GIF" />}
       <Button to={-2}>Zurück zur vorherigen Seite</Button>
     </main>

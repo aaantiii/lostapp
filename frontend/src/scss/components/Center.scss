@@ -1,0 +1,21 @@
+@use '../abstracts/variables' as v;
+
+.Center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+
+  & > .content {
+    width: 60%;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: v.$gap-medium;
+
+    @media (max-width: v.$breakpoint-tablet) {
+      width: 100%;
+    }
+  }
+}

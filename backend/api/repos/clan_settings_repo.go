@@ -22,7 +22,7 @@ func NewClanSettingsRepo(db *gorm.DB) *ClanSettingsRepo {
 
 func (repo *ClanSettingsRepo) ClanSettings(tag string) (*models.LostClanSettings, error) {
 	clanSettings := &models.LostClanSettings{ClanTag: tag}
-	if err := repo.db.FirstOrCreate(&clanSettings).Error; err != nil {
+	if err := repo.db.Preload("UpdatedByUser").FirstOrCreate(&clanSettings).Error; err != nil {
 		return nil, err
 	}
 

@@ -18,6 +18,7 @@ import FormMessages from '@/validation/formMessages'
 import usePageSize from '@hooks/usePageSize'
 import { AxiosError, HttpStatusCode } from 'axios'
 import { Player } from '@api/types/player'
+import { useSearchParams } from 'react-router-dom'
 
 interface FindPlayerForm {
   option: string
@@ -39,9 +40,17 @@ export default function Find() {
   const heading = useDocumentTitle('Mitglied suchen')
   const pageSize = usePageSize(10, 16)
   const { sendMessage } = useMessage()
+  const [searchParams, setSearchParams] = useSearchParams()
 
-  const [formData, setFormData] = useState<FindPlayerForm>({ option: '', value: '' })
-  const [selectedSearchOption, setSelectedSearchOption] = useState(searchOptionGroup.options[0])
+  const [selectedSearchOption, setSelectedSearchOption] = useState(() => {
+    for (const key of searchParams.keys()) {
+      const option = searchOptionGroup.options.find((option) => option.value === key)
+      if (option) return option
+    }
+
+    return searchOptionGroup.options[0]
+  })
+  const searchValue = searchParams.get(selectedSearchOption.value) ?? ''
   const [page, setPage] = useState(1)
 
   const {
@@ -56,7 +65,7 @@ export default function Find() {
       {
         pageSize,
         page,
-        [formData.option]: formData.value,
+        [selectedSearchOption.value]: searchValue,
       } satisfies PlayersParams,
     ],
     enabled: false,
@@ -65,10 +74,9 @@ export default function Find() {
   })
 
   useEffect(() => {
-    if (!formData.option || !formData.value) return
-
+    if (searchValue === '') return
     refetch()
-  }, [page, formData])
+  }, [page, searchParams])
 
   const handleCopyTag = useCallback((player: Player) => {
     navigator.clipboard.writeText(player.tag)
@@ -76,7 +84,7 @@ export default function Find() {
       message: `Tag von ${player.name} kopiert!`,
       type: 'success',
     })
-  }, []) // [sendMessage]
+  }, [])
 
   function handleOptionChange(value: string) {
     const option = searchOptionGroup.options.find((option) => option.value === value)
@@ -86,10 +94,10 @@ export default function Find() {
   }
 
   function handleSubmit(newFormData: FindPlayerForm) {
-    if (newFormData.option === formData.option && newFormData.value === formData.value) return
-    if (newFormData.option.toLowerCase().includes('tag')) newFormData.value = urlEncodeTag(newFormData.value)
+    if (searchParams.get(newFormData.option) === newFormData.value) return
+    newFormData.value = encodeURI(newFormData.value)
     setPage(1)
-    setFormData(newFormData)
+    setSearchParams({ [newFormData.option]: newFormData.value }, { replace: true })
   }
 
   return (
@@ -113,15 +121,15 @@ export default function Find() {
                   defaultValue={selectedSearchOption.value}
                 />
               ),
-              messages: [FormMessages.valueMissing],
+              messages: [FormMessages.required],
             },
             {
               label: `Nach ${selectedSearchOption.displayText} suchen`,
               name: 'value',
-              control: <Input type="search" placeholder={`Nach ${selectedSearchOption.displayText} suchen`} />,
+              control: <Input type="search" placeholder={`Nach ${selectedSearchOption.displayText} suchen`} defaultValue={searchValue} />,
               messages: [
                 selectedSearchOption.value === 'discordID' ? FormMessages.fixedLength(18) : FormMessages.minMaxLength(3, 30),
-                FormMessages.valueMissing,
+                FormMessages.required,
               ],
             },
           ]}
@@ -152,9 +160,9 @@ export default function Find() {
           </CardList>
         )}
         {error?.response?.status === HttpStatusCode.NotFound ? (
-          <p>Keine Ergebnisse für {`${selectedSearchOption.displayText} "${formData.value}"`}</p>
+          <p>Keine Ergebnisse für {`${selectedSearchOption.displayText} "${searchValue}"`}</p>
         ) : (
-          error && <p>Es ist ein Fehler aufgetreten</p>
+          error?.response?.status === HttpStatusCode.BadRequest && <p>Ungültige Eingaben.</p>
         )}
       </section>
     </main>
