@@ -2,7 +2,7 @@
 .env*
 
 # Builds
-service_api*
+backend*
 
 # IDEA
 .idea/*
