@@ -1,6 +1,5 @@
 # Environment Variables
-.env
-.env.*
+.env*
 
 # Builds
 service_api*
