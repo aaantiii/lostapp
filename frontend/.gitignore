@@ -1,5 +1,6 @@
 # Env files
 .env*
+!.env.example
 
 # Builds
 build
