@@ -44,10 +44,10 @@ export default function Index() {
                       key="member-details"
                       onClick={() => navigate(`/member/clans/${urlEncodeTag(clan.tag)}/members/${urlEncodeTag(account.tag)}`)}
                     >
-                      Details
+                      Mitglied ansehen
                     </Button>,
                     <Button key="clan-details" onClick={() => navigate(`/member/clans/${urlEncodeTag(clan.tag)}`)}>
-                      Clan Details
+                      Clan ansehen
                     </Button>,
                   ]}
                 />
