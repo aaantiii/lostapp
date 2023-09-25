@@ -3,7 +3,7 @@
 !.env.example
 
 # Builds
-backend
+build
 
 # IDEA
 .idea
