@@ -6,7 +6,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBars, faUser, faXmark } from '@fortawesome/free-solid-svg-icons'
 import UserAvatar from './UserAvatar'
 import useNavItems from '@hooks/useNavItems'
-import Notifications from './Notifications'
 import { useAuth } from '@context/authContext'
 import useDashboardNavigate from '@hooks/useDashboardNavigate'
 
@@ -55,7 +54,6 @@ export default function Navbar() {
               <a onClick={logout} className="logout">
                 abmelden
               </a>
-              <Notifications />
             </div>
           )}
           {discordUser ? (
