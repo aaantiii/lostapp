@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Input from '@components/Input'
 import useDocumentTitle from '@hooks/useDocumentTitle'
 import { SelectFormWrapper, SelectOptionGroup } from '@components/Select'
@@ -15,10 +15,10 @@ import Paginator from '@components/Paginator'
 import { useMessage } from '@context/messageContext'
 import routes from '@api/routes'
 import FormMessages from '@/validation/formMessages'
-import usePageSize from '@hooks/usePageSize'
 import { AxiosError, HttpStatusCode } from 'axios'
 import { Player } from '@api/types/player'
 import { useSearchParams } from 'react-router-dom'
+import { uriSafe } from '@fmt/urlFormatter'
 
 interface FindPlayerForm {
   option: string
@@ -38,7 +38,6 @@ const searchOptionGroup: SelectOptionGroup = {
 
 export default function Find() {
   const heading = useDocumentTitle('Mitglied suchen')
-  const pageSize = usePageSize(10, 16)
   const { sendMessage } = useMessage()
   const [searchParams, setSearchParams] = useSearchParams()
 
@@ -50,8 +49,7 @@ export default function Find() {
 
     return searchOptionGroup.options[0]
   })
-  const searchValue = searchParams.get(selectedSearchOption.value) ?? ''
-  const [page, setPage] = useState(1)
+  const searchValue = uriSafe(searchParams.get(selectedSearchOption.value) ?? '')
 
   const {
     data: players,
@@ -63,9 +61,9 @@ export default function Find() {
       routes.players.all,
       null,
       {
-        pageSize,
-        page,
         [selectedSearchOption.value]: searchValue,
+        page: Number(searchParams.get('page')),
+        pageSize: Number(searchParams.get('pageSize')),
       } satisfies PlayersParams,
     ],
     enabled: false,
@@ -76,7 +74,7 @@ export default function Find() {
   useEffect(() => {
     if (searchValue === '') return
     refetch()
-  }, [page, searchParams])
+  }, [searchParams])
 
   const handleCopyTag = useCallback((player: Player) => {
     navigator.clipboard.writeText(player.tag)
@@ -90,14 +88,24 @@ export default function Find() {
     const option = searchOptionGroup.options.find((option) => option.value === value)
     if (!option) return
 
+    setSearchParams((prev) => {
+      prev.delete(selectedSearchOption.value)
+      return prev
+    })
     setSelectedSearchOption(option)
   }
 
   function handleSubmit(newFormData: FindPlayerForm) {
     if (searchParams.get(newFormData.option) === newFormData.value) return
-    newFormData.value = encodeURI(newFormData.value)
-    setPage(1)
-    setSearchParams({ [newFormData.option]: newFormData.value }, { replace: true })
+    //newFormData.value = encodeURIComponent(newFormData.value)
+    setSearchParams(
+      (prev) => {
+        prev.set(newFormData.option, newFormData.value)
+        prev.set('page', '1')
+        return prev
+      },
+      { replace: true }
+    )
   }
 
   return (
@@ -137,7 +145,7 @@ export default function Find() {
       </section>
       <section>
         <h2>Suchergebnisse</h2>
-        <Paginator pagination={players?.pagination} onPageChange={setPage} />
+        <Paginator pagination={players?.pagination} />
         {isFetching && <LoadingSpinner />}
         {players?.items && players.items.length > 0 && (
           <CardList>
@@ -145,7 +153,7 @@ export default function Find() {
               <Card
                 title={player.name}
                 thumbnail={<ExperienceLevel level={player.expLevel} />}
-                description={formatPlayerClanRoles(player)}
+                description={formatPlayerClanRoles(player.clans)}
                 key={player.tag}
                 buttons={[
                   <Button to={`/member/${urlEncodeTag(player.tag)}`} key="view-player">
@@ -159,6 +167,7 @@ export default function Find() {
             ))}
           </CardList>
         )}
+        {searchValue.length === 0 && <p>Bitte gib einen gültigen Suchbegriff ein.</p>}
         {error?.response?.status === HttpStatusCode.NotFound ? (
           <p>Keine Ergebnisse für {`${selectedSearchOption.displayText} "${searchValue}"`}</p>
         ) : (

@@ -3,7 +3,7 @@ import Button from '@components/Button'
 import { CardList, Card } from '@components/Card'
 import ExperienceLevel from '@components/ExperienceLevel'
 import useDocumentTitle from '@hooks/useDocumentTitle'
-import { formatPlayerClanRoles, urlEncodeTag } from '@fmt/cocFormatter'
+import { formatPlayerClanRole, formatPlayerClanRoles, urlEncodeTag } from '@fmt/cocFormatter'
 import { MemberOutletContext } from '@context/types'
 import { useMessage } from '@context/messageContext'
 import { Player } from '@api/types/player'
@@ -31,6 +31,14 @@ export default function ViewMember() {
     })
   }
 
+  if (!member || !clan)
+    return (
+      <main>
+        {heading}
+        <p>Das angeforderte Mitglied konnte nicht gefunden werden.</p>
+      </main>
+    )
+
   return (
     <main>
       {heading}
@@ -39,7 +47,7 @@ export default function ViewMember() {
           <CardList flexDirection="column">
             <Card
               title={member.name}
-              description={formatPlayerClanRoles(member)}
+              description={formatPlayerClanRole(member.clans.find((c) => c.tag === clan.tag))}
               thumbnail={<ExperienceLevel level={member.expLevel} />}
               fields={[
                 {

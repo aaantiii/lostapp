@@ -7,7 +7,7 @@
   transition: all 2000ms linear;
 
   &::before,
-  .border {
+  & > .border {
     border-radius: inherit;
     height: 100%;
     width: 100%;
@@ -29,11 +29,11 @@
     opacity: 1;
   }
 
-  .border {
+  & > .border {
     background: radial-gradient(650px circle at var(--mouse-x) var(--mouse-y), rgba(255, 255, 255, 0.4), transparent 40%);
   }
 
-  .content {
+  & > .content {
     flex-direction: column;
     display: flex;
     padding: 1em 1.5em;
@@ -44,53 +44,57 @@
     height: calc(100% - 2px);
     z-index: 2;
     position: relative;
-  }
 
-  .head {
-    display: flex;
-    justify-content: space-between;
-  }
+    & > .head {
+      display: flex;
+      justify-content: space-between;
 
-  .title {
-    margin: 0;
-  }
+      .title {
+        margin: 0;
+      }
 
-  .description {
-    display: flex;
-    flex-direction: column;
-    font-style: italic;
-  }
+      .description {
+        display: flex;
+        flex-direction: column;
+        font-style: italic;
+        white-space: pre-line;
+      }
 
-  .thumbnail {
-    width: 2.5em;
-    height: 2.5em;
-    overflow: hidden;
+      & > .thumbnail {
+        width: 2.5em;
+        height: 2.5em;
+        overflow: hidden;
+        margin-left: 0.5em;
 
-    img {
-      height: 100%;
+        & > img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+      }
     }
-  }
 
-  .fields {
-    margin-top: v.$gap-large;
-    display: flex;
-    flex-direction: column;
-    gap: v.$gap-tiny;
-  }
+    & > .fields {
+      margin-top: v.$gap-large;
+      display: flex;
+      flex-direction: column;
+      gap: v.$gap-tiny;
+    }
 
-  .buttons {
-    height: 100%;
-    display: flex;
-    gap: v.$gap-small;
-    align-content: flex-end;
-    flex-wrap: wrap;
-    margin-top: v.$gap-medium;
+    & > .buttons {
+      height: 100%;
+      display: flex;
+      gap: v.$gap-small;
+      align-content: flex-end;
+      flex-wrap: wrap;
+      margin-top: v.$gap-medium;
+    }
   }
 }
 
 .CardList {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(325px, 1fr));
   gap: v.$gap-medium;
 
   &.column {

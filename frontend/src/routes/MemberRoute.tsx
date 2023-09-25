@@ -29,7 +29,7 @@ export default function MemberRoute() {
   const [player, setPlayer] = useState<Player>()
   const {
     data: fetchedPlayer,
-    refetch: fetchMember,
+    refetch: fetchPlayer,
     isFetching: memberFetching,
   } = useQuery<Player>({
     queryKey: [routes.players.byTag, { tag: memberTag }],
@@ -46,7 +46,7 @@ export default function MemberRoute() {
 
     const player = userPlayers.find((account) => account.tag === urlDecodeTag(memberTag))
     if (player) setPlayer(player)
-    else fetchMember()
+    else fetchPlayer()
   }, [memberTag, userPlayers])
 
   useEffect(() => {
@@ -54,11 +54,10 @@ export default function MemberRoute() {
     setPlayer(fetchedPlayer)
   }, [fetchedPlayer])
 
-  if (userPlayersLoading || clanFetching || memberFetching || clanSettingsFetching) return <LoadingScreen />
-
+  const isLoading = userPlayersLoading || clanFetching || memberFetching || clanSettingsFetching
   return (
     <ProtectedRoute requiredRole={AuthRole.Member}>
-      <Outlet context={{ userPlayers, clan, player, clanSettings } satisfies MemberOutletContext} />
+      {isLoading ? <LoadingScreen /> : <Outlet context={{ userPlayers, clan, player, clanSettings } satisfies MemberOutletContext} />}
     </ProtectedRoute>
   )
 }

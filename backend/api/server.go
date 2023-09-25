@@ -15,7 +15,7 @@ var router *gin.Engine
 
 // Init initializes router with a new gin.Engine instance.
 func Init() error {
-	if env.DEBUG.Value() != "true" {
+	if env.MODE.Value() == "PROD" {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
@@ -25,7 +25,7 @@ func Init() error {
 	}
 
 	corsConfig := cors.Config{
-		AllowOrigins:     []string{env.FRONTEND_URL.Value(), "http://localhost:4173"},
+		AllowOrigins:     []string{env.FRONTEND_URL.Value()},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		ExposeHeaders:    []string{"Content-Length", "Content-Type", "Origin"},
 		AllowHeaders:     []string{"Content-Length", "Content-Type", "Origin"},
@@ -48,4 +48,5 @@ func ListenAndServe() error {
 	port := env.PORT.Value()
 	log.Printf("HTTP server listening on port %s", port)
 	return router.Run(":" + port)
+	//return router.RunTLS(":"+port, "/etc/letsencrypt/live/aaantiii.com/cert.pem", "/etc/letsencrypt/live/aaantiii.com/privkey.pem")
 }

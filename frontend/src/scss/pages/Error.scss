@@ -1,3 +1,5 @@
+@use '../abstracts/variables' as v;
+
 .p-error {
   display: flex;
   flex-direction: column;
@@ -6,5 +8,9 @@
 
   img {
     width: clamp(200px, 80vw, 350px);
+
+    @media (max-width: v.$breakpoint-mobile) {
+      width: 100%;
+    }
   }
 }

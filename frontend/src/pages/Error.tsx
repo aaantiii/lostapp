@@ -5,6 +5,8 @@ import { useEffect, useRef, useState } from 'react'
 import useDocumentTitle from '@hooks/useDocumentTitle'
 import Button from '@components/Button'
 import Spacer from '@components/Spacer'
+import Content from '@components/Content'
+import Center from '@components/Center'
 
 interface Error {
   title: string
@@ -34,11 +36,15 @@ export default function ErrorPage() {
 
   return (
     <main className="p-error">
-      <Spacer size="medium" />
-      {heading}
-      <div ref={contentRef}></div>
-      {error.gif && <img src={error.gif} alt="Error GIF" />}
-      <Button to={-2}>Zurück zur vorherigen Seite</Button>
+      <Content>
+        <Spacer size="medium" />
+        {heading}
+        <Center>
+          <div ref={contentRef}></div>
+          {error.gif && <img src={error.gif} alt="Error GIF" />}
+          <Button to={-2}>Zurück zur vorherigen Seite</Button>
+        </Center>
+      </Content>
     </main>
   )
 }

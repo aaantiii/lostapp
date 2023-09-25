@@ -49,10 +49,6 @@ export default function DialogEdit({ kickpoint, onSuccess }: DialogEditProps) {
     }
   }
 
-  function handleSubmit(data: UpdateKickpoint) {
-    saveChanges(data)
-  }
-
   return (
     <FormDialog
       title="Kickpunkt bearbeiten"
@@ -81,7 +77,7 @@ export default function DialogEdit({ kickpoint, onSuccess }: DialogEditProps) {
         },
       ]}
       submitText="Änderungen speichern"
-      onSubmit={handleSubmit}
+      onSubmit={saveChanges}
     />
   )
 }

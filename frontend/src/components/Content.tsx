@@ -1,7 +1,7 @@
 import '@styles/components/Content.scss'
 
 interface ContentProps {
-  children: JSX.Element[] | JSX.Element
+  children: any
 }
 
 export default function Content({ children }: ContentProps) {

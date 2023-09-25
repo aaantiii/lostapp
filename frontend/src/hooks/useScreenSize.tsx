@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 export enum ScreenSize {
   Mobile = 480,
@@ -8,13 +8,13 @@ export enum ScreenSize {
 }
 
 export default function useScreenSize() {
-  const [screenSize, setScreenSize] = useState<ScreenSize>(getCurrentSize())
-
-  const handleResize = useCallback(() => {
-    setScreenSize(getCurrentSize())
-  }, [])
+  const [screenSize, setScreenSize] = useState(getCurrentSize())
 
   useEffect(() => {
+    function handleResize() {
+      setScreenSize(getCurrentSize())
+    }
+
     window.addEventListener('resize', handleResize)
     return () => removeEventListener('resize', handleResize)
   }, [])

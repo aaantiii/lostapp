@@ -12,6 +12,7 @@ interface SelectProps {
   value?: string
   id?: string
   placeholder?: string
+  label?: string
 }
 
 export interface SelectOptionGroup {
@@ -28,9 +29,14 @@ export interface SelectOption {
 const selectOptionValueOther = 'other'
 export const selectOptionOther = (displayText: string): SelectOption => ({ value: selectOptionValueOther, displayText })
 
-export default function Select({ onChange, defaultValue, value, placeholder, optionGroups, id }: SelectProps) {
+export default function Select({ onChange, defaultValue, label, value, placeholder, optionGroups, id }: SelectProps) {
   return (
     <div className="Select">
+      {label && (
+        <label htmlFor={id} className="label">
+          {label}
+        </label>
+      )}
       <s.Root onValueChange={onChange} defaultValue={defaultValue?.toString()} value={value}>
         <s.Trigger className="SelectTrigger" id={id}>
           <s.Value placeholder={placeholder} />

@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"backend/api/types"
-	"backend/env"
 )
 
 type DiscordClient struct {
@@ -16,13 +15,14 @@ type DiscordClient struct {
 type DiscordApiRoute string
 
 const (
+	DiscordBaseURL                          = "https://discord.com/api"
 	DiscordGuildMemberRoute DiscordApiRoute = "/users/@me/guilds/733857906117574717/member"
 	DiscordAuthRoute        DiscordApiRoute = "/oauth2/authorize"
 	DiscordTokenRoute       DiscordApiRoute = "/oauth2/token"
 )
 
 func (route DiscordApiRoute) URL() string {
-	return env.DISCORD_API_URL.Value() + string(route)
+	return DiscordBaseURL + string(route)
 }
 
 func NewDiscordClient() *DiscordClient {

@@ -1,7 +1,7 @@
 import '@styles/components/Center.scss'
 
 interface CenteredContentProps {
-  children?: JSX.Element | JSX.Element[]
+  children?: any
 }
 
 export default function Center({ children }: CenteredContentProps) {

@@ -19,10 +19,9 @@ export default function ProtectedRoute({ requiredRole, children }: ProtectedRout
   const [hasPermission, setHasPermission] = useState(false)
 
   useEffect(() => {
-    if (userRole === undefined) return navigate('/auth/login')
-    if (userRole < requiredRole) return navigate('/error/403')
-
-    setHasPermission(true)
+    if (userRole === undefined) navigate('/auth/login')
+    else if (userRole >= requiredRole) setHasPermission(true)
+    else navigate('/error/403')
   }, [userRole])
 
   return hasPermission ? (

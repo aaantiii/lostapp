@@ -41,9 +41,13 @@
 
   .description {
     margin: 0;
-    padding: 0.75em;
+    padding: v.$gap-small;
     border-radius: v.$border-radius-medium;
     background-color: v.$dark-fade-200;
-    max-width: 80vw;
+    width: clamp(300px, min-content, 750px);
+
+    @supports (text-wrap: balance) {
+      text-wrap: balance;
+    }
   }
 }

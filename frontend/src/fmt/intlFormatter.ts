@@ -22,7 +22,7 @@ export function timeUntil(date: Date): string {
   const diff = date.getTime() - new Date().getTime()
   const diffDays = Math.floor(diff / (1000 * 3600 * 24))
   const diffHours = Math.floor((diff % (1000 * 3600 * 24)) / (1000 * 3600))
-  const diffMinutes = Math.ceil((diff % (1000 * 3600)) / (1000 * 60))
+  const diffMinutes = Math.floor((diff % (1000 * 3600)) / (1000 * 60))
 
   let res = ''
   if (diffDays > 0) res += `${diffDays}d `

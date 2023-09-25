@@ -26,6 +26,7 @@ export default function Routing() {
 
       <Route path="member" element={<MemberRoute />}>
         <Route index element={<pages.member.Index />} />
+        <Route path=":memberTag" element={<pages.member.View />} />
         <Route path="stats" element={<pages.member.Stats />} />
         <Route path="leaderboard" element={<pages.member.Leaderboard />} />
         <Route path="1v1" element={<pages.member.OneVersusOne />} />

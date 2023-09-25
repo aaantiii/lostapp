@@ -8,7 +8,7 @@ import Messages from './components/Messages'
 import { MessageProvider } from './context/messageContext'
 
 export default function App() {
-  const location = useLocation()
+  const { pathname } = useLocation()
 
   useEffect(() => {
     console.log(`
@@ -20,7 +20,7 @@ export default function App() {
     `)
   }, [])
 
-  useEffect(() => window.scrollTo(0, 0), [location])
+  useEffect(() => window.scrollTo(0, 0), [pathname])
 
   return (
     <div className="App">

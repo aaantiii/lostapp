@@ -36,11 +36,14 @@ export default function LeaderRoute() {
     cacheTime: 1000 * 60,
   })
 
-  if (leadingClansLoading || memberFetching || clanSettingsFetching) return <LoadingScreen />
-
+  const isLoading = leadingClansLoading || memberFetching || clanSettingsFetching
   return (
     <ProtectedRoute requiredRole={AuthRole.Leader}>
-      <Outlet context={{ leadingClans, clan, clanSettings, player, refreshClanSettings } satisfies LeaderOutletContext} />
+      {isLoading ? (
+        <LoadingScreen />
+      ) : (
+        <Outlet context={{ leadingClans, clan, clanSettings, player, refreshClanSettings } satisfies LeaderOutletContext} />
+      )}
     </ProtectedRoute>
   )
 }

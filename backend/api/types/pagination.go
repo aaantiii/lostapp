@@ -9,7 +9,7 @@ type Pagination struct {
 
 type PaginationParams struct {
 	Page     int `form:"page" binding:"omitempty,min=1"`
-	PageSize int `form:"pageSize" binding:"omitempty,min=1,max=50"`
+	PageSize int `form:"pageSize" binding:"omitempty,min=5,max=50"`
 }
 
 type PaginatedResponse[T any] struct {
@@ -19,6 +19,10 @@ type PaginatedResponse[T any] struct {
 
 func NewPaginatedResponse[T any](data []T, params PaginationParams) *PaginatedResponse[T] {
 	totalItems := len(data)
+
+	if params.PageSize <= 0 {
+		params.PageSize = 10
+	}
 	totalPages := totalItems / params.PageSize
 	if totalItems%params.PageSize > 0 {
 		totalPages++

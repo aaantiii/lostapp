@@ -6,9 +6,8 @@ export default new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 1000 * 60 * 3,
-      retry: 2,
-      cacheTime: 1000 * 60,
-      refetchOnWindowFocus: false,
+      retry: 1,
+      cacheTime: 1000 * 60 * 2,
       queryFn: async ({ queryKey: [path, ids, params] }: any) => {
         if (typeof path !== 'string') throw new Error('invalid path in query: path must be string')
 

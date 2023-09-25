@@ -5,28 +5,27 @@ import useDocumentTitle from '@hooks/useDocumentTitle'
 import { useQuery } from '@tanstack/react-query'
 import { PlayersParams } from '@api/types/params'
 import LoadingScreen from '@components/LoadingScreen'
-import { urlEncodeTag } from '@fmt/cocFormatter'
+import { urlDecodeTag, urlEncodeTag } from '@fmt/cocFormatter'
 import routes from '@api/routes'
 import { PaginatedResponse } from '@api/types/pagination'
 import UnsubmittableForm from '@components/UnsubmittableForm'
 import usePageSize from '@hooks/usePageSize'
 import { ComparableStatistic, PlayerStatistic } from '@api/types/playerStats'
 import { Clan } from '@api/types/clan'
+import { useSearchParams } from 'react-router-dom'
 
-const clanTagFilterAll: SelectOption = { value: 'all', displayText: 'Alle Lost Clans' }
+const clanTagFilterAll: SelectOption = { value: '#all', displayText: 'Alle Lost Clans' }
 
 export default function Leaderboard() {
   const heading = useDocumentTitle('Leaderboard')
 
-  const [page, setPage] = useState(1)
   const pageSize = usePageSize(20, 30)
+  const [searchParams, setSearchParams] = useSearchParams({ clan: clanTagFilterAll.value })
   const [clansSelectOptions, setClanOptionGroup] = useState({ options: [] } as SelectOptionGroup)
   const [statisticsSelectOptions, setStatisticsOptionGroup] = useState({ options: [] } as SelectOptionGroup)
-  const [selectedClan, setSelectedClan] = useState(clanTagFilterAll.value)
-  const [selectedStatistic, setSelectedStatistic] = useState<ComparableStatistic>()
 
   const { data: clans, isLoading: clansLoading } = useQuery<Clan[]>({
-    queryKey: [routes.clans.all, null, { minifyData: true }],
+    queryKey: [routes.clans.all],
     staleTime: Infinity,
   })
 
@@ -42,11 +41,11 @@ export default function Leaderboard() {
   } = useQuery<PaginatedResponse<PlayerStatistic>>({
     queryKey: [
       routes.players.leaderboard,
-      { statsId: selectedStatistic?.id },
+      { statsId: comparableStatistics?.find((s) => s.name === searchParams.get('statistic'))?.id },
       {
-        page,
-        pageSize,
-        clanTag: selectedClan === clanTagFilterAll.value ? '' : urlEncodeTag(selectedClan),
+        page: Number(searchParams.get('page') ?? '1'),
+        pageSize: Number(searchParams.get('pageSize') ?? '30'),
+        clanTag: searchParams.get('clan') === clanTagFilterAll.value ? '' : searchParams.get('clan') ?? '',
       } satisfies PlayersParams,
     ],
     enabled: false,
@@ -74,14 +73,10 @@ export default function Leaderboard() {
   }, [comparableStatistics])
 
   useEffect(() => {
-    if (!selectedStatistic || !selectedClan) return
+    if (!comparableStatistics || !searchParams.get('statistic') || !searchParams.get('clan')) return
 
     fetchLeaderboardPlayers()
-  }, [selectedStatistic, selectedClan, page, pageSize])
-
-  useEffect(() => {
-    setPage(1)
-  }, [selectedStatistic, selectedClan])
+  }, [searchParams, comparableStatistics])
 
   if (clansLoading || achievementsLoading) return <LoadingScreen />
 
@@ -91,10 +86,32 @@ export default function Leaderboard() {
       <section>
         <h2>Filter</h2>
         <UnsubmittableForm>
-          <Select defaultValue={selectedClan} optionGroups={[clansSelectOptions]} onChange={setSelectedClan} placeholder="Clan auswählen" />
           <Select
+            defaultValue={urlDecodeTag(searchParams.get('clan') ?? clanTagFilterAll.value)}
+            optionGroups={[clansSelectOptions]}
+            onChange={(tag) =>
+              setSearchParams(
+                (prev) => {
+                  prev.set('clan', urlEncodeTag(tag))
+                  return prev
+                },
+                { replace: true }
+              )
+            }
+            placeholder="Clan auswählen"
+          />
+          <Select
+            defaultValue={searchParams.get('statistic') ?? undefined}
             optionGroups={[statisticsSelectOptions]}
-            onChange={(name) => setSelectedStatistic(comparableStatistics?.find((s) => s.name === name))}
+            onChange={(statistic) =>
+              setSearchParams(
+                (prev) => {
+                  prev.set('statistic', statistic)
+                  return prev
+                },
+                { replace: true }
+              )
+            }
             placeholder="Statistik auswählen"
           />
         </UnsubmittableForm>
@@ -110,8 +127,8 @@ export default function Leaderboard() {
               { prop: 'value', heading: 'Wert', type: 'number' },
               { prop: 'clanNames', heading: 'Clan' },
             ]}
-            onPageChange={setPage}
             pagination={paginatedPlayers.pagination}
+            pageSize={pageSize}
           />
         ) : (
           isError && <div className="center">Keine Spieler gefunden</div>

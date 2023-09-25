@@ -16,7 +16,7 @@ import (
 const maxRetries, retryTimeout = 10, time.Second * 15
 
 func NewClient() (*gorm.DB, error) {
-	client, err := newGormClient(env.POSTGRES_DB_LOSTSTATS.Value())
+	client, err := newGormClient()
 	if err != nil {
 		return nil, err
 	}
@@ -38,10 +38,10 @@ func NewClient() (*gorm.DB, error) {
 	return client, nil
 }
 
-func newGormClient(dbName string) (client *gorm.DB, err error) {
-	dsn := env.POSTGRES_URL.Value() + dbName
+func newGormClient() (client *gorm.DB, err error) {
+	dsn := env.POSTGRES_URL.Value()
 	loggerMode := logger.Silent
-	if env.DEBUG.Value() != "false" {
+	if env.MODE.Value() != "PROD" {
 		loggerMode = logger.Warn
 	}
 
@@ -49,12 +49,12 @@ func newGormClient(dbName string) (client *gorm.DB, err error) {
 		if client, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
 			Logger: logger.Default.LogMode(loggerMode),
 		}); err != nil {
-			log.Printf("Failed to connect to database '%s': %v\nRetrying in %s...", dbName, err, retryTimeout.String())
+			log.Printf("Failed to connect to database: %v\nRetrying in %s...", err, retryTimeout.String())
 			time.Sleep(retryTimeout)
 			continue
 		}
 
-		log.Printf("Connected to postgres database '%s'.", dbName)
+		log.Println("Connected to postgres database.")
 		return
 	}
 
