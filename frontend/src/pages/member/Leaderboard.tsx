@@ -14,7 +14,7 @@ import { ComparableStatistic, PlayerStatistic } from '@api/types/playerStats'
 import { Clan } from '@api/types/clan'
 import { useSearchParams } from 'react-router-dom'
 
-const clanTagFilterAll: SelectOption = { value: '#all', displayText: 'Alle Lost Clans' }
+const clanTagFilterAll: SelectOption = { value: 'all', displayText: 'Alle Lost Clans' }
 
 export default function Leaderboard() {
   const heading = useDocumentTitle('Leaderboard')

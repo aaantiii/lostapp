@@ -16,6 +16,7 @@ export function urlEncodeTag(tag?: string): string {
 }
 
 export function urlDecodeTag(tag?: string): string {
-  if (tag?.startsWith('#')) return tag
-  return tag ? `#${tag}` : ''
+  if (!tag) return ''
+  if (tag?.startsWith('#') || tag.length < 7) return tag
+  return `#${tag}`
 }
