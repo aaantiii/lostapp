@@ -1,9 +1,8 @@
 # Environment Variables
-.env
-.env.*
+.env*
 
 # Builds
-service_api*
+backend*
 
 # IDEA
-.idea/*
+.idea
