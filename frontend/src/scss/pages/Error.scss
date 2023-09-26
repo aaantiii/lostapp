@@ -3,7 +3,7 @@
 .p-error {
   display: flex;
   flex-direction: column;
-  gap: 2em;
+  gap: v.$gap-large;
   align-items: center;
 
   img {

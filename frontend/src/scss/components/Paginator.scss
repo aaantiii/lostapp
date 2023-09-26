@@ -4,7 +4,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  margin-bottom: 1em;
+  margin-bottom: v.$gap-medium;
 
   & > .total-items {
     font-size: v.$font-size-larger;
@@ -12,11 +12,11 @@
     font-weight: 600;
   }
 
-  @media screen and (max-width: v.$breakpoint-tablet) {
+  @media screen and (max-width: v.$breakpoint-mobile) {
     width: 100%;
     flex-direction: column;
     align-items: flex-start;
-    gap: 1em;
+    gap: v.$gap-medium;
 
     & > * {
       width: 100%;
