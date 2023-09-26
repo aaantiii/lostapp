@@ -131,7 +131,7 @@ export default function Leaderboard() {
             pageSize={pageSize}
           />
         ) : (
-          isError && <div className="center">Keine Spieler gefunden</div>
+          isError && <div className="center">Keine Spieler gefunden.</div>
         )}
         <p>Momentan werden nur Statistiken der gesamten Zeit angezeigt. Das Filtern nach Zeiträumen wird in Zukunft möglich sein.</p>
       </section>
