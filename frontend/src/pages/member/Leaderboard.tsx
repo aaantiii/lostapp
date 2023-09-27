@@ -89,6 +89,7 @@ export default function Leaderboard() {
           <Select
             defaultValue={urlDecodeTag(searchParams.get('clan') ?? clanTagFilterAll.value)}
             optionGroups={[clansSelectOptions]}
+            label={clansSelectOptions.title}
             onChange={(tag) =>
               setSearchParams(
                 (prev) => {
@@ -103,6 +104,7 @@ export default function Leaderboard() {
           <Select
             defaultValue={searchParams.get('statistic') ?? undefined}
             optionGroups={[statisticsSelectOptions]}
+            label={statisticsSelectOptions.title}
             onChange={(statistic) =>
               setSearchParams(
                 (prev) => {

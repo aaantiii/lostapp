@@ -34,7 +34,7 @@ export default function Index() {
     navigator.clipboard.writeText(clan.tag)
     sendMessage({
       message: `Tag von ${clan.name} kopiert!`,
-      type: 'warning',
+      type: 'success',
     })
   }
 

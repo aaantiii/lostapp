@@ -2,7 +2,7 @@ import '@styles/components/Select.scss'
 import * as s from '@radix-ui/react-select'
 import { faAngleDown, faCheck, faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { forwardRef, useState } from 'react'
+import { forwardRef, useId, useState } from 'react'
 import Input from './Input'
 
 interface SelectProps {
@@ -30,6 +30,9 @@ const selectOptionValueOther = 'other'
 export const selectOptionOther = (displayText: string): SelectOption => ({ value: selectOptionValueOther, displayText })
 
 export default function Select({ onChange, defaultValue, label, value, placeholder, optionGroups, id }: SelectProps) {
+  const newId = useId()
+  if (id === undefined) id = newId
+
   return (
     <div className="Select">
       {label && (

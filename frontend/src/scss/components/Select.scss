@@ -53,19 +53,16 @@
   padding: 0 35px;
   position: relative;
   user-select: none;
+  outline: none;
 
   &:hover {
     cursor: pointer;
+    background-color: v.$gray-300;
   }
 
   &[data-disabled] {
     color: v.$gray-400;
     pointer-events: none;
-  }
-
-  &[data-highlighted] {
-    outline: none;
-    background-color: v.$gray-300;
   }
 }
 

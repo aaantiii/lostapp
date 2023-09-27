@@ -6,14 +6,13 @@
 
   height: $height;
   width: $width;
-  user-select: none;
 
   > * {
     width: 100%;
     height: 100%;
   }
 
-  .background img {
+  .background > img {
     height: $height;
     width: $width;
     filter: brightness(0.85);
@@ -29,25 +28,26 @@
     flex-direction: column;
     gap: 1em;
     padding: 0 1em;
-  }
 
-  .title {
-    color: white;
-    font-size: v.$font-size-huge;
-    text-align: center;
-    text-shadow: 0 0 4px black;
-    margin: 5px 15px;
-  }
+    & > .title {
+      color: white;
+      font-size: v.$font-size-huge;
+      text-align: center;
+      text-shadow: 0 0 10px black;
+      margin: 5px 15px;
+      user-select: none;
+    }
 
-  .description {
-    margin: 0;
-    padding: v.$gap-small;
-    border-radius: v.$border-radius-medium;
-    background-color: v.$dark-fade-200;
-    width: clamp(300px, min-content, 750px);
+    & > .description {
+      margin: 0;
+      padding: v.$gap-small;
+      border-radius: v.$border-radius-medium;
+      background-color: v.$dark-fade-200;
+      width: clamp(300px, min-content, 750px);
 
-    @supports (text-wrap: balance) {
-      text-wrap: balance;
+      @supports (text-wrap: balance) {
+        text-wrap: balance;
+      }
     }
   }
 }

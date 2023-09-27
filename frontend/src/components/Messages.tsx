@@ -30,8 +30,8 @@ function Message({ message, type, id }: MessageProps) {
   useEffect(() => {
     if (!messageRef.current) return
 
-    messageRef.current.addEventListener('animationend', closeMessage)
-    messageRef.current.addEventListener('transitionend', handleTransitionEnd)
+    messageRef.current.addEventListener('animationend', closeMessage) // indicator animation
+    messageRef.current.addEventListener('transitionend', handleTransitionEnd) // opacity transition
 
     return () => {
       messageRef.current?.removeEventListener('animationend', closeMessage)
