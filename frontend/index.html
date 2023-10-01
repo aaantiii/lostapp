@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="de">
   <head>
+    <title>Lost Clans</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+
     <meta charset="UTF-8" />
     <meta name="author" content="Anti" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
@@ -15,15 +18,17 @@
     <meta name="og:url" content="https://lost-clans.de" />
     <meta name="og:image" content="/favicon.ico" />
     <meta name="theme-color" content="#014d98" />
-
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <title>Lost Clans</title>
   </head>
   <body>
     <div id="root">
       <noscript>
-        <h1>Aktiviere JavaScript um die Web App zu verwenden.</h1>
-        <p>Du kannst diese Web App ohne das Aktivieren von JavaScript <strong>nicht verwenden</strong>.</p>
+        <div style="display: flex; justify-content: center; align-items: center; flex-direction: column">
+          <h1>JavaScript ist deaktiviert</h1>
+          <p>
+            Du kannst diese Web App ohne JavaScript <strong>nicht verwenden</strong>. JavaScript kannst du in deinen Browsereinstellungen aktivieren.
+          </p>
+          <img src="/gifs/pepe_sad.gif" loading="eager" alt="Pepe (sad)" />
+        </div>
       </noscript>
     </div>
     <script type="module" src="/src/main.tsx"></script>
