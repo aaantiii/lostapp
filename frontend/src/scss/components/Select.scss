@@ -57,12 +57,15 @@
 
   &:hover {
     cursor: pointer;
-    background-color: v.$gray-300;
   }
 
   &[data-disabled] {
     color: v.$gray-400;
     pointer-events: none;
+  }
+
+  &[data-highlighted] {
+    background-color: v.$gray-300;
   }
 }
 
