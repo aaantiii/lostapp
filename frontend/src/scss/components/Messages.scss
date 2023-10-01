@@ -3,20 +3,21 @@
 .Messages {
   width: clamp(300px, 80vw, 450px);
   max-height: 40vh;
-  overflow: hidden;
+  overflow-y: hidden;
   display: flex;
-  flex-direction: column;
+  flex-direction: column-reverse;
   gap: v.$gap-small;
   position: fixed;
-  bottom: 1.5em;
+  top: v.$hnav-height + 20px;
   right: 1.5em;
   z-index: v.$max-z-index;
 
   @media screen and (max-width: v.$breakpoint-mobile) {
     width: 100%;
     max-height: 25vh;
-    bottom: v.$gap-medium;
+    top: unset;
     left: 0;
+    bottom: v.$gap-medium;
     padding: 0 v.$gap-medium;
     align-items: center;
   }
@@ -28,6 +29,7 @@
   transition: opacity 0.5s linear;
   border-radius: v.$border-radius-small;
   overflow: hidden;
+  flex-shrink: 0;
 
   &.open {
     opacity: 1;
@@ -40,7 +42,7 @@
     padding: 0.5em 1em;
     font-weight: 500;
     justify-content: space-between;
-    background-color: v.$blue-100;
+    background-color: inherit;
 
     & > .content {
       display: flex;
@@ -61,7 +63,7 @@
   & > .close-indicator {
     width: 100%;
     height: 2px;
-    background-color: v.$blue-100;
+    background-color: inherit;
 
     & > .indicator {
       width: 0;
@@ -77,16 +79,17 @@
     }
   }
 
-  &.success > .body {
+  &.success {
     user-select: none;
-    background: v.$bright-fade-100;
+    background-color: v.$blue-100;
+  }
+
+  &.warning {
+    background: v.$blue-100;
   }
 
   &.error {
-    & > .body,
-    & > .close-indicator {
-      background: v.$red-100;
-    }
+    background: v.$red-100;
   }
 
   &.warning,
