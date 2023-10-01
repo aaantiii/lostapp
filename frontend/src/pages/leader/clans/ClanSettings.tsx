@@ -57,7 +57,7 @@ export default function ClanSettings() {
     }
 
     sendMessage({
-      type: 'error',
+      type: 'warning',
       message: 'Es wurden keine Änderungen vorgenommen!',
     })
   }
