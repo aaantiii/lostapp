@@ -54,8 +54,8 @@
 
         &:last-child {
           border-right-style: solid;
-          border-bottom-right-radius: v.$border-radius-medium;
           border-top-right-radius: v.$border-radius-medium;
+          border-bottom-right-radius: v.$border-radius-medium;
         }
       }
     }
