@@ -49,7 +49,7 @@ func (repo *KickpointsRepo) ActiveClanMemberKickpoints(clanTag string, settings 
 		return nil, err
 	}
 
-	clan, found := repo.cache.ClanByTag[clanTag]
+	clan, found := repo.cache.ClanByTag.Get(clanTag)
 	if !found {
 		return nil, errors.New("clan not found")
 	}

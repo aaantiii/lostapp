@@ -33,7 +33,7 @@ func (repo *ClansRepo) Clans() []*types.Clan {
 }
 
 func (repo *ClansRepo) ClanByTag(tag string) (*types.Clan, error) {
-	clan, found := repo.cache.ClanByTag[tag]
+	clan, found := repo.cache.ClanByTag.Get(tag)
 	if !found {
 		return nil, fmt.Errorf("no clan found with tag=%s", tag)
 	}

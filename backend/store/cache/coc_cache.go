@@ -16,16 +16,17 @@ import (
 
 // CocCache stores current data from the COC-API.
 type CocCache struct {
+	sync.Mutex
 	client        *client.CocClient
 	db            *gorm.DB
 	isMaintenance bool // true if the COC-API is in maintenance mode
 
 	Players            []*types.Player
-	PlayerByTag        map[string]*types.Player
-	PlayersByClanTag   map[string][]*types.Player
-	PlayersByDiscordID map[string][]*types.Player
+	PlayerByTag        SyncMap[*types.Player]
+	PlayersByClanTag   SyncMap[[]*types.Player]
+	PlayersByDiscordID SyncMap[[]*types.Player]
 	Clans              []*types.Clan
-	ClanByTag          map[string]*types.Clan
+	ClanByTag          SyncMap[*types.Clan]
 }
 
 const MemberOrder = "clan_role like 'member', clan_role like 'admin', clan_role like 'coLeader', clan_role like 'leader'"
@@ -171,8 +172,9 @@ func (cache *CocCache) setClans(cocClans []*coc.Clan, playersByTag map[string]*c
 		membersByClan[member.ClanTag] = append(membersByClan[member.ClanTag], member)
 	}
 
-	clans := make([]*types.Clan, len(cocClans))
-	clanByTag := make(map[string]*types.Clan)
+	cache.Lock()
+	cache.Clans = make([]*types.Clan, len(cocClans))
+	cache.ClanByTag = SyncMap[*types.Clan]{}
 	for i, cocClan := range cocClans {
 		clanMembers := membersByClan[cocClan.Tag]
 		memberList := make([]types.ClanMember, 0)
@@ -185,51 +187,49 @@ func (cache *CocCache) setClans(cocClans []*coc.Clan, playersByTag map[string]*c
 		}
 
 		clan := types.NewClan(cocClan, memberList)
-		clans[i] = clan
-		clanByTag[clan.Tag] = clan
+		cache.Clans[i] = clan
+		cache.ClanByTag.Set(clan.Tag, clan)
 	}
 
-	cache.Clans = clans
-	cache.ClanByTag = clanByTag
+	cache.Unlock()
 }
 
 // setPlayers sets the clan and role of each player as they are in the members table.
 func (cache *CocCache) setPlayers(cocPlayers []*coc.Player, members models.Members) {
-	players := make([]*types.Player, len(cocPlayers))
-	playerByTag := make(map[string]*types.Player)
+	cache.Lock()
+	cache.Players = make([]*types.Player, len(cocPlayers))
+	cache.PlayerByTag = SyncMap[*types.Player]{}
 
 	for i, cocPlayer := range cocPlayers {
 		player := types.NewPlayer(cocPlayer)
 		player.ComparableStatsByName = cache.comparableStatsByName(cocPlayer)
-		players[i] = player
-		playerByTag[player.Tag] = player
+		cache.Players[i] = player
+		cache.PlayerByTag.Set(player.Tag, player)
 	}
 
-	playerByClanTag := make(map[string][]*types.Player)
+	cache.PlayersByClanTag = SyncMap[[]*types.Player]{}
 	for _, member := range members {
-		if player, playerFound := playerByTag[member.PlayerTag]; playerFound {
+		if player, playerFound := cache.PlayerByTag.Get(member.PlayerTag); playerFound {
 			player.DiscordID = member.DiscordLink.DiscordID
-			if clan, clanFound := cache.ClanByTag[member.ClanTag]; clanFound {
+			if clan, clanFound := cache.ClanByTag.Get(member.ClanTag); clanFound {
 				player.Clans = append(player.Clans, types.PlayerClan{
 					Name: clan.Name,
 					Tag:  clan.Tag,
 					Role: member.ClanRole,
 				})
-				playerByClanTag[member.ClanTag] = append(playerByClanTag[member.ClanTag], player)
+				clanPlayers, _ := cache.PlayersByClanTag.Get(member.ClanTag)
+				cache.PlayersByClanTag.Set(member.ClanTag, append(clanPlayers, player))
 			}
 		}
 	}
 
-	playersByDiscordID := make(map[string][]*types.Player)
-	for _, player := range players {
-		playersByDiscordID[player.DiscordID] = append(playersByDiscordID[player.DiscordID], player)
+	cache.PlayersByDiscordID = SyncMap[[]*types.Player]{}
+	for _, player := range cache.Players {
+		current, _ := cache.PlayersByDiscordID.Get(player.DiscordID)
+		cache.PlayersByDiscordID.Set(player.DiscordID, append(current, player))
 	}
 
-	cache.Players = players
-	cache.PlayerByTag = playerByTag
-	cache.PlayersByClanTag = playerByClanTag
-	cache.PlayersByDiscordID = playersByDiscordID
-
+	cache.Unlock()
 }
 func (cache *CocCache) comparableStatsByName(player *coc.Player) map[string]int {
 	res := make(map[string]int, len(player.Achievements))

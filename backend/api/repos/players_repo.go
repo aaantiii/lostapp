@@ -31,7 +31,7 @@ func (repo *PlayersRepo) Players() types.Players {
 }
 
 func (repo *PlayersRepo) PlayerByTag(tag string) (*types.Player, error) {
-	player, found := repo.cache.PlayerByTag[tag]
+	player, found := repo.cache.PlayerByTag.Get(tag)
 	if !found {
 		return nil, fmt.Errorf("no player found with tag=%s", tag)
 	}
@@ -53,7 +53,7 @@ func (repo *PlayersRepo) PlayersByTags(tags []string) (types.Players, error) {
 }
 
 func (repo *PlayersRepo) PlayersByDiscordID(discordID string) (types.Players, error) {
-	players, found := repo.cache.PlayersByDiscordID[discordID]
+	players, found := repo.cache.PlayersByDiscordID.Get(discordID)
 	if !found {
 		return nil, fmt.Errorf("no players found with discord id=%s", discordID)
 	}
@@ -62,7 +62,7 @@ func (repo *PlayersRepo) PlayersByDiscordID(discordID string) (types.Players, er
 }
 
 func (repo *PlayersRepo) PlayersByClanTag(tag string) (types.Players, error) {
-	players, found := repo.cache.PlayersByClanTag[tag]
+	players, found := repo.cache.PlayersByClanTag.Get(tag)
 	if !found {
 		return nil, fmt.Errorf("no players found with clan tag=%s", tag)
 	}
