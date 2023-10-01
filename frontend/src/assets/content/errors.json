@@ -37,12 +37,11 @@
   "coc-not-linked": {
     "title": "Keine Clash of Clans Verknüpfung",
     "content": [
-      "<h3>Um die Web App nutzen zu können, musst du deinen Clash of Clans Account mit deinem Discord Account verknüpfen.</h3>",
+      "<div class=\"bold\">Um die Web App nutzen zu können, musst du deinen Clash of Clans Account mit deinem Discord Account verknüpfen.</div>",
       "<p>Dazu musst du auf dem Discord Server in irgend einem Channel <code>/verify</code> eingeben. Dann taucht ein kleines Fenster auf, in welchem du den Lost Bot auswählst. Nun musst du nur noch deinen Clash of Clans Player Tag und -API Token eingeben.</p>",
       "<p><strong>Hinweis: </strong>Du kannst auch mehrere Clash of Clans Dörfer mit deinem Discord Account verknüpfen.</p>",
-      "<h3>✅ Nachdem du dich verifiziert hast, solltest du innerhalb weniger Minuten Zugriff zur Web-App haben ✅</h3>"
-    ],
-    "gif": "/gifs/pepe_sad.gif"
+      "<div class=\"bold\">✅ Nachdem du dich verifiziert hast, solltest du innerhalb weniger Minuten Zugriff zur Web-App haben ✅</div>"
+    ]
   },
   "not-implemented": {
     "title": "Noch nicht verfügbar",

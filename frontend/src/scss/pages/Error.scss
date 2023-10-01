@@ -5,6 +5,8 @@
   flex-direction: column;
   gap: v.$gap-large;
   align-items: center;
+  font-size: v.$font-size-larger;
+  text-align: center;
 
   img {
     width: clamp(200px, 80vw, 350px);

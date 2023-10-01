@@ -41,7 +41,7 @@ export default function ErrorPage() {
         {heading}
         <Center>
           <div ref={contentRef}></div>
-          {error.gif && <img src={error.gif} alt="Error GIF" />}
+          {error.gif && <img src={error.gif} loading="eager" alt="Fehler" />}
           <Button to={-2}>Zurück zur vorherigen Seite</Button>
         </Center>
       </Content>
