@@ -1,7 +1,7 @@
 import { useOutletContext } from 'react-router-dom'
 import useDocumentTitle from '@hooks/useDocumentTitle'
 import routes from '@api/routes'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import Form from '@components/Form'
 import { UpdateClanSettings } from '@api/types/clanSettings'
 import Input from '@components/Input'
@@ -10,7 +10,7 @@ import FormMessages from '@/validation/formMessages'
 import { LeaderOutletContext } from '@context/types'
 import DataChangelog from '@components/DataChangelog'
 import client from '@api/client'
-import { replaceRouteIds } from '@api/urlBuilder'
+import { buildURI } from '@api/urlBuilder'
 import { urlEncodeTag } from '@fmt/cocFormatter'
 
 export default function ClanSettings() {
@@ -23,7 +23,7 @@ export default function ClanSettings() {
     if (!clan) return
 
     setIsSaving(true)
-    const { status } = await client.put(replaceRouteIds(routes.clans.settings, { tag: urlEncodeTag(clan.tag) }), data)
+    const { status } = await client.put(buildURI(routes.clans.settings, { tag: urlEncodeTag(clan.tag) }), data)
     setIsSaving(false)
 
     if (status < 300) {

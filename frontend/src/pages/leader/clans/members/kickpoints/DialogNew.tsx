@@ -9,7 +9,7 @@ import { useMemo, useState } from 'react'
 import routes from '@api/routes'
 import { useOutletContext, useParams } from 'react-router-dom'
 import client from '@api/client'
-import { replaceRouteIds } from '@api/urlBuilder'
+import { buildURI } from '@api/urlBuilder'
 import { HttpStatusCode } from 'axios'
 import { LeaderOutletContext } from '@context/types'
 
@@ -26,7 +26,7 @@ export default function DialogNew({ onSuccess }: DialogNewMemberProps) {
 
   async function createKickpoint(data: CreateKickpoint) {
     setIsCreating(true)
-    const { status } = await client.post(replaceRouteIds(routes.clans.members.kickpoints.byTag, { clanTag, memberTag }), data)
+    const { status } = await client.post(buildURI(routes.clans.members.kickpoints.byTag, { clanTag, memberTag }), data)
     setIsCreating(false)
 
     switch (status) {

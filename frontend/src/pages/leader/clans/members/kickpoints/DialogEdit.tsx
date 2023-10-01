@@ -2,7 +2,7 @@ import FormMessages from '@/validation/formMessages'
 import client from '@api/client'
 import routes from '@api/routes'
 import { Kickpoint, UpdateKickpoint } from '@api/types/kickpoint'
-import { replaceRouteIds } from '@api/urlBuilder'
+import { buildURI } from '@api/urlBuilder'
 import FormDialog from '@components/FormDialog'
 import Input from '@components/Input'
 import TextArea from '@components/TextArea'
@@ -24,10 +24,7 @@ export default function DialogEdit({ kickpoint, onSuccess }: DialogEditProps) {
 
   async function saveChanges(data: UpdateKickpoint) {
     setIsSaving(true)
-    const { status } = await client.put(
-      replaceRouteIds(routes.clans.members.kickpoints.byId, { clanTag, memberTag, kickpointId: kickpoint.id }),
-      data
-    )
+    const { status } = await client.put(buildURI(routes.clans.members.kickpoints.byId, { clanTag, memberTag, kickpointId: -1 }), data)
     setIsSaving(false)
 
     if (status < 300) {

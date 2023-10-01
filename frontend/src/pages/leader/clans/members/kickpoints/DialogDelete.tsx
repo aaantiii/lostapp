@@ -1,6 +1,6 @@
 import client from '@api/client'
 import routes from '@api/routes'
-import { replaceRouteIds } from '@api/urlBuilder'
+import { buildURI } from '@api/urlBuilder'
 import ConfirmDialog from '@components/ConfirmDialog'
 import { useMessage } from '@context/messageContext'
 import { HttpStatusCode } from 'axios'
@@ -19,7 +19,7 @@ export default function DialogDelete({ kickpointId, onSuccess }: DialogDeletePro
 
   async function deleteKickpoint() {
     setIsDeleting(true)
-    const { status } = await client.delete(replaceRouteIds(routes.clans.members.kickpoints.byId, { clanTag, memberTag, kickpointId }))
+    const { status } = await client.delete(buildURI(routes.clans.members.kickpoints.byId, { clanTag, memberTag, kickpointId }))
     setIsDeleting(false)
 
     if (status < 300) {

@@ -1,5 +1,5 @@
 import { QueryClient } from '@tanstack/react-query'
-import { replaceQueryParams, replaceRouteIds } from './urlBuilder'
+import { buildURI } from './urlBuilder'
 import client from './client'
 
 export default new QueryClient({
@@ -11,9 +11,9 @@ export default new QueryClient({
       queryFn: async ({ queryKey: [path, ids, params] }: any) => {
         if (typeof path !== 'string') throw new Error('invalid path in query: path must be string')
 
-        const uri = replaceQueryParams(replaceRouteIds(path, ids), params)
+        const uri = buildURI(path, ids)
 
-        const { data, status } = await client.get(uri)
+        const { data, status } = await client.get(uri, { params })
 
         if (status >= 400) throw new Error('get request failed')
 
