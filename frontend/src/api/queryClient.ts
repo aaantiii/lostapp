@@ -11,9 +11,7 @@ export default new QueryClient({
       queryFn: async ({ queryKey: [path, ids, params] }: any) => {
         if (typeof path !== 'string') throw new Error('invalid path in query: path must be string')
 
-        const uri = buildURI(path, ids)
-
-        const { data, status } = await client.get(uri, { params })
+        const { data, status } = await client.get(buildURI(path, ids), { params })
 
         if (status >= 400) throw new Error('get request failed')
 

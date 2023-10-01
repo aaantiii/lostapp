@@ -19,7 +19,7 @@ export default function ViewMember() {
   const { player: member, clanSettings, clan } = useOutletContext<MemberOutletContext>()
 
   const { data: kickpoints } = useQuery<Kickpoint[]>({
-    queryKey: [routes.clans.members.kickpoints.byTag, { memberTag, clanTag }],
+    queryKey: [routes.clans.members.kickpoints.byClanMember, { memberTag, clanTag }],
     enabled: member !== undefined,
   })
 

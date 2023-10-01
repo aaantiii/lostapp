@@ -17,8 +17,8 @@ export default {
     settings: 'clans/:tag/settings',
     members: {
       kickpoints: {
-        all: 'clans/:clanTag/members/kickpoints',
-        byTag: 'clans/:clanTag/members/:memberTag/kickpoints',
+        byClan: 'clans/:clanTag/members/kickpoints',
+        byClanMember: 'clans/:clanTag/members/:memberTag/kickpoints',
         byId: 'clans/:clanTag/members/:memberTag/kickpoints/:kickpointId',
       },
     },

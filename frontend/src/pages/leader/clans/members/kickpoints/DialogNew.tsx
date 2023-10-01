@@ -26,7 +26,7 @@ export default function DialogNew({ onSuccess }: DialogNewMemberProps) {
 
   async function createKickpoint(data: CreateKickpoint) {
     setIsCreating(true)
-    const { status } = await client.post(buildURI(routes.clans.members.kickpoints.byTag, { clanTag, memberTag }), data)
+    const { status } = await client.post(buildURI(routes.clans.members.kickpoints.byClanMember, { clanTag, memberTag }), data)
     setIsCreating(false)
 
     switch (status) {

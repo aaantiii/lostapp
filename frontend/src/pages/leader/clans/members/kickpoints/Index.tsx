@@ -18,7 +18,7 @@ export default function Kickpoints() {
   const heading = useDocumentTitle(player ? `${player.name}'s Kickpunkte` : 'Kickpunkte')
 
   const { data: kickpoints, refetch: refreshKickpoints } = useQuery<Kickpoint[]>({
-    queryKey: [routes.clans.members.kickpoints.byTag, { clanTag, memberTag }],
+    queryKey: [routes.clans.members.kickpoints.byClanMember, { clanTag, memberTag }],
     enabled: clanTag !== undefined && memberTag !== undefined,
   })
 

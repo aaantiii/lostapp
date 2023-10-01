@@ -15,7 +15,7 @@ export default function ClanMembersIndex() {
   const heading = useDocumentTitle(`${clan ? clan.name : 'Clan'} Mitglieder`)
 
   const { data: clanMemberKickpoints } = useQuery<ClanMemberKickpoints[]>({
-    queryKey: [routes.clans.members.kickpoints.all, { clanTag: urlEncodeTag(clan?.tag) }],
+    queryKey: [routes.clans.members.kickpoints.byClan, { clanTag: urlEncodeTag(clan?.tag) }],
     enabled: clan !== undefined,
     refetchOnMount: 'always',
   })
