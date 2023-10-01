@@ -94,6 +94,7 @@ export default function Leaderboard() {
               setSearchParams(
                 (prev) => {
                   prev.set('clan', urlEncodeTag(tag))
+                  prev.set('page', '1')
                   return prev
                 },
                 { replace: true }
@@ -109,6 +110,7 @@ export default function Leaderboard() {
               setSearchParams(
                 (prev) => {
                   prev.set('statistic', statistic)
+                  prev.set('page', '1')
                   return prev
                 },
                 { replace: true }
