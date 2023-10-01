@@ -1,20 +1,20 @@
 @use '../abstracts/variables' as v;
 @use '../abstracts/mixins';
 
-.Select > .label {
-  font-size: v.$font-size-smaller;
-  text-transform: uppercase;
-  width: fit-content;
-
-  &::after {
-    content: ':';
-  }
-}
-
-.SelectFormWrapper {
+.Select {
   display: flex;
   flex-direction: column;
   gap: v.$gap-tiny;
+
+  & > .label {
+    font-size: v.$font-size-smaller;
+    text-transform: uppercase;
+    width: fit-content;
+
+    &::after {
+      content: ':';
+    }
+  }
 }
 
 .SelectTrigger {
