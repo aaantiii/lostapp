@@ -29,11 +29,9 @@ type CocCache struct {
 	ClanByTag          SyncMap[*types.Clan]
 }
 
-const MemberOrder = "clan_role like 'member', clan_role like 'admin', clan_role like 'coLeader', clan_role like 'leader'"
-
 func NewCocCache(db *gorm.DB, refreshInterval time.Duration) (*CocCache, error) {
 	start := time.Now()
-	log.Print("Initializing Clash of Clans cache...")
+	log.Println("Initializing Clash of Clans cache...")
 
 	cocClient, err := client.NewCocClient()
 	if err != nil {
@@ -46,7 +44,6 @@ func NewCocCache(db *gorm.DB, refreshInterval time.Duration) (*CocCache, error) 
 	}
 
 	go cache.startRefresh(refreshInterval)
-
 	log.Printf("Initialized Clash of Clans cache in %s.", time.Since(start).Round(time.Millisecond).String())
 	return cache, nil
 }
@@ -85,9 +82,8 @@ func (cache *CocCache) refresh() error {
 		return err
 	}
 
-	var clans []*coc.Clan
 	var players []*coc.Player
-
+	var clans []*coc.Clan
 	wg.Add(2)
 	start := time.Now()
 	go func() {
@@ -231,13 +227,14 @@ func (cache *CocCache) setPlayers(cocPlayers []*coc.Player, members models.Membe
 
 	cache.Unlock()
 }
-func (cache *CocCache) comparableStatsByName(player *coc.Player) map[string]int {
-	res := make(map[string]int, len(player.Achievements))
 
-	res[types.StatSeasonWins.Name] = player.AttackWins
+func (cache *CocCache) comparableStatsByName(player *coc.Player) map[string]interface{} {
+	stats := make(map[string]interface{}, len(player.Achievements))
+
+	stats[types.StatSeasonWins.Name] = player.AttackWins
 	for _, achievement := range player.Achievements {
-		res[achievement.Name] = achievement.Value
+		stats[achievement.Name] = achievement.Value
 	}
 
-	return res
+	return stats
 }

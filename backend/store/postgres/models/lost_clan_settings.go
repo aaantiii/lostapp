@@ -3,7 +3,7 @@ package models
 import "time"
 
 type LostClanSettings struct {
-	ClanTag                   string    `gorm:"size:10;primaryKey;not null" json:"-"`
+	ClanTag                   string    `gorm:"size:12;primaryKey;not null" json:"-"`
 	MaxKickpoints             uint8     `gorm:"default:10;not null" json:"maxKickpoints"`
 	MinSeasonWins             uint8     `gorm:"default:80;not null" json:"minSeasonWins"`
 	KickpointsExpireAfterDays uint8     `gorm:"default:60;not null" json:"kickpointsExpireAfterDays"`
@@ -18,7 +18,7 @@ type LostClanSettings struct {
 	KickpointsClanGames       uint8     `gorm:"default:3;not null" json:"kickpointsClanGames"`
 	UpdatedAt                 time.Time `json:"updatedAt"`
 	UpdatedByDiscordID        *string   `gorm:"size:18" json:"-"`
-	UpdatedByUser             *User     `gorm:"foreignKey:UpdatedByDiscordID;references:DiscordID" json:"updatedByUser"`
+	UpdatedByUser             *User     `gorm:"foreignKey:UpdatedByDiscordID;references:DiscordID" json:"updatedByUser,omitempty"`
 }
 
 func (*LostClanSettings) TableName() string {

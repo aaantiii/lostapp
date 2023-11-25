@@ -5,20 +5,21 @@ import (
 )
 
 const (
-	ColorAqua  = 0x08f8fc
+	ColorAqua  = 0x64abe1
 	ColorGreen = 0x13E708
 	ColorRed   = 0xe30000
 )
 
-func NewMessageEmbed(title, desc string, color int) *discordgo.MessageEmbed {
+func NewEmbed(title, desc string, color int) *discordgo.MessageEmbed {
 	return &discordgo.MessageEmbed{
 		Title:       title,
 		Description: desc,
 		Color:       color,
+		Type:        discordgo.EmbedTypeRich,
 	}
 }
 
-func NewMessageEmbedWithFields(title, desc string, color int, fields []*discordgo.MessageEmbedField) *discordgo.MessageEmbed {
+func NewFieldEmbed(title, desc string, color int, fields []*discordgo.MessageEmbedField) *discordgo.MessageEmbed {
 	for _, field := range fields {
 		field.Name += ":"
 	}
@@ -28,5 +29,6 @@ func NewMessageEmbedWithFields(title, desc string, color int, fields []*discordg
 		Description: desc,
 		Fields:      fields,
 		Color:       color,
+		Type:        discordgo.EmbedTypeRich,
 	}
 }

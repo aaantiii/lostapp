@@ -8,8 +8,8 @@ type Pagination struct {
 }
 
 type PaginationParams struct {
-	Page     int `form:"page" binding:"omitempty,min=1"`
-	PageSize int `form:"pageSize" binding:"omitempty,min=5,max=50"`
+	Page     int `form:"page" binding:"required,min=1"`
+	PageSize int `form:"pageSize" binding:"required,min=5,max=50"`
 }
 
 type PaginatedResponse[T any] struct {

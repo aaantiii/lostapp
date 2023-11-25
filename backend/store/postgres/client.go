@@ -13,29 +13,51 @@ import (
 	"backend/store/postgres/models"
 )
 
-const maxRetries, retryTimeout = 10, time.Second * 15
+const (
+	maxRetries   = 10
+	retryTimeout = time.Second * 15
+)
 
 func NewClient() (*gorm.DB, error) {
-	client, err := newGormClient()
+	db, err := newGormClient()
 	if err != nil {
 		return nil, err
 	}
 
-	if err = client.AutoMigrate(
+	if err = migrate(db); err != nil {
+		return nil, err
+	}
+
+	log.Printf("Auto-migrated postgres models.")
+	return db, nil
+}
+
+func migrate(db *gorm.DB) error {
+	if err := db.AutoMigrate(
+		&models.Clan{},
+		&models.ClanMember{},
+		&models.ComparableStats{},
 		&models.Guild{},
 		&models.Kickpoint{},
 		&models.LostClan{},
 		&models.LostClanSettings{},
 		&models.Member{},
-		&models.Notification{},
-		&models.NotificationReceiver{},
+		&models.PlayerClan{},
+		&models.Player{},
+		&models.PlayerStats{},
 		&models.User{},
 	); err != nil {
-		return nil, err
+		return err
 	}
 
-	log.Printf("Auto-migrated postgres models.")
-	return client, nil
+	if err := models.SeedLostClans(db); err != nil {
+		return err
+	}
+	if err := models.SeedComparableStats(db); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func newGormClient() (client *gorm.DB, err error) {

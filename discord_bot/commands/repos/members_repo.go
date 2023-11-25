@@ -25,20 +25,20 @@ func NewMembersRepo(db *gorm.DB) IMembersRepo {
 func (repo *MembersRepo) MembersByID(playerTag, clanTag string) (models.Members, error) {
 	var members models.Members
 	err := repo.db.
-		Preload("PlayerByTag").
+		Preload("Player").
 		Find(&members, "player_tag = ? AND clan_tag = ?", playerTag, clanTag).Error
 	return members, err
 }
 
 func (repo *MembersRepo) MembersByDiscordID(discordID string) (models.Members, error) {
-	var discordLink []*models.Player
+	var players []*models.Player
 	err := repo.db.
 		Preload("Members").
-		Find(&discordLink, "discord_id = ?", discordID).Error
+		Find(&players, "discord_id = ?", discordID).Error
 
 	var members models.Members
-	for _, link := range discordLink {
-		members = append(members, link.Members...)
+	for _, player := range players {
+		members = append(members, player.Members...)
 	}
 
 	return members, err

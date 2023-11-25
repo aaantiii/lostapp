@@ -30,7 +30,7 @@ export default function LeaderRoute() {
     refetch: refreshClanSettings,
     isFetching: clanSettingsFetching,
   } = useQuery<ClanSettings>({
-    queryKey: [routes.clans.settings, { tag: clanTag }],
+    queryKey: [routes.clans.settings, { clanTag }],
     enabled: clanTag !== undefined,
     staleTime: 1000 * 60,
     cacheTime: 1000 * 60,

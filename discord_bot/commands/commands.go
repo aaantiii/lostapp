@@ -20,7 +20,7 @@ func Setup(session *discordgo.Session) error {
 	// create interaction commands
 	interactions := make(types.Commands[types.InteractionHandler], 0)
 	interactions = append(interactions,
-		penaltyInteractionCommands(db)...,
+		kickpointInteractionCommands(db)...,
 	)
 	if _, err = session.ApplicationCommandBulkOverwrite(env.DISCORD_CLIENT_ID.Value(), env.DISCORD_GUILD_ID.Value(), interactions.ApplicationCommands()); err != nil {
 		return err
@@ -36,7 +36,7 @@ func commandNotFound(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		&discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
-				Embeds: []*discordgo.MessageEmbed{messages.NewMessageEmbed(
+				Embeds: []*discordgo.MessageEmbed{messages.NewEmbed(
 					"Fehler - Unbekannter Befehl",
 					"Dieser Befehl wurde nicht gefunden.",
 					messages.ColorRed,

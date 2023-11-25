@@ -2,12 +2,13 @@ package cache
 
 import "sync"
 
+// SyncMap sync.Map with type parameters.
 type SyncMap[T any] struct {
-	m sync.Map
+	syncMap sync.Map
 }
 
-func (s *SyncMap[T]) Get(key string) (T, bool) {
-	val, ok := s.m.Load(key)
+func (sm *SyncMap[T]) Get(key string) (T, bool) {
+	val, ok := sm.syncMap.Load(key)
 	if !ok {
 		return *new(T), false
 	}
@@ -15,6 +16,6 @@ func (s *SyncMap[T]) Get(key string) (T, bool) {
 	return val.(T), true
 }
 
-func (s *SyncMap[T]) Set(key string, value T) {
-	s.m.Store(key, value)
+func (sm *SyncMap[T]) Set(key string, value T) {
+	sm.syncMap.Store(key, value)
 }

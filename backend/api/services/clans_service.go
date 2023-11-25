@@ -10,9 +10,9 @@ import (
 
 type IClansService interface {
 	IsMaintenance() bool
-	Clans() ([]*types.Clan, error)
-	ClanByTag(tag string) (*types.Clan, error)
-	ClanMembers(tag string) ([]types.ClanMember, error)
+	Clans() ([]*models.Clan, error)
+	ClanByTag(tag string) (*models.Clan, error)
+	ClanMembers(tag string) ([]models.ClanMember, error)
 	ClanSettings(tag string) (*models.LostClanSettings, error)
 	UpdateClanSettings(tag string, payload *types.UpdateClanSettingsPayload) error
 	ClansWhereMemberIsLeader(discordID string) ([]*types.Clan, error)
@@ -24,7 +24,7 @@ type ClansService struct {
 	clanSettingsRepo repos.IClanSettingsRepo
 }
 
-func NewClansService(clansRepo repos.IClansRepo, playersRepo repos.IPlayersRepo, clanSettingsRepo repos.IClanSettingsRepo) *ClansService {
+func NewClansService(clansRepo repos.IClansRepo, playersRepo repos.IPlayersRepo, clanSettingsRepo repos.IClanSettingsRepo) IClansService
 	return &ClansService{
 		clansRepo:        clansRepo,
 		playersRepo:      playersRepo,
@@ -46,7 +46,7 @@ func (service *ClansService) Clans() ([]*types.Clan, error) {
 }
 
 func (service *ClansService) ClanByTag(tag string) (*types.Clan, error) {
-	clan, err := service.clansRepo.ClanByTag(tag)
+	clan, err := service.clansRepo.Clan(tag)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (service *ClansService) ClanByTag(tag string) (*types.Clan, error) {
 }
 
 func (service *ClansService) ClanMembers(tag string) ([]types.ClanMember, error) {
-	clan, err := service.clansRepo.ClanByTag(tag)
+	clan, err := service.clansRepo.Clan(tag)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func (service *ClansService) ClanMembers(tag string) ([]types.ClanMember, error)
 }
 
 func (service *ClansService) ClanSettings(tag string) (*models.LostClanSettings, error) {
-	if _, err := service.clansRepo.ClanByTag(tag); err != nil {
+	if _, err := service.clansRepo.Clan(tag); err != nil {
 		return nil, err
 	}
 
@@ -95,7 +95,7 @@ func (service *ClansService) UpdateClanSettings(tag string, payload *types.Updat
 	})
 }
 
-func (service *ClansService) ClansWhereMemberIsLeader(discordID string) ([]*types.Clan, error) {
+func (service *ClansService) ClansLedByDiscordID(discordID string) ([]*types.Clan, error) {
 	players, err := service.playersRepo.PlayersByDiscordID(discordID)
 	if err != nil {
 		return nil, err

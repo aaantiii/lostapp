@@ -24,7 +24,7 @@ type KickpointsService struct {
 	clanSettingsRepo repos.IClanSettingsRepo
 }
 
-func NewKickpointsService(kickpointsRepo repos.IKickpointsRepo, playersRepo repos.IPlayersRepo, clanSettingsRepo repos.IClanSettingsRepo) *KickpointsService {
+func NewKickpointsService(kickpointsRepo repos.IKickpointsRepo, playersRepo repos.IPlayersRepo, clanSettingsRepo repos.IClanSettingsRepo) IKickpointsService {
 	return &KickpointsService{
 		kickpointsRepo:   kickpointsRepo,
 		playersRepo:      playersRepo,

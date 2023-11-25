@@ -6,7 +6,7 @@ const LostFamilyGuildID = "733857906117574717"
 
 type Guild struct {
 	GuildID        string `gorm:"primaryKey;not null;size:20"`
-	ClanTag        string `gorm:"primaryKey;not null;size:10"`
+	ClanTag        string `gorm:"primaryKey;not null;size:12"`
 	LeaderRoleID   string `gorm:"size:20"`
 	CoLeaderRoleID string `gorm:"size:20"`
 	ElderRoleID    string `gorm:"size:20"`

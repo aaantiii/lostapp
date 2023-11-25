@@ -3,10 +3,12 @@ package util
 import (
 	"fmt"
 	"strconv"
-	"strings"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 )
+
+var timeNil = time.Time{}
 
 func ParseStringModalInput(c discordgo.MessageComponent) string {
 	input, err := parseTextInputComponent(c)
@@ -30,28 +32,13 @@ func ParseIntModalInput(c discordgo.MessageComponent) int {
 	return 0
 }
 
-func ParseMonthYearInput(c discordgo.MessageComponent) (month, year int) {
+func ParseDateInput(c discordgo.MessageComponent) (time.Time, error) {
 	input, err := parseTextInputComponent(c)
 	if err != nil {
-		return 0, 0
+		return timeNil, err
 	}
 
-	date := strings.Split(input.Value, "-")
-	if len(date) != 2 {
-		return 0, 0
-	}
-
-	month, err = strconv.Atoi(date[0])
-	if err != nil {
-		return 0, 0
-	}
-
-	year, err = strconv.Atoi(date[1])
-	if err != nil {
-		return 0, 0
-	}
-
-	return month, year
+	return ParseDateString(input.Value)
 }
 
 func parseTextInputComponent(c discordgo.MessageComponent) (*discordgo.TextInput, error) {

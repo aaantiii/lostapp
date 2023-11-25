@@ -12,9 +12,9 @@ export default {
   },
   clans: {
     all: 'clans',
-    byTag: 'clans/:tag',
+    byTag: 'clans/:clanTag',
     leading: 'clans/leading',
-    settings: 'clans/:tag/settings',
+    settings: 'clans/:clanTag/settings',
     members: {
       kickpoints: {
         byClan: 'clans/:clanTag/members/kickpoints',

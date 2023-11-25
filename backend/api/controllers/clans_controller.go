@@ -12,6 +12,7 @@ import (
 	"backend/api/services"
 	"backend/api/types"
 	"backend/api/util"
+	"backend/store/postgres/models"
 )
 
 type ClansController struct {
@@ -34,7 +35,6 @@ func (controller *ClansController) setupWithRouter(router *gin.Engine) {
 		GET("settings", controller.GETClanSettings).
 		GET("members/kickpoints", controller.GETActiveClanKickpoints).
 		GET("members/:memberTag/kickpoints", controller.GETActiveMemberKickpoints)
-	//GET("members/:memberTag/kickpoints/future", controller.GETFutureMemberKickpoints)
 
 	coLeaderRoutes := router.Group(rgName, middleware.AuthMiddleware(types.AuthRoleLeader))
 	coLeaderRoutes.GET("leading", controller.GETLeadingClans)
@@ -113,32 +113,6 @@ func (controller *ClansController) GETActiveMemberKickpoints(c *gin.Context) {
 	c.JSON(http.StatusOK, kickpointList)
 }
 
-func (controller *ClansController) GETFutureMemberKickpoints(c *gin.Context) {
-	clanTag, err := util.TagFromQuery(c, "clanTag")
-	if err != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
-
-	memberTag, err := util.TagFromQuery(c, "memberTag")
-	if err != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
-
-	kickpointList, err := controller.kickpointsService.FuturePlayerKickpoints(memberTag, clanTag)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		c.Status(http.StatusNoContent)
-		return
-	}
-	if err != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
-
-	c.JSON(http.StatusOK, kickpointList)
-}
-
 func (controller *ClansController) GETClanSettings(c *gin.Context) {
 	clanTag, err := util.TagFromQuery(c, "clanTag")
 	if err != nil {
@@ -146,12 +120,14 @@ func (controller *ClansController) GETClanSettings(c *gin.Context) {
 		return
 	}
 
-	if settings, err := controller.service.ClanSettings(clanTag); err == nil {
-		c.JSON(http.StatusOK, settings)
+	var settings *models.LostClanSettings
+	if settings, err = controller.service.ClanSettings(clanTag); err != nil {
+		c.AbortWithStatus(http.StatusNotFound)
 		return
 	}
 
-	c.AbortWithStatus(http.StatusNotFound)
+	c.JSON(http.StatusOK, settings)
+	return
 }
 
 func (controller *ClansController) PUTClanSettings(c *gin.Context) {
@@ -201,8 +177,9 @@ func (controller *ClansController) POSTKickpoint(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	playerTag, err := util.TagFromQuery(c, "memberTag")
-	if err != nil {
+
+	var playerTag string
+	if playerTag, err = util.TagFromQuery(c, "memberTag"); err != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
@@ -218,7 +195,7 @@ func (controller *ClansController) POSTKickpoint(c *gin.Context) {
 	payload.ClanTag = clanTag
 	payload.AddedByDiscordID = session.DiscordUser.ID
 
-	if err := controller.kickpointsService.CreateKickpoint(payload); err != nil {
+	if err = controller.kickpointsService.CreateKickpoint(payload); err != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}

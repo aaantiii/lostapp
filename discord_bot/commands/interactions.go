@@ -1,6 +1,9 @@
 package commands
 
 import (
+	"log"
+	"time"
+
 	"github.com/bwmarrin/discordgo"
 
 	"bot/commands/util"
@@ -19,34 +22,37 @@ func interactionCommandMap(commands types.Commands[types.InteractionHandler]) ma
 func interactionHandler(interactions types.Commands[types.InteractionHandler]) func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	commands := interactionCommandMap(interactions)
 	return func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		now := time.Now()
+		defer func() {
+			log.Printf("Interaction called by %s took %s.", i.Member.User.Username, time.Now().Sub(now).Round(time.Millisecond))
+		}()
+
 		switch i.Type {
 		case discordgo.InteractionApplicationCommand:
 			if command, ok := commands[i.ApplicationCommandData().Name]; ok {
 				command.Handler.Main(s, i)
 				return
 			}
-			commandNotFound(s, i)
 
 		case discordgo.InteractionApplicationCommandAutocomplete:
 			if command, ok := commands[i.ApplicationCommandData().Name]; ok {
-				if command.Handler.AutocompleteHandler == nil {
+				if command.Handler.Autocomplete == nil {
 					return
 				}
-				command.Handler.AutocompleteHandler(s, i)
+				command.Handler.Autocomplete(s, i)
 				return
 			}
-			commandNotFound(s, i)
 
 		case discordgo.InteractionModalSubmit:
 			commandName, _ := util.ParseCustomID(i.ModalSubmitData().CustomID)
 			if command, ok := commands[commandName]; ok {
-				if command.Handler.ModalSubmitHandler == nil {
+				if command.Handler.ModalSubmit == nil {
 					return
 				}
-				command.Handler.ModalSubmitHandler(s, i)
+				command.Handler.ModalSubmit(s, i)
 				return
 			}
-			commandNotFound(s, i)
 		}
+		commandNotFound(s, i)
 	}
 }

@@ -7,7 +7,7 @@ import (
 )
 
 type IGuildsRepo interface {
-	Guilds() ([]*models.Guild, error)
+	Guilds(id string) ([]*models.Guild, error)
 	GuildByClanTag(id, clanTag string) (*models.Guild, error)
 }
 
@@ -19,14 +19,14 @@ func NewGuildsRepo(db *gorm.DB) IGuildsRepo {
 	return &GuildsRepo{db: db}
 }
 
-func (r *GuildsRepo) Guilds() ([]*models.Guild, error) {
+func (r *GuildsRepo) Guilds(id string) ([]*models.Guild, error) {
 	var guilds []*models.Guild
-	err := r.db.Find(&guilds, "guild_id = ?", models.LostFamilyGuildID).Error
+	err := r.db.Find(&guilds, "guild_id = ?", id).Error
 	return guilds, err
 }
 
 func (r *GuildsRepo) GuildByClanTag(id, clanTag string) (*models.Guild, error) {
 	var guild *models.Guild
-	err := r.db.First(&guild, "guild_id = ? AND clan_tag = ?", models.LostFamilyGuildID, clanTag).Error
+	err := r.db.First(&guild, "guild_id = ? AND clan_tag = ?", id, clanTag).Error
 	return guild, err
 }

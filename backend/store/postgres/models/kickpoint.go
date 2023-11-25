@@ -4,8 +4,8 @@ import "time"
 
 type Kickpoint struct {
 	ID                 uint      `gorm:"primaryKey;autoIncrement;not null"`
-	PlayerTag          string    `gorm:"size:10;not null"`
-	ClanTag            string    `gorm:"size:10;not null"`
+	PlayerTag          string    `gorm:"size:12;not null"`
+	ClanTag            string    `gorm:"size:12;not null"`
 	Date               time.Time `gorm:"not null"`
 	Amount             int       `gorm:"not null"`
 	Description        string    `gorm:"size:100"`

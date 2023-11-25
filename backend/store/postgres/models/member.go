@@ -3,11 +3,10 @@ package models
 import "github.com/amaanq/coc.go"
 
 type Member struct {
-	PlayerTag        string   `gorm:"primaryKey;not null;size:10"`
-	ClanTag          string   `gorm:"primaryKey;not null;size:10"`
+	PlayerTag        string   `gorm:"primaryKey;not null;size:12"`
+	ClanTag          string   `gorm:"primaryKey;not null;size:12"`
 	AddedByDiscordID string   `gorm:"size:18;not null"`
 	ClanRole         coc.Role `gorm:"not null"`
-	IsAdmin          bool     `gorm:"not null;default:false"`
 
 	LostClan    LostClan     `gorm:"foreignKey:ClanTag;references:Tag;onUpdate:CASCADE;onDelete:CASCADE"`
 	DiscordLink DiscordLink  `gorm:"foreignKey:PlayerTag;references:CocTag"`

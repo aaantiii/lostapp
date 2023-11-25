@@ -19,7 +19,7 @@ type MembersRepo struct {
 	db *gorm.DB
 }
 
-func NewMembersRepo(db *gorm.DB) *MembersRepo {
+func NewMembersRepo(db *gorm.DB) IMembersRepo {
 	return &MembersRepo{db: db}
 }
 

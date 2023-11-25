@@ -1,8 +1,6 @@
 package types
 
-import (
-	"fmt"
-)
+import "fmt"
 
 // DiscordGuildMember is the response body of the Discord API when requesting a user.
 type DiscordGuildMember struct {

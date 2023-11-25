@@ -1,9 +1,5 @@
 package util
 
-func OptionalString(s string) *string {
-	return &s
-}
-
 func OptionalInt(v int) *int {
 	return &v
 }

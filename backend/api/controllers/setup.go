@@ -28,34 +28,33 @@ func Setup(router *gin.Engine) error {
 		return err
 	}
 
-	// Create repos
+	// create repos
 	usersRepo := repos.NewUsersRepo(db)
 	clanSettingsRepo := repos.NewClanSettingsRepo(db)
-	clansRepo := repos.NewClansRepo(db, cocCache)
+	clansRepo := repos.NewClansRepo(db)
 	guildsRepo := repos.NewGuildsRepo(db)
-	kickpointsRepo := repos.NewKickpointsRepo(db, cocCache)
+	kickpointsRepo := repos.NewKickpointsRepo(db)
 	membersRepo := repos.NewMembersRepo(db)
-	playersRepo := repos.NewPlayersRepo(db, cocCache)
+	playersRepo := repos.NewPlayersRepo(db)
 
-	// Create services
+	// create services
 	membersService := services.NewMembersService(membersRepo)
 	authService := services.NewAuthService(guildsRepo, usersRepo)
 	clansService := services.NewClansService(clansRepo, playersRepo, clanSettingsRepo)
 	kickpointsService := services.NewKickpointsService(kickpointsRepo, playersRepo, clanSettingsRepo)
 	playersService := services.NewPlayersService(playersRepo, clansRepo)
 
-	// Inject services into middleware and add global middleware to router
+	// inject services into middleware
 	middleware.InjectServices(authService, clansService)
-	router.Use(middleware.CocMaintenanceMiddleware())
 
-	// Create controllers
+	// create controllers
 	controllers := []Controller{
 		NewAuthController(authService),
 		NewClansController(clansService, kickpointsService, membersService),
 		NewPlayersController(playersService),
 	}
 
-	// Setup Controllers
+	// setup Controllers
 	for _, controller := range controllers {
 		controller.setupWithRouter(router)
 	}

@@ -23,7 +23,7 @@ type PlayersService struct {
 	clansRepo   repos.IClansRepo
 }
 
-func NewPlayersService(playersRepo repos.IPlayersRepo, clansRepo repos.IClansRepo) *PlayersService {
+func NewPlayersService(playersRepo repos.IPlayersRepo, clansRepo repos.IClansRepo) IPlayersService {
 	return &PlayersService{playersRepo: playersRepo, clansRepo: clansRepo}
 }
 

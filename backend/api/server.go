@@ -46,7 +46,7 @@ func Init() error {
 // ListenAndServe starts the HTTP server.
 func ListenAndServe() error {
 	port := env.PORT.Value()
-	log.Printf("HTTP server listening on port %s", port)
+	log.Printf("HTTP server listening on port %s.", port)
 	return router.Run(":" + port)
 	//return router.RunTLS(":"+port, "/etc/letsencrypt/live/aaantiii.com/cert.pem", "/etc/letsencrypt/live/aaantiii.com/privkey.pem")
 }

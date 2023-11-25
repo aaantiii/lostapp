@@ -7,7 +7,6 @@
   justify-content: center;
 
   & > .root {
-    width: clamp(400px, 40vw, 550px);
     gap: v.$gap-medium;
     display: flex;
     flex-direction: column;

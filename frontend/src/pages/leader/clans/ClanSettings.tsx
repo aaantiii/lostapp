@@ -10,7 +10,7 @@ import FormMessages from '@/validation/formMessages'
 import { LeaderOutletContext } from '@context/types'
 import DataChangelog from '@components/DataChangelog'
 import client from '@api/client'
-import { buildURI } from '@api/urlBuilder'
+import { buildURL } from '@api/urlBuilder'
 import { urlEncodeTag } from '@fmt/cocFormatter'
 
 export default function ClanSettings() {
@@ -23,7 +23,7 @@ export default function ClanSettings() {
     if (!clan) return
 
     setIsSaving(true)
-    const { status } = await client.put(buildURI(routes.clans.settings, { tag: urlEncodeTag(clan.tag) }), data)
+    const { status } = await client.put(buildURL(routes.clans.settings, { tag: urlEncodeTag(clan.tag) }), data)
     setIsSaving(false)
 
     if (status < 300) {

@@ -1,71 +1,66 @@
 package repos
 
 import (
-	"fmt"
-
 	"gorm.io/gorm"
 
 	"backend/api/types"
-	"backend/store/cache"
+	"backend/store/postgres"
+	"backend/store/postgres/models"
 )
 
 type IPlayersRepo interface {
-	Players() types.Players
-	PlayerByTag(tag string) (*types.Player, error)
-	PlayersByTags(tags []string) (types.Players, error)
-	PlayersByDiscordID(discordID string) (types.Players, error)
-	PlayersByClanTag(tag string) (types.Players, error)
+	Players(params *types.PaginationParams) ([]*models.Player, error)
+	PlayerByTag(tag string) (*models.Player, error)
+	PlayersByTags(tags []string) ([]*models.Player, error)
+	PlayersByDiscordID(discordID string) ([]*models.Player, error)
+	PlayersByClanTag(tag string) ([]*models.Player, error)
 }
 
 type PlayersRepo struct {
-	db    *gorm.DB
-	cache *cache.CocCache
+	db *gorm.DB
 }
 
-func NewPlayersRepo(db *gorm.DB, cache *cache.CocCache) *PlayersRepo {
-	return &PlayersRepo{db: db, cache: cache}
+func NewPlayersRepo(db *gorm.DB) IPlayersRepo {
+	return &PlayersRepo{db: db}
 }
 
-func (repo *PlayersRepo) Players() types.Players {
-	return repo.cache.Players
-}
-
-func (repo *PlayersRepo) PlayerByTag(tag string) (*types.Player, error) {
-	player, found := repo.cache.PlayerByTag.Get(tag)
-	if !found {
-		return nil, fmt.Errorf("no player found with tag=%s", tag)
-	}
-
-	return player, nil
-}
-
-func (repo *PlayersRepo) PlayersByTags(tags []string) (types.Players, error) {
-	var players types.Players
-	for _, tag := range tags {
-		if player, err := repo.PlayerByTag(tag); err == nil {
-			players = append(players, player)
-		} else {
-			return nil, err
-		}
+func (repo *PlayersRepo) Players(params *types.PaginationParams) ([]*models.Player, error) {
+	var players []*models.Player
+	if err := repo.db.Scopes(postgres.Paginate(params)).Find(players).Error; err != nil {
+		panic(err)
 	}
 
 	return players, nil
 }
 
-func (repo *PlayersRepo) PlayersByDiscordID(discordID string) (types.Players, error) {
-	players, found := repo.cache.PlayersByDiscordID.Get(discordID)
-	if !found {
-		return nil, fmt.Errorf("no players found with discord id=%s", discordID)
-	}
-
-	return players, nil
+func (repo *PlayersRepo) PlayerByTag(tag string) (*models.Player, error) {
+	var player *models.Player
+	err := repo.db.First(&player, "tag = ?", tag).Error
+	return player, err
 }
 
-func (repo *PlayersRepo) PlayersByClanTag(tag string) (types.Players, error) {
-	players, found := repo.cache.PlayersByClanTag.Get(tag)
-	if !found {
-		return nil, fmt.Errorf("no players found with clan tag=%s", tag)
+func (repo *PlayersRepo) PlayersByTags(tags []string) ([]*models.Player, error) {
+	var players []*models.Player
+	err := repo.db.Find(&players, "tag IN ?", tags).Error
+	return players, err
+}
+
+func (repo *PlayersRepo) PlayersByDiscordID(discordID string) ([]*models.Player, error) {
+	var players []*models.Player
+	err := repo.db.Find(&players, "discord_id = ?", discordID).Error
+	return players, err
+}
+
+func (repo *PlayersRepo) PlayersByClanTag(tag string) ([]*models.Player, error) {
+	var playerTags []string
+	if err := repo.db.
+		Model(&models.Member{}).
+		Where("clan_tag = ?", tag).
+		Pluck("player_tag", &playerTags).Error; err != nil {
+		return nil, err
 	}
 
-	return players, nil
+	var players []*models.Player
+	err := repo.db.Find(&players, "tag IN ?", playerTags).Error
+	return players, err
 }

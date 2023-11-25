@@ -16,13 +16,13 @@ type UsersRepo struct {
 	db *gorm.DB
 }
 
-func NewUsersRepo(db *gorm.DB) *UsersRepo {
+func NewUsersRepo(db *gorm.DB) IUsersRepo {
 	return &UsersRepo{db: db}
 }
 
 func (repo *UsersRepo) User(discordID string) (*models.User, error) {
 	var user *models.User
-	err := repo.db.First(&user, discordID).Error
+	err := repo.db.First(&user, "discord_id = ?", discordID).Error
 	return user, err
 }
 
@@ -32,13 +32,16 @@ func (repo *UsersRepo) CreateOrUpdateUser(user *models.User) error {
 	if err == nil {
 		user.IsAdmin = existingUser.IsAdmin
 	}
+	if user == existingUser {
+		return nil
+	}
 
 	return repo.db.Save(user).Error
 }
 
 func (repo *UsersRepo) UserIsAdmin(discordID string) (bool, error) {
-	var user models.User
-	if err := repo.db.First(&user, discordID).Error; err != nil {
+	user, err := repo.User(discordID)
+	if err != nil {
 		return false, err
 	}
 

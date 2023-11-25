@@ -44,7 +44,7 @@ type AuthServiceConfig struct {
 	MaxSessionDataAge  time.Duration // MaxSessionDataAge is the time after which a session is considered outdated. The data will be refetched when the session is used.
 }
 
-func NewAuthService(guildsRepo repos.IGuildsRepo, usersRepo repos.IUsersRepo) *AuthService {
+func NewAuthService(guildsRepo repos.IGuildsRepo, usersRepo repos.IUsersRepo) IAuthService {
 	service := &AuthService{
 		guildsRepo: guildsRepo,
 		usersRepo:  usersRepo,

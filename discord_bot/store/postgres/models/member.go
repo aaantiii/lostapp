@@ -1,26 +1,23 @@
 package models
 
-import (
-	"github.com/amaanq/coc.go"
-	"github.com/bwmarrin/discordgo"
-)
+import "github.com/amaanq/coc.go"
 
 type Member struct {
-	PlayerTag        string   `gorm:"primaryKey;not null;size:12"`
-	ClanTag          string   `gorm:"primaryKey;not null;size:12"`
-	AddedByDiscordID string   `gorm:"size:18;not null"`
-	ClanRole         coc.Role `gorm:"not null"`
+	PlayerTag        string
+	ClanTag          string
+	AddedByDiscordID string
+	ClanRole         coc.Role
 
-	LostClan  LostClan   `gorm:"foreignKey:ClanTag;references:Tag;onUpdate:CASCADE;onDelete:CASCADE"`
-	Player    Player     `gorm:"foreignKey:PlayerTag;references:CocTag"`
-	Penalties *[]Penalty `gorm:"foreignKey:PlayerTag,ClanTag;references:PlayerTag,ClanTag;onUpdate:CASCADE;onDelete:CASCADE"`
+	Player     *Player     `gorm:"foreignKey:CocTag;references:PlayerTag"`
+	Clan       *Clan       `gorm:"foreignKey:Tag;references:ClanTag"`
+	Kickpoints []Kickpoint `gorm:"foreignKey:PlayerTag,ClanTag;references:PlayerTag,ClanTag;onUpdate:CASCADE;onDelete:CASCADE"`
 }
 
 func (*Member) TableName() string {
 	return "clan_member"
 }
 
-type Members []*Member
+type Members []Member
 
 func (members Members) Tags() []string {
 	if members == nil {
@@ -36,7 +33,7 @@ func (members Members) Tags() []string {
 }
 
 func (members Members) TagsDistinct() []string {
-	if members == nil || len(members) == 0 {
+	if members == nil {
 		return nil
 	}
 
@@ -52,16 +49,4 @@ func (members Members) TagsDistinct() []string {
 	}
 
 	return tags
-}
-
-func (members Members) Choices() []*discordgo.ApplicationCommandOptionChoice {
-	choices := make([]*discordgo.ApplicationCommandOptionChoice, len(members))
-	for i, member := range members {
-		choices[i] = &discordgo.ApplicationCommandOptionChoice{
-			Name:  member.Player.Name,
-			Value: member.PlayerTag,
-		}
-	}
-
-	return choices
 }

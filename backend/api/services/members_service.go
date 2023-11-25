@@ -16,7 +16,7 @@ type MembersService struct {
 	membersRepo repos.IMembersRepo
 }
 
-func NewMembersService(memberRepo repos.IMembersRepo) *MembersService {
+func NewMembersService(memberRepo repos.IMembersRepo) IMembersService {
 	return &MembersService{membersRepo: memberRepo}
 }
 

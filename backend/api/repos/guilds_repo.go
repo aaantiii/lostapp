@@ -15,7 +15,7 @@ type GuildsRepo struct {
 	db *gorm.DB
 }
 
-func NewGuildsRepo(db *gorm.DB) *GuildsRepo {
+func NewGuildsRepo(db *gorm.DB) IGuildsRepo {
 	return &GuildsRepo{db: db}
 }
 

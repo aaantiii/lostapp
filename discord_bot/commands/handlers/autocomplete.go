@@ -9,9 +9,9 @@ import (
 	"bot/commands/repos"
 )
 
-func autocompleteClans(repo repos.ILostClansRepo, query string) func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func autocompleteClans(repo repos.IClansRepo, query string) func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	return func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-		clans, err := repo.LostClans(query)
+		clans, err := repo.Clans(query)
 		if err != nil {
 			log.Print("err clans")
 			messages.SendAutoCompletion(s, i, nil)

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"backend/api/types"
 	"backend/api/util"
@@ -27,7 +28,7 @@ type KickpointsRepo struct {
 	cache *cache.CocCache
 }
 
-func NewKickpointsRepo(db *gorm.DB, cache *cache.CocCache) *KickpointsRepo {
+func NewKickpointsRepo(db *gorm.DB, cache *cache.CocCache) IKickpointsRepo {
 	return &KickpointsRepo{db: db, cache: cache}
 }
 
@@ -75,8 +76,9 @@ func (repo *KickpointsRepo) ActivePlayerKickpoints(playerTag, clanTag string, se
 	minDate := time.Now().AddDate(0, 0, -int(settings.KickpointsExpireAfterDays))
 	var kickpoints []*models.Kickpoint
 	err := repo.db.
-		Preload("CreatedByUser").
-		Preload("UpdatedByUser").
+		//Preload("CreatedByUser").
+		//Preload("UpdatedByUser").
+		Preload(clause.Associations).
 		Order("id").
 		Find(&kickpoints, "player_tag = ? AND clan_tag = ? AND date > ? AND date <= ?", playerTag, clanTag, minDate, time.Now()).Error
 
