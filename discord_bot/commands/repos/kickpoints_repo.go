@@ -15,8 +15,10 @@ type IKickpointsRepo interface {
 	KickpointByID(id uint) (*models.Kickpoint, error)
 	ActiveClanKickpoints(settings *models.ClanSettings) ([]*types.ClanMemberKickpoints, error)
 	ActiveMemberKickpoints(memberTag string, settings *models.ClanSettings) ([]*models.Kickpoint, error)
+	ActiveMemberKickpointsSum(memberTag string, settings *models.ClanSettings) (int, error)
+	FutureMemberKickpoints(memberTag, clanTag string) ([]*models.Kickpoint, error)
 	CreateKickpoint(kickpoint *models.Kickpoint) error
-	UpdateKickpoint(kickpoint *models.Kickpoint) error
+	UpdateKickpoint(kickpoint *models.Kickpoint) (*models.Kickpoint, error)
 	DeleteKickpoint(id uint) error
 }
 
@@ -84,12 +86,49 @@ func (repo *KickpointsRepo) ActiveMemberKickpoints(memberTag string, settings *m
 	return kickpoints, nil
 }
 
-func (repo *KickpointsRepo) CreateKickpoint(kickpoint *models.Kickpoint) error {
-	return repo.db.Create(kickpoint).Error
+func (repo *KickpointsRepo) ActiveMemberKickpointsSum(memberTag string, settings *models.ClanSettings) (int, error) {
+	minDate := util.TruncateToDay(time.Now()).
+		AddDate(0, 0, -settings.KickpointsExpireAfterDays)
+
+	var v struct{ Sum int }
+	if err := repo.db.
+		Model(&models.Kickpoint{}).
+		Where("player_tag = ? AND clan_tag = ? AND date BETWEEN ? AND NOW()", memberTag, settings.ClanTag, minDate).
+		Select("SUM(amount) as sum").
+		Scan(&v).Error; err != nil {
+		return 0, err
+	}
+
+	return v.Sum, nil
 }
 
-func (repo *KickpointsRepo) UpdateKickpoint(kickpoint *models.Kickpoint) error {
-	return repo.db.Updates(kickpoint).Error
+func (repo *KickpointsRepo) FutureMemberKickpoints(memberTag, clanTag string) ([]*models.Kickpoint, error) {
+	var kickpoints []*models.Kickpoint
+	if err := repo.db.
+		Preload(clause.Associations).
+		Order("created_at").
+		Limit(20).
+		Find(&kickpoints, "player_tag = ? AND clan_tag = ? AND date > NOW()", memberTag, clanTag).Error; err != nil {
+		return nil, err
+	}
+
+	if len(kickpoints) == 0 {
+		return nil, gorm.ErrRecordNotFound
+	}
+
+	return kickpoints, nil
+}
+
+func (repo *KickpointsRepo) CreateKickpoint(kickpoint *models.Kickpoint) error {
+	return repo.db.Create(&kickpoint).Error
+}
+
+func (repo *KickpointsRepo) UpdateKickpoint(kickpoint *models.Kickpoint) (*models.Kickpoint, error) {
+	if err := repo.db.Updates(kickpoint).Error; err != nil {
+		return nil, err
+	}
+
+	return repo.KickpointByID(kickpoint.ID)
 }
 
 func (repo *KickpointsRepo) DeleteKickpoint(id uint) error {

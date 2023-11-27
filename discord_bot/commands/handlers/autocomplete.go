@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"log"
-
 	"github.com/bwmarrin/discordgo"
 
 	"bot/commands/messages"
@@ -13,7 +11,6 @@ func autocompleteClans(repo repos.IClansRepo, query string) func(s *discordgo.Se
 	return func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		clans, err := repo.Clans(query)
 		if err != nil {
-			log.Print("err clans")
 			messages.SendAutoCompletion(s, i, nil)
 			return
 		}
@@ -33,6 +30,18 @@ func autocompleteMembers(repo repos.IPlayersRepo, query, clanTag string) func(s 
 		}
 
 		players, err := repo.MembersPlayersByClan(clanTag, query)
+		if err != nil {
+			messages.SendAutoCompletion(s, i, nil)
+			return
+		}
+
+		messages.SendAutoCompletion(s, i, players.Choices())
+	}
+}
+
+func autocompletePlayers(repo repos.IPlayersRepo, query string) func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	return func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		players, err := repo.Players(query)
 		if err != nil {
 			messages.SendAutoCompletion(s, i, nil)
 			return

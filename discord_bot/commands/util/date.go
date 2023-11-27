@@ -1,6 +1,8 @@
 package util
 
 import (
+	"fmt"
+	"strings"
 	"time"
 )
 
@@ -31,5 +33,24 @@ func TruncateToDay(t time.Time) time.Time {
 }
 
 func FormatDuration(d time.Duration) string {
-	return d.Round(time.Second).String()
+	days := int(d.Hours() / 24)
+	hours := int(d.Hours()) % 24
+	minutes := int(d.Minutes()) % 60
+	seconds := int(d.Seconds()) % 60
+
+	var res string
+	if days > 0 {
+		res += fmt.Sprintf("%dd ", days)
+	}
+	if hours > 0 {
+		res += fmt.Sprintf("%dh ", hours)
+	}
+	if minutes > 0 {
+		res += fmt.Sprintf("%dm ", minutes)
+	}
+	if seconds > 0 {
+		res += fmt.Sprintf("%ds ", seconds)
+	}
+
+	return strings.Trim(res, " ")
 }

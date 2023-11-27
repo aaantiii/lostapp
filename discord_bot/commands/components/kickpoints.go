@@ -1,6 +1,7 @@
 package components
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/bwmarrin/discordgo"
@@ -42,7 +43,7 @@ func KickpointAmount(defaultValue int) discordgo.TextInput {
 	return discordgo.TextInput{
 		CustomID:    KickpointAmountID,
 		Label:       label,
-		Placeholder: "Zahl von 1 bis 10",
+		Placeholder: fmt.Sprintf("Zahl zwischen %d und %d", validation.MinKickpointAmount, validation.MaxKickpointAmount),
 		Style:       discordgo.TextInputShort,
 		Value:       strconv.Itoa(defaultValue),
 		Required:    true,

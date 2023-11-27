@@ -44,7 +44,7 @@ func interactionHandler(interactions types.Commands[types.InteractionHandler]) f
 			}
 
 		case discordgo.InteractionModalSubmit:
-			commandName, _ := util.ParseCustomID(i.ModalSubmitData().CustomID)
+			commandName, _, _ := util.ParseCustomID(i.ModalSubmitData().CustomID)
 			if command, ok := commands[commandName]; ok {
 				if command.Handler.ModalSubmit == nil {
 					return

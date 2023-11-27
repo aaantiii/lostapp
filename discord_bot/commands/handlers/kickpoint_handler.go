@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"time"
+	"strconv"
 
 	"github.com/amaanq/coc.go"
 	"github.com/bwmarrin/discordgo"
@@ -15,6 +15,7 @@ import (
 	"bot/commands/middleware"
 	"bot/commands/repos"
 	"bot/commands/util"
+	"bot/commands/validation"
 	"bot/store/postgres/models"
 )
 
@@ -22,10 +23,13 @@ type IKickpointHandler interface {
 	ClanKickpoints(s *discordgo.Session, i *discordgo.InteractionCreate)
 	MemberKickpoints(s *discordgo.Session, i *discordgo.InteractionCreate)
 	KickpointInfo(s *discordgo.Session, i *discordgo.InteractionCreate)
+	KickpointConfig(s *discordgo.Session, i *discordgo.InteractionCreate)
+	KickpointHelp(s *discordgo.Session, i *discordgo.InteractionCreate)
 	CreateKickpointModal(s *discordgo.Session, i *discordgo.InteractionCreate)
 	CreateKickpointModalSubmit(s *discordgo.Session, i *discordgo.InteractionCreate)
-	EditPenalty(s *discordgo.Session, i *discordgo.InteractionCreate)
-	DeletePenalty(s *discordgo.Session, i *discordgo.InteractionCreate)
+	EditKickpoint(s *discordgo.Session, i *discordgo.InteractionCreate)
+	EditKickpointModalSubmit(s *discordgo.Session, i *discordgo.InteractionCreate)
+	DeleteKickpoint(s *discordgo.Session, i *discordgo.InteractionCreate)
 	ClansAutocomplete(s *discordgo.Session, i *discordgo.InteractionCreate)
 	MembersAndClansAutocomplete(s *discordgo.Session, i *discordgo.InteractionCreate)
 }
@@ -49,7 +53,13 @@ func NewKickpointHandler(kickpoints repos.IKickpointsRepo, clans repos.IClansRep
 }
 
 func (h *KickpointHandler) ClanKickpoints(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	clanTag := i.ApplicationCommandData().Options[0].StringValue()
+	opts := i.ApplicationCommandData().Options
+	if len(opts) != 1 {
+		messages.SendInvalidInputError(s, i, "Du musst einen Clan angeben.")
+		return
+	}
+
+	clanTag := opts[0].StringValue()
 	if err := h.authMiddleware.NewHandler(clanTag, coc.Member)(s, i); err != nil {
 		return
 	}
@@ -112,11 +122,61 @@ func (h *KickpointHandler) MemberKickpoints(s *discordgo.Session, i *discordgo.I
 		return
 	}
 
-	messages.SendMemberKickpoints(s, i, settings.Clan.Name, kickpoints)
+	messages.SendMemberKickpoints(s, i, settings, kickpoints)
 }
 
 func (h *KickpointHandler) KickpointInfo(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	log.Print("sent")
+	opts := i.ApplicationCommandData().Options
+	if len(opts) != 1 {
+		messages.SendInvalidInputError(s, i, "Du musst eine Kickpunkt ID angeben.")
+		return
+	}
+
+	clanTag := opts[0].StringValue()
+	settings, err := h.clanSettings.ClanSettingsPreload(clanTag)
+	if err != nil {
+		messages.SendClanNotFound(s, i, clanTag)
+		return
+	}
+
+	messages.SendClanSettings(s, i, settings)
+}
+
+func (h *KickpointHandler) KickpointConfig(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	opts := i.ApplicationCommandData().Options
+	if len(opts) != 3 {
+		messages.SendInvalidInputError(s, i, "Du musst einen Clan, den Namen der Einstellung und einen neuen Wert der Einstellung angeben.")
+		return
+	}
+
+	clanTag := opts[0].StringValue()
+	if err := h.authMiddleware.NewHandler(clanTag, coc.CoLeader)(s, i); err != nil {
+		return
+	}
+
+	if _, err := h.clanSettings.ClanSettings(clanTag); err != nil {
+		messages.SendClanNotFound(s, i, clanTag)
+		return
+	}
+
+	settingName := opts[1].StringValue()
+	settingValue := int(opts[2].IntValue())
+
+	if msg, ok := validation.ValidateKickpointSettings(settingName, settingValue); !ok {
+		messages.SendInvalidInputError(s, i, msg)
+		return
+	}
+
+	if err := h.clanSettings.UpdateKickpointSetting(clanTag, settingName, settingValue); err != nil {
+		messages.SendEmbed(s, i, messages.NewEmbed("Fehler", "Beim Speichern der Einstellung ist ein Fehler aufgetreten.", messages.ColorRed))
+		return
+	}
+
+	messages.SendEmbed(s, i, messages.NewEmbed("Einstellung geändert!", "Die Einstellung wurde erfolgreich geändert.", messages.ColorGreen))
+}
+
+func (h *KickpointHandler) KickpointHelp(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	messages.SendKickpointHelp(s, i)
 }
 
 func (h *KickpointHandler) CreateKickpointModal(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -143,19 +203,48 @@ func (h *KickpointHandler) CreateKickpointModal(s *discordgo.Session, i *discord
 		return
 	}
 
+	if kickpointAmount == 0 {
+		messages.SendEmbed(s, i, messages.NewEmbed(
+			"Kein Kickpunkt erforderlich",
+			fmt.Sprintf("Dieser Regelbruch gibt in %s keine Kickpunkte. Du kannst die Anzahl der Kickpunkte mit ```kpconfig``` ändern.", clanSettings.Clan.Name),
+			messages.ColorRed,
+		))
+		return
+	}
+
 	playerTag := opts[1].StringValue()
-	now := time.Now()
+	settings, err := h.clanSettings.ClanSettings(clanTag)
+	if err != nil {
+		messages.SendClanNotFound(s, i, clanTag)
+		return
+	}
+
+	totalKickpoints, err := h.kickpoints.ActiveMemberKickpointsSum(playerTag, settings)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		messages.SendUnknownError(s, i)
+		return
+	}
+
+	if totalKickpoints >= settings.MaxKickpoints {
+		messages.SendEmbed(s, i, messages.NewEmbed(
+			"Maximale Kickpunkte erreicht",
+			fmt.Sprintf("Dieses Mitglied hat bereits %d/%d Kickpunkte und kann keine weiteren erhalten.", totalKickpoints, settings.MaxKickpoints),
+			messages.ColorRed,
+		))
+		return
+	}
+
 	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseModal,
 		Data: &discordgo.InteractionResponseData{
-			CustomID: util.BuildCustomID(i.ApplicationCommandData().Name, i.Interaction.Member.User.ID),
+			CustomID: util.BuildCustomID(i.ApplicationCommandData().Name, i.Interaction.Member.User.ID, ""),
 			Title:    "Kickpunkt hinzufügen",
 			Components: components.GenModalComponents(
 				components.KickpointReason(""),
-				components.KickpointDate(util.FormatDate(now)),
+				components.KickpointDate(""),
+				components.KickpointAmount(kickpointAmount),
 				components.Tag("Spieler Tag", playerTag, components.PlayerTagID),
 				components.Tag("Clan Tag", clanTag, components.ClanTagID),
-				components.KickpointAmount(kickpointAmount),
 			),
 		},
 	})
@@ -167,31 +256,53 @@ func (h *KickpointHandler) CreateKickpointModal(s *discordgo.Session, i *discord
 
 func (h *KickpointHandler) CreateKickpointModalSubmit(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	data := i.ModalSubmitData()
-	_, userID := util.ParseCustomID(data.CustomID)
-
 	if len(data.Components) != 5 {
 		messages.SendEmbed(s, i, messages.NewEmbed("Fehler", "Es wurden nicht alle Felder ausgefüllt.", messages.ColorRed))
 		return
 	}
 
-	date, err := util.ParseDateInput(data.Components[1])
-	if err != nil {
-		messages.SendEmbed(s, i, messages.NewEmbed(
-			"Ungültiges Datum",
-			"Beim Erstellen des Kickpunkts wurde ein ungültiges Datum angegeben. Das Datum muss im Format 'ClanTag.Monat.Jahr' angegeben werden.",
-			messages.ColorRed,
-		))
+	clanTag := util.ParseStringModalInput(data.Components[4])
+	if err := h.authMiddleware.NewHandler(clanTag, coc.CoLeader)(s, i); err != nil {
 		return
 	}
 
+	date, err := util.ParseDateInput(data.Components[1])
+	if err != nil {
+		messages.SendInvalidInputError(s, i, "Das eingegebene Datum ist ungültig. Es muss im Format `DD.MM.YYYY` angegeben werden.")
+		return
+	}
+
+	amount := util.ParseIntModalInput(data.Components[2])
+	if amount < validation.MinKickpointAmount || amount > validation.MaxKickpointAmount {
+		messages.SendInvalidInputError(s, i, fmt.Sprintf(
+			"Die Anzahl der Kickpunkte muss zwischen %d und %d liegen.", validation.MinKickpointAmount, validation.MaxKickpointAmount),
+		)
+		return
+	}
+
+	playerTag := util.ParseStringModalInput(data.Components[3])
+
+	_, userID, _ := util.ParseCustomID(data.CustomID)
 	kickpoint := &models.Kickpoint{
 		Description:        util.ParseStringModalInput(data.Components[0]),
-		PlayerTag:          util.ParseStringModalInput(data.Components[2]),
-		ClanTag:            util.ParseStringModalInput(data.Components[3]),
-		Amount:             util.ParseIntModalInput(data.Components[4]),
 		Date:               date,
+		Amount:             amount,
+		PlayerTag:          playerTag,
+		ClanTag:            clanTag,
 		CreatedByDiscordID: userID,
 		UpdatedByDiscordID: userID,
+	}
+
+	playerName, err := h.players.NameByTag(kickpoint.PlayerTag)
+	if err != nil {
+		messages.SendMemberNotFound(s, i, kickpoint.PlayerTag)
+		return
+	}
+
+	settings, err := h.clanSettings.ClanSettingsPreload(kickpoint.ClanTag)
+	if err != nil {
+		messages.SendClanNotFound(s, i, kickpoint.ClanTag)
+		return
 	}
 
 	if err = h.kickpoints.CreateKickpoint(kickpoint); err != nil {
@@ -203,49 +314,152 @@ func (h *KickpointHandler) CreateKickpointModalSubmit(s *discordgo.Session, i *d
 		return
 	}
 
-	playerName, err := h.players.NameByTag(kickpoint.PlayerTag)
-	if err != nil {
-		messages.SendEmbed(s, i, messages.NewEmbed(
-			"Ungültige Eingaben",
-			"Der Spieler konnte nicht gefunden werden.",
-			messages.ColorRed,
-		))
+	messages.SendEmbed(s, i, messages.NewFieldEmbed(
+		fmt.Sprintf("Kickpunkt #%d erstellt", kickpoint.ID),
+		"Der Kickpunkt wurde erstellt und gespeichert!",
+		messages.ColorGreen,
+		append([]*discordgo.MessageEmbedField{
+			{Name: "Mitglied", Value: fmt.Sprintf("%s in %s", playerName, settings.Clan.Name)}},
+			messages.DetailedKickpointFields(kickpoint, settings.KickpointsExpireAfterDays)...,
+		),
+	))
+}
+
+func (h *KickpointHandler) EditKickpoint(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	opts := i.ApplicationCommandData().Options
+	if len(opts) != 1 || opts[0].UintValue() == 0 {
+		messages.SendInvalidInputError(s, i, "Du musst eine Kickpunkt ID angeben.")
 		return
 	}
 
-	clanName, err := h.clans.ClanNameByTag(kickpoint.ClanTag)
+	id := uint(opts[0].UintValue())
+	kickpoint, err := h.kickpoints.KickpointByID(id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			messages.SendEmbed(s, i, messages.NewEmbed(
+				"Ungültige ID",
+				"Es wurde kein Kickpunkt mit dieser ID gefunden.",
+				messages.ColorRed,
+			))
+			return
+		}
+
+		messages.SendUnknownError(s, i)
+		return
+	}
+
+	if err = h.authMiddleware.NewHandler(kickpoint.ClanTag, coc.CoLeader)(s, i); err != nil {
+		return
+	}
+
+	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseModal,
+		Data: &discordgo.InteractionResponseData{
+			CustomID: util.BuildCustomID(i.ApplicationCommandData().Name, i.Interaction.Member.User.ID, strconv.Itoa(int(id))),
+			Title:    "Kickpunkt bearbeiten",
+			Components: components.GenModalComponents(
+				components.KickpointReason(kickpoint.Description),
+				components.KickpointDate(util.FormatDate(kickpoint.Date)),
+				components.KickpointAmount(kickpoint.Amount),
+			),
+		},
+	})
+
+	if err != nil {
+		log.Println("Error while handling CreateKickpoint", "err", err)
+	}
+}
+
+func (h *KickpointHandler) EditKickpointModalSubmit(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	data := i.ModalSubmitData()
+	if len(data.Components) != 3 {
+		messages.SendEmbed(s, i, messages.NewEmbed("Fehler", "Es wurden nicht alle Felder ausgefüllt.", messages.ColorRed))
+		return
+	}
+
+	date, err := util.ParseDateInput(data.Components[1])
+	if err != nil {
+		messages.SendInvalidInputError(s, i, "Das eingegebene Datum ist ungültig. Es muss im Format `DD.MM.YYYY` angegeben werden.")
+		return
+	}
+
+	amount := util.ParseIntModalInput(data.Components[2])
+	if amount < validation.MinKickpointAmount || amount > validation.MaxKickpointAmount {
+		messages.SendInvalidInputError(s, i, fmt.Sprintf(
+			"Die Anzahl der Kickpunkte muss zwischen %d und %d liegen.", validation.MinKickpointAmount, validation.MaxKickpointAmount),
+		)
+		return
+	}
+
+	_, userID, idStr := util.ParseCustomID(data.CustomID)
+	id, err := strconv.ParseUint(idStr, 10, 32)
+	if err != nil {
+		messages.SendInvalidInputError(s, i, "Es wurde eine ungültige ID angegeben.")
+		return
+	}
+
+	prevKickpoint, err := h.kickpoints.KickpointByID(uint(id))
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			messages.SendEmbed(s, i, messages.NewEmbed(
+				"Ungültige ID",
+				"Es wurde kein Kickpunkt mit dieser ID gefunden.",
+				messages.ColorRed,
+			))
+			return
+		}
+
+		messages.SendUnknownError(s, i)
+		return
+	}
+
+	if err = h.authMiddleware.NewHandler(prevKickpoint.ClanTag, coc.CoLeader)(s, i); err != nil {
+		return
+	}
+
+	settings, err := h.clanSettings.ClanSettings(prevKickpoint.ClanTag)
+	if err != nil {
+		messages.SendClanNotFound(s, i, prevKickpoint.ClanTag)
+		return
+	}
+
+	updatedKickpoint := &models.Kickpoint{
+		ID:                 prevKickpoint.ID,
+		Description:        util.ParseStringModalInput(data.Components[0]),
+		Date:               date,
+		Amount:             amount,
+		UpdatedByDiscordID: userID,
+	}
+
+	updatedKickpoint, err = h.kickpoints.UpdateKickpoint(updatedKickpoint)
 	if err != nil {
 		messages.SendEmbed(s, i, messages.NewEmbed(
-			"Ungültige Eingaben",
-			"Der Clan konnte nicht gefunden werden.",
+			"Datenbankfehler",
+			"Beim Speichern der Daten in der Datenbank ist ein Fehler aufgetreten. Dies liegt wahrscheinlich an der Eingabe ungültiger Daten.",
 			messages.ColorRed,
 		))
 		return
 	}
 
 	messages.SendEmbed(s, i, messages.NewFieldEmbed(
-		"Kickpunkt erstellt",
-		"Der Kickpunkt wurde erstellt und gespeichert!",
+		fmt.Sprintf("Kickpunkt #%d bearbeitet", updatedKickpoint.ID),
+		"Der Kickpunkt wurde bearbeitet und gespeichert!",
 		messages.ColorGreen,
 		append([]*discordgo.MessageEmbedField{
-			{Name: "Mitglied", Value: fmt.Sprintf("%s in %s", playerName, clanName)}},
-			messages.DetailedKickpointFields(kickpoint)...,
+			{Name: "Mitglied", Value: fmt.Sprintf("%s in %s", updatedKickpoint.Player.Name, updatedKickpoint.Clan.Name)}},
+			messages.DetailedKickpointFields(updatedKickpoint, settings.KickpointsExpireAfterDays)...,
 		),
 	))
 }
 
-func (h *KickpointHandler) EditPenalty(s *discordgo.Session, i *discordgo.InteractionCreate) {
-
-}
-
-func (h *KickpointHandler) DeletePenalty(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	idOpt := i.ApplicationCommandData().Options[0].UintValue()
-	if idOpt == 0 {
-		messages.SendInvalidInputError(s, i, "Du musst eine gültige Kickpunkt ID angeben.")
+func (h *KickpointHandler) DeleteKickpoint(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	opts := i.ApplicationCommandData().Options
+	if len(opts) != 1 || opts[0].UintValue() == 0 {
+		messages.SendInvalidInputError(s, i, "Du musst eine Kickpunkt ID angeben.")
 		return
 	}
 
-	id := uint(idOpt)
+	id := uint(opts[0].UintValue())
 	kickpoint, err := h.kickpoints.KickpointByID(id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -274,24 +488,43 @@ func (h *KickpointHandler) DeletePenalty(s *discordgo.Session, i *discordgo.Inte
 		fmt.Sprintf("Kickpunkt #%d gelöscht", kickpoint.ID),
 		fmt.Sprintf("Der Kickpunkt von %s in %s wurde gelöscht!", kickpoint.Player.Name, kickpoint.Clan.Name),
 		messages.ColorGreen,
-		messages.DetailedKickpointFields(kickpoint),
+		messages.DetailedKickpointFields(kickpoint, 0),
 	))
 }
 
 func (h *KickpointHandler) ClansAutocomplete(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	autocompleteClans(h.clans, i.ApplicationCommandData().Options[0].StringValue())(s, i)
+	opts := i.ApplicationCommandData().Options
+	if len(opts) != 1 {
+		autocompleteClans(h.clans, "")(s, i)
+		return
+	}
+
+	autocompleteClans(h.clans, opts[0].StringValue())(s, i)
 }
 
 func (h *KickpointHandler) MembersAndClansAutocomplete(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	data := i.ApplicationCommandData()
-	for _, opt := range data.Options {
-		if opt.Focused {
-			if opt.Name == "clan" {
-				autocompleteClans(h.clans, opt.StringValue())(s, i)
-			} else {
-				autocompleteMembers(h.players, opt.StringValue(), data.Options[0].StringValue())(s, i)
-			}
-			continue // sometimes both options are focused...
-		}
+	opts := i.ApplicationCommandData().Options
+	totalOpts := len(opts)
+	log.Print(totalOpts)
+	if totalOpts == 1 {
+		autocompleteClans(h.clans, opts[0].StringValue())(s, i)
+		return
 	}
+	if totalOpts >= 2 {
+		for _, opt := range opts {
+			if opt.Focused {
+				clanTag := opts[0].StringValue()
+				playerTag := opts[1].StringValue()
+				if opt.Name == "clan" {
+					autocompleteClans(h.clans, clanTag)(s, i)
+				} else {
+					autocompleteMembers(h.players, playerTag, clanTag)(s, i)
+				}
+				// don't break, sometimes both options are focused...
+			}
+		}
+		return
+	}
+
+	autocompleteClans(h.clans, "")(s, i)
 }

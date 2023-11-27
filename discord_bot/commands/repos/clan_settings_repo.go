@@ -10,7 +10,7 @@ import (
 type IClanSettingsRepo interface {
 	ClanSettings(clanTag string) (*models.ClanSettings, error)
 	ClanSettingsPreload(clanTag string) (*models.ClanSettings, error)
-	UpdateKickpointSetting(column string, value int) error
+	UpdateKickpointSetting(clanTag, column string, value int) error
 }
 
 type ClanSettingsRepo struct {
@@ -23,7 +23,7 @@ func NewClanSettingsRepo(db *gorm.DB) IClanSettingsRepo {
 
 func (repo *ClanSettingsRepo) ClanSettings(clanTag string) (*models.ClanSettings, error) {
 	clanSettings := &models.ClanSettings{ClanTag: clanTag}
-	err := repo.db.FirstOrCreate(&clanSettings).Error
+	err := repo.db.Clauses(clause.Returning{}).FirstOrCreate(&clanSettings).Error
 	return clanSettings, err
 }
 
@@ -31,12 +31,13 @@ func (repo *ClanSettingsRepo) ClanSettingsPreload(clanTag string) (*models.ClanS
 	clanSettings := &models.ClanSettings{ClanTag: clanTag}
 	err := repo.db.
 		Preload(clause.Associations).
+		Clauses(clause.Returning{}).
 		FirstOrCreate(&clanSettings).Error
 	return clanSettings, err
 }
 
-func (repo *ClanSettingsRepo) UpdateKickpointSetting(column string, value int) error {
+func (repo *ClanSettingsRepo) UpdateKickpointSetting(clanTag, column string, value int) error {
 	return repo.db.
-		Model(&models.ClanSettings{}).
+		Model(&models.ClanSettings{ClanTag: clanTag}).
 		Update(column, value).Error
 }

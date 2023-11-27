@@ -27,16 +27,19 @@ type ClanSettings struct {
 }
 
 const (
-	ClanSettingsSeasonWins = "kickpoints_season_wins"
-	ClanSettingsCWMissed   = "kickpoints_cw_missed"
-	ClanSettingsCWFail     = "kickpoints_cw_fail"
-	ClanSettingsCWLMissed  = "kickpoints_cwl_missed"
-	ClanSettingsCWLZero    = "kickpoints_cwl_zero"
-	ClanSettingsCWLOne     = "kickpoints_cwl_one"
-	ClanSettingsRaidMissed = "kickpoints_raid_missed"
-	ClanSettingsRaidFail   = "kickpoints_raid_fail"
-	ClanSettingsClanGames  = "kickpoints_clan_games"
-	ClanSettingsOther      = "kickpoints_other"
+	ClanSettingsMaxKickpoints   = "max_kickpoints"
+	ClanSettingsMinSeasonWins   = "min_season_wins"
+	ClanSettingsExpireAfterDays = "kickpoints_expire_after_days"
+	ClanSettingsSeasonWins      = "kickpoints_season_wins"
+	ClanSettingsCWMissed        = "kickpoints_cw_missed"
+	ClanSettingsCWFail          = "kickpoints_cw_fail"
+	ClanSettingsCWLMissed       = "kickpoints_cwl_missed"
+	ClanSettingsCWLZero         = "kickpoints_cwl_zero"
+	ClanSettingsCWLOne          = "kickpoints_cwl_one"
+	ClanSettingsRaidMissed      = "kickpoints_raid_missed"
+	ClanSettingsRaidFail        = "kickpoints_raid_fail"
+	ClanSettingsClanGames       = "kickpoints_clan_games"
+	ClanSettingsOther           = "kickpoints_other"
 )
 
 func (s *ClanSettings) KickpointAmountFromName(name string) (int, error) {
@@ -60,7 +63,7 @@ func (s *ClanSettings) KickpointAmountFromName(name string) (int, error) {
 	case ClanSettingsClanGames:
 		return s.KickpointsClanGames, nil
 	case ClanSettingsOther:
-		return 0, nil
+		return 1, nil
 	default:
 		return 0, errors.New("invalid name")
 	}

@@ -1,8 +1,8 @@
 package postgres
 
 import (
-	"database/sql"
 	"fmt"
+	"strings"
 
 	"gorm.io/gorm"
 
@@ -21,20 +21,17 @@ func ScopePaginate(params types.PaginationParams) func(db *gorm.DB) *gorm.DB {
 
 func ScopeContains(value string, fields ...string) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
-		if value == "" {
+		if value == "" || len(fields) == 0 {
 			return db
 		}
 
-		query := "("
 		for i, field := range fields {
-			query += fmt.Sprintf("POSITION(LOWER(@value) in LOWER(%s)) > 0", field)
-			if len(fields)-1 > i {
-				query += " OR "
-			}
+			fields[i] = fmt.Sprintf("%s::text", field)
 		}
-		query += ")"
 
-		return db.Where(query, sql.Named("value", value))
+		concatenatedFields := strings.Join(fields, " || ' ' || ")
+		query := fmt.Sprintf("POSITION(? in LOWER(%s)) > 0", concatenatedFields)
+		return db.Where(query, strings.ToLower(value))
 	}
 }
 
