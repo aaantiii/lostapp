@@ -36,40 +36,47 @@ func interactionCommandMap(commands types.Commands[types.InteractionHandler]) ma
 	return interactionsMap
 }
 
+// InteractionHandler is the handler for all interactions. It handles every interaction in its own goroutine.
 func interactionHandler(interactions types.Commands[types.InteractionHandler]) func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	commands := interactionCommandMap(interactions)
 	return func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-		now := time.Now()
-		defer func() {
-			log.Printf("Interaction called by %s took %s.", i.Member.User.Username, time.Now().Sub(now).Round(time.Millisecond))
+		go func() {
+			now := time.Now()
+			defer func() {
+				if err := recover(); err != nil {
+					log.Printf("Interaction called by %s panicked: %v", i.Member.User.Username, err)
+				} else {
+					log.Printf("Interaction called by %s took %s.", i.Member.User.Username, time.Now().Sub(now).Round(time.Millisecond))
+				}
+			}()
+
+			switch i.Type {
+			case discordgo.InteractionApplicationCommand:
+				if command, ok := commands[i.ApplicationCommandData().Name]; ok {
+					command.Handler.Main(s, i)
+					return
+				}
+
+			case discordgo.InteractionApplicationCommandAutocomplete:
+				if command, ok := commands[i.ApplicationCommandData().Name]; ok {
+					if command.Handler.Autocomplete == nil {
+						return
+					}
+					command.Handler.Autocomplete(s, i)
+					return
+				}
+
+			case discordgo.InteractionModalSubmit:
+				commandName, _, _ := util.ParseCustomID(i.ModalSubmitData().CustomID)
+				if command, ok := commands[commandName]; ok {
+					if command.Handler.ModalSubmit == nil {
+						return
+					}
+					command.Handler.ModalSubmit(s, i)
+					return
+				}
+			}
+			commandNotFound(s, i)
 		}()
-
-		switch i.Type {
-		case discordgo.InteractionApplicationCommand:
-			if command, ok := commands[i.ApplicationCommandData().Name]; ok {
-				command.Handler.Main(s, i)
-				return
-			}
-
-		case discordgo.InteractionApplicationCommandAutocomplete:
-			if command, ok := commands[i.ApplicationCommandData().Name]; ok {
-				if command.Handler.Autocomplete == nil {
-					return
-				}
-				command.Handler.Autocomplete(s, i)
-				return
-			}
-
-		case discordgo.InteractionModalSubmit:
-			commandName, _, _ := util.ParseCustomID(i.ModalSubmitData().CustomID)
-			if command, ok := commands[commandName]; ok {
-				if command.Handler.ModalSubmit == nil {
-					return
-				}
-				command.Handler.ModalSubmit(s, i)
-				return
-			}
-		}
-		commandNotFound(s, i)
 	}
 }

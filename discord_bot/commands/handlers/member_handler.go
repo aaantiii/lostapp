@@ -66,7 +66,7 @@ func (h *MemberHandler) HandleAutocomplete(s *discordgo.Session, i *discordgo.In
 
 	for _, opt := range opts {
 		if !opt.Focused {
-			return
+			continue
 		}
 
 		switch opt.Name {

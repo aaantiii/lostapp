@@ -20,10 +20,10 @@ const (
 func Tag(label, defaultValue, customId string) discordgo.TextInput {
 	return discordgo.TextInput{
 		CustomID:    customId,
-		Label:       label,
+		Label:       autofillLabel(label, defaultValue),
 		Placeholder: "z.B. #18742069",
 		Style:       discordgo.TextInputShort,
-		Value:       autofillLabel(label, defaultValue),
+		Value:       defaultValue,
 		Required:    true,
 		MinLength:   validation.TagMinLength,
 		MaxLength:   validation.TagMaxLength,

@@ -496,7 +496,7 @@ func (h *KickpointHandler) HandleAutocomplete(s *discordgo.Session, i *discordgo
 
 	for _, opt := range opts {
 		if !opt.Focused {
-			return
+			continue
 		}
 
 		switch opt.Name {
