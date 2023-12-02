@@ -47,7 +47,7 @@ func kickpointInteractionCommands(db *gorm.DB) types.Commands[types.InteractionH
 			DMPermission: util.OptionalBool(false),
 			Options: []*discordgo.ApplicationCommandOption{
 				optionClanTag("Clan, aus dem das Mitglied stammt."),
-				optionPlayerTag("Member, dessen Kickpunkte angezeigt werden sollen."),
+				optionMemberTag("Member, dessen Kickpunkte angezeigt werden sollen."),
 			},
 		},
 	}, {
@@ -126,7 +126,7 @@ func kickpointInteractionCommands(db *gorm.DB) types.Commands[types.InteractionH
 			DMPermission: util.OptionalBool(false),
 			Options: []*discordgo.ApplicationCommandOption{
 				optionClanTag("Clan aus dem das Mitglied stammt."),
-				optionPlayerTag("Mitglied, welches einen Kickpunkt erhält."),
+				optionMemberTag("Mitglied, welches einen Kickpunkt erhält."),
 				{
 					Name:        "reason",
 					Description: "Grund des Kickpunktes (wird für die Anzahl der Kickpunkte benötigt).",

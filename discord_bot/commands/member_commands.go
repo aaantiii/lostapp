@@ -1,13 +1,13 @@
 package commands
 
 import (
-	"github.com/amaanq/coc.go"
 	"github.com/bwmarrin/discordgo"
 	"gorm.io/gorm"
 
 	"bot/commands/handlers"
 	"bot/commands/repos"
 	"bot/commands/util"
+	"bot/store/postgres/models"
 	"bot/types"
 )
 
@@ -16,6 +16,8 @@ func memberInteractionCommands(db *gorm.DB) types.Commands[types.InteractionHand
 		repos.NewMembersRepo(db),
 		repos.NewClansRepo(db),
 		repos.NewPlayersRepo(db),
+		repos.NewGuildsRepo(db),
+		repos.NewUsersRepo(db),
 	)
 
 	return types.Commands[types.InteractionHandler]{{
@@ -51,10 +53,10 @@ func memberInteractionCommands(db *gorm.DB) types.Commands[types.InteractionHand
 					Description: "Rolle, die das Mitglied im Clan haben soll.",
 					Required:    true,
 					Choices: []*discordgo.ApplicationCommandOptionChoice{
-						{Name: coc.Leader.String(), Value: coc.Leader},
-						{Name: coc.CoLeader.String(), Value: coc.CoLeader},
-						{Name: coc.Elder.String(), Value: coc.Elder},
-						{Name: coc.Member.String(), Value: coc.Member},
+						{Name: models.RoleLeader.Format(), Value: models.RoleLeader.String()},
+						{Name: models.RoleCoLeader.Format(), Value: models.RoleCoLeader.String()},
+						{Name: models.RoleElder.Format(), Value: models.RoleElder.String()},
+						{Name: models.RoleMember.Format(), Value: models.RoleMember.String()},
 					},
 				},
 			},
@@ -71,17 +73,17 @@ func memberInteractionCommands(db *gorm.DB) types.Commands[types.InteractionHand
 			DMPermission: util.OptionalBool(false),
 			Options: []*discordgo.ApplicationCommandOption{
 				optionClanTag("Clan, zu dem das Mitglied gehört."),
-				optionPlayerTag("Mitglied, dessen Rolle bearbeitet werden soll."),
+				optionMemberTag("Mitglied, dessen Rolle bearbeitet werden soll."),
 				{
 					Type:        discordgo.ApplicationCommandOptionString,
 					Name:        "role",
 					Description: "Rolle, die das Mitglied im Clan haben soll.",
 					Required:    true,
 					Choices: []*discordgo.ApplicationCommandOptionChoice{
-						{Name: coc.Leader.String(), Value: coc.Leader},
-						{Name: coc.CoLeader.String(), Value: coc.CoLeader},
-						{Name: coc.Elder.String(), Value: coc.Elder},
-						{Name: coc.Member.String(), Value: coc.Member},
+						{Name: models.RoleLeader.Format(), Value: models.RoleLeader.String()},
+						{Name: models.RoleCoLeader.Format(), Value: models.RoleCoLeader.String()},
+						{Name: models.RoleElder.Format(), Value: models.RoleElder.String()},
+						{Name: models.RoleMember.Format(), Value: models.RoleMember.String()},
 					},
 				},
 			},
@@ -98,7 +100,7 @@ func memberInteractionCommands(db *gorm.DB) types.Commands[types.InteractionHand
 			DMPermission: util.OptionalBool(false),
 			Options: []*discordgo.ApplicationCommandOption{
 				optionClanTag("Clan, von dem das Mitglied entfernt werden soll."),
-				optionPlayerTag("Mitglied, das vom Clan entfernt werden soll."),
+				optionMemberTag("Mitglied, das vom Clan entfernt werden soll."),
 			},
 		},
 	}}

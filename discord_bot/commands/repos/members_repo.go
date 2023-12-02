@@ -7,10 +7,10 @@ import (
 )
 
 type IMembersRepo interface {
-	MembersByID(playerTag, clanTag string) (models.Members, error)
 	MembersByDiscordID(discordID string) (models.Members, error)
+	MemberByID(playerTag, clanTag string) (*models.Member, error)
 	CreateMember(member *models.Member) error
-	UpdateMember(member *models.Member) error
+	UpdateMemberRole(playerTag, clanTag string, role models.ClanRole) error
 	DeleteMember(tag, clanTag string) error
 }
 
@@ -20,14 +20,6 @@ type MembersRepo struct {
 
 func NewMembersRepo(db *gorm.DB) IMembersRepo {
 	return &MembersRepo{db: db}
-}
-
-func (repo *MembersRepo) MembersByID(playerTag, clanTag string) (models.Members, error) {
-	var members models.Members
-	err := repo.db.
-		Preload("Player").
-		Find(&members, "player_tag = ? AND clan_tag = ?", playerTag, clanTag).Error
-	return members, err
 }
 
 func (repo *MembersRepo) MembersByDiscordID(discordID string) (models.Members, error) {
@@ -44,12 +36,23 @@ func (repo *MembersRepo) MembersByDiscordID(discordID string) (models.Members, e
 	return members, err
 }
 
+func (repo *MembersRepo) MemberByID(playerTag, clanTag string) (*models.Member, error) {
+	var members *models.Member
+	err := repo.db.
+		Preload("Player").
+		Preload("Clan").
+		First(&members, "player_tag = ? AND clan_tag = ?", playerTag, clanTag).Error
+	return members, err
+}
+
 func (repo *MembersRepo) CreateMember(member *models.Member) error {
 	return repo.db.Create(member).Error
 }
 
-func (repo *MembersRepo) UpdateMember(member *models.Member) error {
-	return repo.db.Save(member).Error
+func (repo *MembersRepo) UpdateMemberRole(playerTag, clanTag string, role models.ClanRole) error {
+	return repo.db.
+		Model(&models.Member{PlayerTag: playerTag, ClanTag: clanTag}).
+		Update("clan_role", role).Error
 }
 
 func (repo *MembersRepo) DeleteMember(tag, clanTag string) error {

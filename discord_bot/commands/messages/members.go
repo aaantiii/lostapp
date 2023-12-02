@@ -19,7 +19,7 @@ func SendClanMembers(s *discordgo.Session, i *discordgo.InteractionCreate, clan 
 		}
 
 		field := &discordgo.MessageEmbedField{
-			Name: fmt.Sprintf("%s (%d)", members[0].ClanRole.String(), len(members)),
+			Name: fmt.Sprintf("%s (%d)", members[0].ClanRole.Format(), len(members)),
 		}
 		for _, member := range members {
 			field.Value += fmt.Sprintf("%s\n", member.Player.Name)

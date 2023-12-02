@@ -4,13 +4,13 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/amaanq/coc.go"
 	"github.com/bwmarrin/discordgo"
 	"gorm.io/gorm"
 
 	"bot/commands/messages"
 	"bot/commands/repos"
 	"bot/store/postgres/models"
+	"bot/types"
 )
 
 type AuthMiddleware struct {
@@ -28,7 +28,7 @@ func NewAuthMiddleware(guilds repos.IGuildsRepo, clans repos.IClansRepo, users r
 }
 
 // NewHandler returns a middleware handler that checks if the user has the specified role in the specified clan.
-func (m AuthMiddleware) NewHandler(clanTag string, role coc.Role) InteractionMiddleware {
+func (m AuthMiddleware) NewHandler(clanTag string, role types.AuthRole) InteractionMiddleware {
 	return func(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 		user := models.UserFromGuildMember(i.Member)
 		if err := m.users.CreateOrUpdateUser(user); err != nil {
@@ -36,6 +36,10 @@ func (m AuthMiddleware) NewHandler(clanTag string, role coc.Role) InteractionMid
 		}
 		if user.IsAdmin {
 			return nil
+		}
+		if role == types.AuthRoleAdmin {
+			m.sendAdminRequired(s, i)
+			return errors.New("member is not an admin")
 		}
 
 		guild, err := m.guilds.GuildByClanTag(i.GuildID, clanTag)
@@ -49,19 +53,19 @@ func (m AuthMiddleware) NewHandler(clanTag string, role coc.Role) InteractionMid
 		}
 
 		switch role {
-		case coc.Member:
+		case types.AuthRoleMember:
 			if guild.IsMember(i.Member.Roles) {
 				return nil
 			}
-		case coc.Elder:
+		case types.AuthRoleElder:
 			if guild.IsElder(i.Member.Roles) {
 				return nil
 			}
-		case coc.CoLeader:
+		case types.AuthRoleCoLeader:
 			if guild.IsCoLeader(i.Member.Roles) {
 				return nil
 			}
-		case coc.Leader:
+		case types.AuthRoleLeader:
 			if guild.IsLeader(i.Member.Roles) {
 				return nil
 			}
@@ -80,7 +84,15 @@ func (m AuthMiddleware) sendClanNotInGuildError(s *discordgo.Session, i *discord
 	))
 }
 
-func (m AuthMiddleware) sendNoPermissionError(s *discordgo.Session, i *discordgo.InteractionCreate, clanTag string, role coc.Role) {
+func (m AuthMiddleware) sendAdminRequired(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	messages.SendEmbed(s, i, messages.NewEmbed(
+		"Keine Berechtigung",
+		"Um diesen Befehl ausführen zu können, musst du ein Administrator sein.",
+		messages.ColorRed,
+	))
+}
+
+func (m AuthMiddleware) sendNoPermissionError(s *discordgo.Session, i *discordgo.InteractionCreate, clanTag string, role types.AuthRole) {
 	clan, err := m.clans.ClanByTag(clanTag)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

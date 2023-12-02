@@ -22,10 +22,10 @@ func SendClanNotFound(s *discordgo.Session, i *discordgo.InteractionCreate, clan
 	))
 }
 
-func SendMemberNotFound(s *discordgo.Session, i *discordgo.InteractionCreate, memberTag string) {
+func SendMemberNotFound(s *discordgo.Session, i *discordgo.InteractionCreate, memberTag, clanTag string) {
 	SendEmbed(s, i, NewEmbed(
 		"Mitglied nicht gefunden",
-		fmt.Sprintf("Das Mitglied mit dem SpielerTag '%s' konnte nicht gefunden werden.", memberTag),
+		fmt.Sprintf("Das Mitglied mit dem Tag '%s' konnte im Clan '%s' nicht gefunden werden.", memberTag, clanTag),
 		ColorRed,
 	))
 }

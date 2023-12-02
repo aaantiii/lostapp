@@ -1,16 +1,42 @@
 package models
 
-import "github.com/amaanq/coc.go"
-
 type Member struct {
-	PlayerTag        string
-	ClanTag          string
+	PlayerTag        string `gorm:"primaryKey;not null"`
+	ClanTag          string `gorm:"primaryKey;not null"`
 	AddedByDiscordID string
-	ClanRole         coc.Role
+	ClanRole         ClanRole
 
 	Player     *Player     `gorm:"foreignKey:CocTag;references:PlayerTag"`
 	Clan       *Clan       `gorm:"foreignKey:Tag;references:ClanTag"`
 	Kickpoints []Kickpoint `gorm:"foreignKey:PlayerTag,ClanTag;references:PlayerTag,ClanTag;onUpdate:CASCADE;onDelete:CASCADE"`
+}
+
+type ClanRole string
+
+const (
+	RoleLeader   ClanRole = "leader"
+	RoleCoLeader ClanRole = "coLeader"
+	RoleElder    ClanRole = "admin"
+	RoleMember   ClanRole = "member"
+)
+
+func (m ClanRole) String() string {
+	return string(m)
+}
+
+func (m ClanRole) Format() string {
+	switch m {
+	case RoleLeader:
+		return "Anführer"
+	case RoleCoLeader:
+		return "Vize-Anführer"
+	case RoleElder:
+		return "Ältester"
+	case RoleMember:
+		return "Mitglied"
+	default:
+		return "Unbekannte Rolle"
+	}
 }
 
 func (*Member) TableName() string {

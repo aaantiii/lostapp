@@ -1,8 +1,6 @@
 package util
 
 import (
-	"github.com/amaanq/coc.go"
-
 	"bot/store/postgres/models"
 )
 
@@ -17,13 +15,13 @@ func SortMembersByRole(members models.Members) []models.Members {
 	sortedMembers := make([]models.Members, 4)
 	for _, member := range members {
 		switch member.ClanRole {
-		case coc.Leader:
+		case models.RoleLeader:
 			sortedMembers[IndexRoleLeader] = append(sortedMembers[IndexRoleLeader], member)
-		case coc.CoLeader:
+		case models.RoleCoLeader:
 			sortedMembers[IndexRoleCoLeader] = append(sortedMembers[IndexRoleCoLeader], member)
-		case coc.Elder:
+		case models.RoleElder:
 			sortedMembers[IndexRoleElder] = append(sortedMembers[IndexRoleElder], member)
-		case coc.Member:
+		case models.RoleMember:
 			sortedMembers[IndexRoleMember] = append(sortedMembers[IndexRoleMember], member)
 		}
 	}

@@ -6,7 +6,6 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/amaanq/coc.go"
 	"github.com/bwmarrin/discordgo"
 	"gorm.io/gorm"
 
@@ -17,6 +16,7 @@ import (
 	"bot/commands/util"
 	"bot/commands/validation"
 	"bot/store/postgres/models"
+	"bot/types"
 )
 
 type IKickpointHandler interface {
@@ -59,7 +59,7 @@ func (h *KickpointHandler) ClanKickpoints(s *discordgo.Session, i *discordgo.Int
 	}
 
 	clanTag := opts[0].StringValue()
-	if err := h.authMiddleware.NewHandler(clanTag, coc.Member)(s, i); err != nil {
+	if err := h.authMiddleware.NewHandler(clanTag, types.AuthRoleMember)(s, i); err != nil {
 		return
 	}
 
@@ -89,13 +89,14 @@ func (h *KickpointHandler) ClanKickpoints(s *discordgo.Session, i *discordgo.Int
 
 func (h *KickpointHandler) MemberKickpoints(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	opts := i.ApplicationCommandData().Options
-	if len(opts) != 2 {
-		messages.SendInvalidInputError(s, i, "Du musst einen Spieler und einen Clan angeben.")
+	clanTag := util.StringOptionByName(ClanTagOptionName, opts)
+	memberTag := util.StringOptionByName(MemberTagOptionName, opts)
+	if clanTag == "" || memberTag == "" {
+		messages.SendInvalidInputError(s, i, "Du musst einen Clan und ein Mitglied angeben.")
 		return
 	}
 
-	clanTag := opts[0].StringValue()
-	if err := h.authMiddleware.NewHandler(clanTag, coc.Member)(s, i); err != nil {
+	if err := h.authMiddleware.NewHandler(clanTag, types.AuthRoleMember)(s, i); err != nil {
 		return
 	}
 
@@ -105,8 +106,7 @@ func (h *KickpointHandler) MemberKickpoints(s *discordgo.Session, i *discordgo.I
 		return
 	}
 
-	playerTag := opts[1].StringValue()
-	kickpoints, err := h.kickpoints.ActiveMemberKickpoints(playerTag, settings)
+	kickpoints, err := h.kickpoints.ActiveMemberKickpoints(memberTag, settings)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			messages.SendEmbed(s, i, messages.NewEmbed(
@@ -117,7 +117,7 @@ func (h *KickpointHandler) MemberKickpoints(s *discordgo.Session, i *discordgo.I
 			return
 		}
 
-		messages.SendMemberNotFound(s, i, playerTag)
+		messages.SendMemberNotFound(s, i, memberTag, clanTag)
 		return
 	}
 
@@ -126,12 +126,12 @@ func (h *KickpointHandler) MemberKickpoints(s *discordgo.Session, i *discordgo.I
 
 func (h *KickpointHandler) KickpointInfo(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	opts := i.ApplicationCommandData().Options
-	if len(opts) != 1 {
-		messages.SendInvalidInputError(s, i, "Du musst eine Kickpunkt ID angeben.")
+	clanTag := util.StringOptionByName(ClanTagOptionName, opts)
+	if clanTag == "" {
+		messages.SendInvalidInputError(s, i, "Du musst einen Clan angeben.")
 		return
 	}
 
-	clanTag := opts[0].StringValue()
 	settings, err := h.clanSettings.ClanSettingsPreload(clanTag)
 	if err != nil {
 		messages.SendClanNotFound(s, i, clanTag)
@@ -143,13 +143,16 @@ func (h *KickpointHandler) KickpointInfo(s *discordgo.Session, i *discordgo.Inte
 
 func (h *KickpointHandler) KickpointConfig(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	opts := i.ApplicationCommandData().Options
-	if len(opts) != 3 {
-		messages.SendInvalidInputError(s, i, "Du musst einen Clan, den Namen der Einstellung und einen neuen Wert der Einstellung angeben.")
+	clanTag := util.StringOptionByName(ClanTagOptionName, opts)
+	settingName := util.StringOptionByName(SettingOptionName, opts)
+	settingValue := util.IntOptionByName(AmountOptionName, opts)
+
+	if clanTag == "" || settingName == "" || settingValue == 0 {
+		messages.SendInvalidInputError(s, i, "Du musst einen Clan, eine Einstellung und einen Wert angeben.")
 		return
 	}
 
-	clanTag := opts[0].StringValue()
-	if err := h.authMiddleware.NewHandler(clanTag, coc.CoLeader)(s, i); err != nil {
+	if err := h.authMiddleware.NewHandler(clanTag, types.AuthRoleCoLeader)(s, i); err != nil {
 		return
 	}
 
@@ -157,9 +160,6 @@ func (h *KickpointHandler) KickpointConfig(s *discordgo.Session, i *discordgo.In
 		messages.SendClanNotFound(s, i, clanTag)
 		return
 	}
-
-	settingName := opts[1].StringValue()
-	settingValue := int(opts[2].IntValue())
 
 	if msg, ok := validation.ValidateKickpointSettings(settingName, settingValue); !ok {
 		messages.SendInvalidInputError(s, i, msg)
@@ -180,13 +180,15 @@ func (h *KickpointHandler) KickpointHelp(s *discordgo.Session, i *discordgo.Inte
 
 func (h *KickpointHandler) CreateKickpointModal(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	opts := i.ApplicationCommandData().Options
-	if len(opts) != 3 {
-		messages.SendInvalidInputError(s, i, "Du musst einen Spieler und einen Clan angeben.")
+	clanTag := util.StringOptionByName(ClanTagOptionName, opts)
+	memberTag := util.StringOptionByName(MemberTagOptionName, opts)
+	settingName := util.StringOptionByName(SettingOptionName, opts)
+	if clanTag == "" || memberTag == "" || settingName == "" {
+		messages.SendInvalidInputError(s, i, "Du musst einen Clan, ein Mitglied und einen Grund angeben.")
 		return
 	}
 
-	clanTag := opts[0].StringValue()
-	if err := h.authMiddleware.NewHandler(clanTag, coc.CoLeader)(s, i); err != nil {
+	if err := h.authMiddleware.NewHandler(clanTag, types.AuthRoleCoLeader)(s, i); err != nil {
 		return
 	}
 
@@ -196,7 +198,7 @@ func (h *KickpointHandler) CreateKickpointModal(s *discordgo.Session, i *discord
 		return
 	}
 
-	kickpointAmount, err := clanSettings.KickpointAmountFromName(opts[2].StringValue())
+	kickpointAmount, err := clanSettings.KickpointAmountFromName(settingName)
 	if err != nil {
 		messages.SendInvalidInputError(s, i, "Es wurde ein ungültiger Grund angegeben.")
 		return
@@ -211,14 +213,13 @@ func (h *KickpointHandler) CreateKickpointModal(s *discordgo.Session, i *discord
 		return
 	}
 
-	playerTag := opts[1].StringValue()
 	settings, err := h.clanSettings.ClanSettings(clanTag)
 	if err != nil {
 		messages.SendClanNotFound(s, i, clanTag)
 		return
 	}
 
-	totalKickpoints, err := h.kickpoints.ActiveMemberKickpointsSum(playerTag, settings)
+	totalKickpoints, err := h.kickpoints.ActiveMemberKickpointsSum(memberTag, settings)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		messages.SendUnknownError(s, i)
 		return
@@ -242,7 +243,7 @@ func (h *KickpointHandler) CreateKickpointModal(s *discordgo.Session, i *discord
 				components.KickpointReason(""),
 				components.KickpointDate(""),
 				components.KickpointAmount(kickpointAmount),
-				components.Tag("Spieler Tag", playerTag, components.PlayerTagID),
+				components.Tag("Spieler Tag", memberTag, components.PlayerTagID),
 				components.Tag("Clan Tag", clanTag, components.ClanTagID),
 			),
 		},
@@ -261,7 +262,7 @@ func (h *KickpointHandler) CreateKickpointModalSubmit(s *discordgo.Session, i *d
 	}
 
 	clanTag := util.ParseStringModalInput(data.Components[4])
-	if err := h.authMiddleware.NewHandler(clanTag, coc.CoLeader)(s, i); err != nil {
+	if err := h.authMiddleware.NewHandler(clanTag, types.AuthRoleCoLeader)(s, i); err != nil {
 		return
 	}
 
@@ -294,7 +295,7 @@ func (h *KickpointHandler) CreateKickpointModalSubmit(s *discordgo.Session, i *d
 
 	playerName, err := h.players.NameByTag(kickpoint.PlayerTag)
 	if err != nil {
-		messages.SendMemberNotFound(s, i, kickpoint.PlayerTag)
+		messages.SendMemberNotFound(s, i, kickpoint.PlayerTag, kickpoint.ClanTag)
 		return
 	}
 
@@ -326,12 +327,12 @@ func (h *KickpointHandler) CreateKickpointModalSubmit(s *discordgo.Session, i *d
 
 func (h *KickpointHandler) EditKickpoint(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	opts := i.ApplicationCommandData().Options
-	if len(opts) != 1 || opts[0].UintValue() == 0 {
-		messages.SendInvalidInputError(s, i, "Du musst eine Kickpunkt ID angeben.")
+	id := util.UintOptionByName(IDOptionName, opts)
+	if id == 0 {
+		messages.SendInvalidInputError(s, i, "Du musst eine gültige Kickpunkt ID angeben.")
 		return
 	}
 
-	id := uint(opts[0].UintValue())
 	kickpoint, err := h.kickpoints.KickpointByID(id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -347,7 +348,7 @@ func (h *KickpointHandler) EditKickpoint(s *discordgo.Session, i *discordgo.Inte
 		return
 	}
 
-	if err = h.authMiddleware.NewHandler(kickpoint.ClanTag, coc.CoLeader)(s, i); err != nil {
+	if err = h.authMiddleware.NewHandler(kickpoint.ClanTag, types.AuthRoleCoLeader)(s, i); err != nil {
 		return
 	}
 
@@ -412,7 +413,7 @@ func (h *KickpointHandler) EditKickpointModalSubmit(s *discordgo.Session, i *dis
 		return
 	}
 
-	if err = h.authMiddleware.NewHandler(prevKickpoint.ClanTag, coc.CoLeader)(s, i); err != nil {
+	if err = h.authMiddleware.NewHandler(prevKickpoint.ClanTag, types.AuthRoleCoLeader)(s, i); err != nil {
 		return
 	}
 
@@ -453,12 +454,12 @@ func (h *KickpointHandler) EditKickpointModalSubmit(s *discordgo.Session, i *dis
 
 func (h *KickpointHandler) DeleteKickpoint(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	opts := i.ApplicationCommandData().Options
-	if len(opts) != 1 || opts[0].UintValue() == 0 {
-		messages.SendInvalidInputError(s, i, "Du musst eine Kickpunkt ID angeben.")
+	id := util.UintOptionByName(IDOptionName, opts)
+	if id == 0 {
+		messages.SendInvalidInputError(s, i, "Du musst eine gültige Kickpunkt ID angeben.")
 		return
 	}
 
-	id := uint(opts[0].UintValue())
 	kickpoint, err := h.kickpoints.KickpointByID(id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -474,7 +475,7 @@ func (h *KickpointHandler) DeleteKickpoint(s *discordgo.Session, i *discordgo.In
 		return
 	}
 
-	if err = h.authMiddleware.NewHandler(kickpoint.ClanTag, coc.CoLeader)(s, i); err != nil {
+	if err = h.authMiddleware.NewHandler(kickpoint.ClanTag, types.AuthRoleCoLeader)(s, i); err != nil {
 		return
 	}
 
@@ -502,8 +503,8 @@ func (h *KickpointHandler) HandleAutocomplete(s *discordgo.Session, i *discordgo
 		switch opt.Name {
 		case ClanTagOptionName:
 			autocompleteClans(h.clans, opt.StringValue())(s, i)
-		case PlayerTagOptionName:
-			autocompleteMembers(h.players, opt.StringValue(), opts[0].StringValue())(s, i)
+		case MemberTagOptionName:
+			autocompleteMembers(h.players, opt.StringValue(), util.StringOptionByName(ClanTagOptionName, opts))(s, i)
 		}
 	}
 }
