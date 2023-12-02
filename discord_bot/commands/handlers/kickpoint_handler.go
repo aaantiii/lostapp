@@ -30,8 +30,7 @@ type IKickpointHandler interface {
 	EditKickpoint(s *discordgo.Session, i *discordgo.InteractionCreate)
 	EditKickpointModalSubmit(s *discordgo.Session, i *discordgo.InteractionCreate)
 	DeleteKickpoint(s *discordgo.Session, i *discordgo.InteractionCreate)
-	ClansAutocomplete(s *discordgo.Session, i *discordgo.InteractionCreate)
-	MembersAndClansAutocomplete(s *discordgo.Session, i *discordgo.InteractionCreate)
+	HandleAutocomplete(s *discordgo.Session, i *discordgo.InteractionCreate)
 }
 
 type KickpointHandler struct {
@@ -250,7 +249,7 @@ func (h *KickpointHandler) CreateKickpointModal(s *discordgo.Session, i *discord
 	})
 
 	if err != nil {
-		log.Println("Error while handling CreateKickpoint", "err", err)
+		log.Println("Error while handling CreateKickpoint", err)
 	}
 }
 
@@ -366,7 +365,7 @@ func (h *KickpointHandler) EditKickpoint(s *discordgo.Session, i *discordgo.Inte
 	})
 
 	if err != nil {
-		log.Println("Error while handling CreateKickpoint", "err", err)
+		log.Println("Error while handling CreateKickpoint", err)
 	}
 }
 
@@ -492,39 +491,19 @@ func (h *KickpointHandler) DeleteKickpoint(s *discordgo.Session, i *discordgo.In
 	))
 }
 
-func (h *KickpointHandler) ClansAutocomplete(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func (h *KickpointHandler) HandleAutocomplete(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	opts := i.ApplicationCommandData().Options
-	if len(opts) != 1 {
-		autocompleteClans(h.clans, "")(s, i)
-		return
-	}
 
-	autocompleteClans(h.clans, opts[0].StringValue())(s, i)
-}
-
-func (h *KickpointHandler) MembersAndClansAutocomplete(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	opts := i.ApplicationCommandData().Options
-	totalOpts := len(opts)
-	log.Print(totalOpts)
-	if totalOpts == 1 {
-		autocompleteClans(h.clans, opts[0].StringValue())(s, i)
-		return
-	}
-	if totalOpts >= 2 {
-		for _, opt := range opts {
-			if opt.Focused {
-				clanTag := opts[0].StringValue()
-				playerTag := opts[1].StringValue()
-				if opt.Name == "clan" {
-					autocompleteClans(h.clans, clanTag)(s, i)
-				} else {
-					autocompleteMembers(h.players, playerTag, clanTag)(s, i)
-				}
-				// don't break, sometimes both options are focused...
-			}
+	for _, opt := range opts {
+		if !opt.Focused {
+			return
 		}
-		return
-	}
 
-	autocompleteClans(h.clans, "")(s, i)
+		switch opt.Name {
+		case ClanTagOptionName:
+			autocompleteClans(h.clans, opt.StringValue())(s, i)
+		case PlayerTagOptionName:
+			autocompleteMembers(h.players, opt.StringValue(), opts[0].StringValue())(s, i)
+		}
+	}
 }

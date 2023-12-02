@@ -8,11 +8,10 @@ import (
 
 // Player links a Clash of Clans player tag with a Discord ID.
 type Player struct {
-	Name      string
-	CocTag    string
-	DiscordID *string
-
-	UpdatedAt time.Time `gorm:"column:last_updated"`
+	CocTag      string `gorm:"not null;primaryKey"`
+	Name        string `gorm:"not null"`
+	DiscordID   string
+	LastUpdated time.Time `gorm:"->"`
 
 	Members Members `gorm:"foreignKey:PlayerTag;references:CocTag"`
 }

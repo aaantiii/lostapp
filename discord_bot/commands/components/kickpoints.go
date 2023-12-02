@@ -18,16 +18,12 @@ const (
 )
 
 func Tag(label, defaultValue, customId string) discordgo.TextInput {
-	if defaultValue != "" {
-		label += " (automatisch ausgefüllt)"
-	}
-
 	return discordgo.TextInput{
 		CustomID:    customId,
 		Label:       label,
 		Placeholder: "z.B. #18742069",
 		Style:       discordgo.TextInputShort,
-		Value:       defaultValue,
+		Value:       autofillLabel(label, defaultValue),
 		Required:    true,
 		MinLength:   validation.TagMinLength,
 		MaxLength:   validation.TagMaxLength,
@@ -35,14 +31,9 @@ func Tag(label, defaultValue, customId string) discordgo.TextInput {
 }
 
 func KickpointAmount(defaultValue int) discordgo.TextInput {
-	label := "Anzahl Kickpunkte"
-	if defaultValue != 0 {
-		label += " (automatisch ausgefüllt)"
-	}
-
 	return discordgo.TextInput{
 		CustomID:    KickpointAmountID,
-		Label:       label,
+		Label:       autofillLabel("Anzahl Kickpunkte", defaultValue),
 		Placeholder: fmt.Sprintf("Zahl zwischen %d und %d", validation.MinKickpointAmount, validation.MaxKickpointAmount),
 		Style:       discordgo.TextInputShort,
 		Value:       strconv.Itoa(defaultValue),

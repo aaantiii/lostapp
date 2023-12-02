@@ -7,6 +7,11 @@ import (
 	"bot/commands/repos"
 )
 
+const (
+	ClanTagOptionName   = "clan"
+	PlayerTagOptionName = "player"
+)
+
 func autocompleteClans(repo repos.IClansRepo, query string) func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	return func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		clans, err := repo.Clans(query)

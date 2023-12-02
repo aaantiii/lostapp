@@ -5,10 +5,27 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"gorm.io/gorm"
 
+	"bot/client"
 	"bot/commands/util"
 	"bot/types"
 )
+
+func createInteractions(db *gorm.DB, cocClient *client.CocClient) types.Commands[types.InteractionHandler] {
+	interactions := []types.Commands[types.InteractionHandler]{
+		kickpointInteractionCommands(db),
+		playerInteractionCommands(db, cocClient),
+		memberInteractionCommands(db),
+	}
+
+	var flat types.Commands[types.InteractionHandler]
+	for _, i := range interactions {
+		flat = append(flat, i...)
+	}
+
+	return flat
+}
 
 func interactionCommandMap(commands types.Commands[types.InteractionHandler]) map[string]*types.Command[types.InteractionHandler] {
 	interactionsMap := make(map[string]*types.Command[types.InteractionHandler])

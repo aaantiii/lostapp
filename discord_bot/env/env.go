@@ -16,6 +16,8 @@ const (
 	DISCORD_CLIENT_ID     EnvironmentVariable = "DISCORD_CLIENT_ID"
 	DISCORD_CLIENT_SECRET EnvironmentVariable = "DISCORD_CLIENT_SECRET"
 	DISCORD_GUILD_ID      EnvironmentVariable = "DISCORD_GUILD_ID"
+	COC_API_EMAILS        EnvironmentVariable = "COC_API_EMAILS"
+	COC_API_PASSWORDS     EnvironmentVariable = "COC_API_PASSWORDS"
 )
 
 // Value returns the value of the environment variable as string.
@@ -37,17 +39,19 @@ func Init() error {
 		log.Println("Environment variables loaded.")
 	}
 
-	requiredEnv := []EnvironmentVariable{
+	required := []EnvironmentVariable{
 		MODE,
 		POSTGRES_URL,
 		DISCORD_CLIENT_ID,
 		DISCORD_CLIENT_SECRET,
 		DISCORD_GUILD_ID,
+		COC_API_EMAILS,
+		COC_API_PASSWORDS,
 	}
 
-	for _, envVar := range requiredEnv {
-		if _, found := os.LookupEnv(envVar.Name()); !found {
-			return fmt.Errorf("required env variable '%s' not set", envVar.Name())
+	for _, v := range required {
+		if _, found := os.LookupEnv(v.Name()); !found {
+			return fmt.Errorf("required env variable '%s' not set", v.Name())
 		}
 	}
 

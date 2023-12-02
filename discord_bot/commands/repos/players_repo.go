@@ -14,6 +14,8 @@ import (
 type IPlayersRepo interface {
 	Players(query string) (models.Players, error)
 	PlayerByTag(tag string) (*models.Player, error)
+	PlayerByTagAndDiscordID(tag, discordID string) (*models.Player, error)
+	CreateOrUpdatePlayer(player *models.Player) error
 	NameByTag(tag string) (string, error)
 	MembersPlayersByClan(clanTag, query string) (models.Players, error)
 }
@@ -41,6 +43,17 @@ func (repo *PlayersRepo) PlayerByTag(tag string) (*models.Player, error) {
 	var clan *models.Player
 	err := repo.db.First(&clan, "coc_tag = ?", tag).Error
 	return clan, err
+}
+
+func (repo *PlayersRepo) PlayerByTagAndDiscordID(tag, discordID string) (*models.Player, error) {
+	var clan *models.Player
+	err := repo.db.First(&clan, "coc_tag = ? AND discord_id = ?", tag, discordID).Error
+	return clan, err
+}
+
+// CreateOrUpdatePlayer returns types.ErrNoChanges if player tag exists and discord id did not change.
+func (repo *PlayersRepo) CreateOrUpdatePlayer(player *models.Player) error {
+	return repo.db.Save(player).Error
 }
 
 func (repo *PlayersRepo) NameByTag(tag string) (string, error) {

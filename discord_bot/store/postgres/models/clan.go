@@ -8,9 +8,8 @@ type Clan struct {
 	Tag  string `gorm:"primaryKey;not null"`
 	Name string
 
-	Kickpoints []Kickpoint   `gorm:"foreignKey:ClanTag;references:Tag"`
-	Settings   *ClanSettings `gorm:"foreignKey:ClanTag;references:Tag"`
-	Members    Members       `gorm:"foreignKey:ClanTag;references:Tag"`
+	Settings *ClanSettings `gorm:"foreignKey:ClanTag;references:Tag"`
+	Members  Members       `gorm:"foreignKey:ClanTag;references:Tag"`
 }
 
 func (*Clan) TableName() string {

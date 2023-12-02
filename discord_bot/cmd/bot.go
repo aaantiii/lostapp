@@ -5,7 +5,9 @@ import (
 	"os"
 	"os/signal"
 
-	"bot/client"
+	"github.com/bwmarrin/discordgo"
+
+	"bot/commands"
 	"bot/env"
 )
 
@@ -19,7 +21,7 @@ func init() {
 }
 
 func main() {
-	session, err := client.NewDiscordSession()
+	session, err := newDiscordSession()
 	if err != nil {
 		log.Fatalf("Failed to create discord session: %v", err)
 	}
@@ -33,4 +35,25 @@ func main() {
 	if err = session.Close(); err != nil {
 		log.Fatalf("Failed to close discord session: %v", err)
 	}
+}
+
+func newDiscordSession() (*discordgo.Session, error) {
+	session, err := discordgo.New("Bot " + env.DISCORD_CLIENT_SECRET.Value())
+	if err != nil {
+		return nil, err
+	}
+
+	if err = commands.Setup(session); err != nil {
+		return nil, err
+	}
+
+	if err = session.Open(); err != nil {
+		return nil, err
+	}
+
+	if err = session.UpdateGameStatus(0, "mit deinen Kickpunkten"); err != nil {
+		return nil, err
+	}
+
+	return session, nil
 }
