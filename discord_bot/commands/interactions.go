@@ -41,6 +41,14 @@ func interactionHandler(interactions types.Commands[types.InteractionHandler]) f
 	commands := interactionCommandMap(interactions)
 	return func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		go func() {
+			if i.GuildID == "" {
+				if i.User != nil {
+					log.Printf("Interaction called by %s in DMs.", i.User.Username)
+				}
+				sendDMNotSupported(s, i)
+				return
+			}
+
 			now := time.Now()
 			defer func() {
 				if err := recover(); err != nil {
@@ -76,7 +84,7 @@ func interactionHandler(interactions types.Commands[types.InteractionHandler]) f
 					return
 				}
 			}
-			commandNotFound(s, i)
+			sendCommandNotFound(s, i)
 		}()
 	}
 }

@@ -1,8 +1,6 @@
 package commands
 
 import (
-	"log"
-
 	"github.com/bwmarrin/discordgo"
 
 	"bot/client"
@@ -31,20 +29,18 @@ func Setup(session *discordgo.Session) error {
 	return nil
 }
 
-func commandNotFound(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	if err := s.InteractionRespond(
-		i.Interaction,
-		&discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Embeds: []*discordgo.MessageEmbed{messages.NewEmbed(
-					"Fehler - Unbekannter Befehl",
-					"Dieser Befehl wurde nicht gefunden.",
-					messages.ColorRed,
-				)},
-			},
-		},
-	); err != nil {
-		log.Println("Error responding to interaction: ", err)
-	}
+func sendCommandNotFound(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	messages.SendEmbed(s, i, messages.NewEmbed(
+		"Fehler - Unbekannter Befehl",
+		"Dieser Befehl wurde nicht gefunden.",
+		messages.ColorRed,
+	))
+}
+
+func sendDMNotSupported(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	messages.SendEmbed(s, i, messages.NewEmbed(
+		"Fehler",
+		"DMs werden vom Bot nicht unterstüzt. Bitte führe alle Befehle in einem Server aus.",
+		messages.ColorRed,
+	))
 }
