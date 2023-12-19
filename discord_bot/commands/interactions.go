@@ -43,7 +43,7 @@ func interactionHandler(interactions types.Commands[types.InteractionHandler]) f
 		go func() {
 			if i.GuildID == "" {
 				if i.User != nil {
-					log.Printf("Interaction called by %s in DMs.", i.User.Username)
+					log.Printf("Aborted interaction called by %s in DMs (not supported).", i.User.Username)
 				}
 				sendDMNotSupported(s, i)
 				return
@@ -51,26 +51,27 @@ func interactionHandler(interactions types.Commands[types.InteractionHandler]) f
 
 			now := time.Now()
 			defer func() {
+				took := time.Now().Sub(now).Round(time.Millisecond)
 				if err := recover(); err != nil {
-					log.Printf("Interaction called by %s panicked: %v", i.Member.User.Username, err)
+					log.Printf("Interaction called by %s panicked after %s: %v", i.Member.User.Username, took, err)
 				} else {
-					log.Printf("Interaction called by %s took %s.", i.Member.User.Username, time.Now().Sub(now).Round(time.Millisecond))
+					log.Printf("Interaction called by %s took %s.", i.Member.User.Username, took)
 				}
 			}()
 
 			switch i.Type {
-			case discordgo.InteractionApplicationCommand:
-				if command, ok := commands[i.ApplicationCommandData().Name]; ok {
-					command.Handler.Main(s, i)
-					return
-				}
-
 			case discordgo.InteractionApplicationCommandAutocomplete:
 				if command, ok := commands[i.ApplicationCommandData().Name]; ok {
 					if command.Handler.Autocomplete == nil {
 						return
 					}
 					command.Handler.Autocomplete(s, i)
+					return
+				}
+
+			case discordgo.InteractionApplicationCommand:
+				if command, ok := commands[i.ApplicationCommandData().Name]; ok {
+					command.Handler.Main(s, i)
 					return
 				}
 

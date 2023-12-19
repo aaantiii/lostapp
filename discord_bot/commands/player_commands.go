@@ -8,6 +8,7 @@ import (
 	"bot/commands/handlers"
 	"bot/commands/repos"
 	"bot/commands/util"
+	"bot/commands/validation"
 	"bot/types"
 )
 
@@ -20,22 +21,22 @@ func playerInteractionCommands(db *gorm.DB, cocClient *client.CocClient) types.C
 		},
 		ApplicationCommand: &discordgo.ApplicationCommand{
 			Name:         "verify",
-			Description:  "Verifiziert einen Spieler.",
+			Description:  "Verknüpfe deinen Discord Account mit deinem COC-Account.",
 			Type:         discordgo.ChatApplicationCommand,
 			DMPermission: util.OptionalBool(false),
 			Options: []*discordgo.ApplicationCommandOption{
 				{
 					Type:        discordgo.ApplicationCommandOptionString,
 					Name:        handlers.PlayerTagOptionName,
-					Description: "Der Spieler-Tag des zu verifizierenden Spielers.",
+					Description: "Spieler-Tag deines Clash of Clans Accounts.",
 					Required:    true,
-					MinLength:   util.OptionalInt(4),
-					MaxLength:   12,
+					MinLength:   util.OptionalInt(validation.TagMinLength),
+					MaxLength:   validation.TagMaxLength,
 				},
 				{
 					Type:        discordgo.ApplicationCommandOptionString,
 					Name:        "api_token",
-					Description: "Der API Token des zu verifizierenden Spielers.",
+					Description: "API Token deines Clash of Clans Accounts.",
 					Required:    true,
 					MinLength:   util.OptionalInt(8),
 					MaxLength:   8,

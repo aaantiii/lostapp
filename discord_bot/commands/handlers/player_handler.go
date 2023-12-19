@@ -82,8 +82,21 @@ func (h *PlayerHandler) VerifyPlayer(s *discordgo.Session, i *discordgo.Interact
 		return
 	}
 
+	if existingPlayers, _ := h.players.PlayersByDiscordID(i.Member.User.ID); len(existingPlayers) == 0 {
+		if _, err = s.GuildMemberEdit(i.GuildID, i.Member.User.ID, &discordgo.GuildMemberParams{
+			Nick: cocPlayer.Name,
+		}); err != nil {
+			messages.SendEmbed(s, i, messages.NewEmbed(
+				"Fehler",
+				"Der Bot konnte deinen Discord Namen nicht zu deinem Clash of Clans Namen ändern.",
+				messages.ColorGreen,
+			))
+			return
+		}
+	}
+
 	if err = h.players.CreateOrUpdatePlayer(&models.Player{
-		CocTag:    playerTag,
+		CocTag:    cocPlayer.Tag,
 		Name:      cocPlayer.Name,
 		DiscordID: i.Member.User.ID,
 	}); err != nil {

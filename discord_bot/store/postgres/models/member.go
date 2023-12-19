@@ -20,12 +20,12 @@ const (
 	RoleMember   ClanRole = "member"
 )
 
-func (m ClanRole) String() string {
-	return string(m)
+func (r ClanRole) String() string {
+	return string(r)
 }
 
-func (m ClanRole) Format() string {
-	switch m {
+func (r ClanRole) Format() string {
+	switch r {
 	case RoleLeader:
 		return "Anführer"
 	case RoleCoLeader:
@@ -59,11 +59,11 @@ func (members Members) Tags() []string {
 }
 
 func (members Members) TagsDistinct() []string {
-	if members == nil {
+	if len(members) == 0 {
 		return nil
 	}
 
-	tags := make([]string, 0)
+	tags := make([]string, 1)
 	seen := make(map[string]bool)
 	for _, member := range members {
 		if seen[member.PlayerTag] {

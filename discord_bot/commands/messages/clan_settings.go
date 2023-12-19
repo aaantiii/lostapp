@@ -23,7 +23,7 @@ func SendClanSettings(s *discordgo.Session, i *discordgo.InteractionCreate, sett
 
 	SendEmbed(s, i, NewFieldEmbed(
 		fmt.Sprintf("Einstellungen von %s", settings.Clan.Name),
-		fmt.Sprintf("Kickpunkte in %s laufen nach **%d Tagen** ab.\nBei **%d Kickpunkten** erfolgt ein Kick.\nPro Season sind **mindestens %d Wins** erforlderlich.\n\nFür folgende Regelbrüche wird die jeweilige Anzahl an Kickpunkten vergeben:",
+		fmt.Sprintf("Kickpunkte in %s laufen nach **%d Tagen** ab.\nBei **%d Kickpunkten** erfolgt ein Kick.\nPro Season sind **mindestens %d Wins** erforderlich.\n\nFür folgende Regelbrüche wird die jeweilige Anzahl an Kickpunkten vergeben:",
 			settings.Clan.Name, settings.KickpointsExpireAfterDays, settings.MaxKickpoints, settings.MinSeasonWins,
 		),
 		ColorAqua,

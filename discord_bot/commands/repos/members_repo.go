@@ -9,6 +9,7 @@ import (
 type IMembersRepo interface {
 	MembersByDiscordID(discordID string) (models.Members, error)
 	MemberByID(playerTag, clanTag string) (*models.Member, error)
+	MembersByTag(clanTag string, playerTags ...string) (models.Members, error)
 	CreateMember(member *models.Member) error
 	UpdateMemberRole(playerTag, clanTag string, role models.ClanRole) error
 	DeleteMember(tag, clanTag string) error
@@ -42,6 +43,24 @@ func (repo *MembersRepo) MemberByID(playerTag, clanTag string) (*models.Member, 
 		Preload("Player").
 		Preload("Clan").
 		First(&members, "player_tag = ? AND clan_tag = ?", playerTag, clanTag).Error
+	return members, err
+}
+
+func (repo *MembersRepo) MembersByTag(clanTag string, playerTags ...string) (models.Members, error) {
+	var members models.Members
+	err := repo.db.
+		Preload("Player").
+		Preload("Clan").
+		Find(&members, "clan_tag = ? AND player_tag IN (?)", clanTag, playerTags).Error
+	return members, err
+}
+
+func (repo *MembersRepo) MissingClanMembers(clanTag string, playerTags ...string) (models.Members, error) {
+	var members models.Members
+	err := repo.db.
+		Preload("Player").
+		Preload("Clan").
+		Find(&members, "clan_tag = ? AND player_tag NOT IN (?)", clanTag, playerTags).Error
 	return members, err
 }
 

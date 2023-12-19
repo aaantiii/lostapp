@@ -113,24 +113,24 @@ Ein Beispiel dafür wäre ein verpasster CKL Angriff im Vergleich zu einem 0-Sta
 `,
 		},
 		{
-			Name: "Befehl ```kpmember```",
+			Name: "Befehl ```kpmember [clan_tag] [player_tag]```",
 			Value: `
 Mit diesem Befehl kann jedes Mitglied einsehen
-- Wie viele Kickpunkt es hat
-- Für welchen Regelbruch es den Kickpunkt erhalten hat
-- Wann es den Kickpunkt erhalten hat
+- Wie viele Kickpunkte es hat
+- Für welche Regelbrüche es Kickpunkte erhalten hat
+- Wann es die Kickpunkte erhalten hat
 - Wann die Kickpunkte ablaufen
-- Wer den Kickpunkt erstellt hat
+- Von wem es den Kickpunkt erhalten hat
 `,
 		},
 		{
-			Name: "Befehl ```kpclan```",
+			Name: "Befehl ```kpclan [clan_tag]```",
 			Value: `
 Mit diesem Befehl können Mitglieder einsehen, wie viele Kickpunkte jedes Mitglied im Clan hat.
 `,
 		},
 		{
-			Name: "Befehl ```kpinfo```",
+			Name: "Befehl ```kpinfo [clan_tag]```",
 			Value: `
 Mit diesem Befehl kann jedes Mitglied einsehen
 - Wie hoch die maximale Anzahl an Kickpunkten bis zum Kick ist
@@ -142,7 +142,7 @@ Mit diesem Befehl kann jedes Mitglied einsehen
 
 	SendEmbed(s, i, NewFieldEmbed(
 		"Neues Kickpunktesystem - Erklärung",
-		"Das Kickpunkte System vom Bot funktioniert anderst, als das alte System. Hier sind die wichtigsten Änderungen:",
+		"Das Kickpunkte System vom Bot funktioniert anders, als das alte System. Hier sind die wichtigsten Änderungen:",
 		ColorAqua,
 		fields,
 	))

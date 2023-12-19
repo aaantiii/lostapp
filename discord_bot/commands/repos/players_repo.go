@@ -13,6 +13,7 @@ import (
 
 type IPlayersRepo interface {
 	Players(query string) (models.Players, error)
+	PlayersByDiscordID(discordID string) (models.Players, error)
 	PlayerByTag(tag string) (*models.Player, error)
 	PlayerByTagAndDiscordID(tag, discordID string) (*models.Player, error)
 	CreateOrUpdatePlayer(player *models.Player) error
@@ -36,6 +37,12 @@ func (repo *PlayersRepo) Players(query string) (models.Players, error) {
 			postgres.ScopeContains(query, "name", "coc_tag"),
 		).
 		Find(&players).Error
+	return players, err
+}
+
+func (repo *PlayersRepo) PlayersByDiscordID(discordID string) (models.Players, error) {
+	var players models.Players
+	err := repo.db.Find(&players, "discord_id = ?", discordID).Error
 	return players, err
 }
 
