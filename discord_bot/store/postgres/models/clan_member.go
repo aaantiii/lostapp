@@ -1,6 +1,6 @@
 package models
 
-type Member struct {
+type ClanMember struct {
 	PlayerTag        string `gorm:"primaryKey;not null"`
 	ClanTag          string `gorm:"primaryKey;not null"`
 	AddedByDiscordID string
@@ -39,11 +39,7 @@ func (r ClanRole) Format() string {
 	}
 }
 
-func (*Member) TableName() string {
-	return "clan_member"
-}
-
-type Members []Member
+type Members []ClanMember
 
 func (members Members) Tags() []string {
 	if members == nil {

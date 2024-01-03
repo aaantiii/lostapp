@@ -183,6 +183,9 @@ func (h *KickpointHandler) CreateKickpointModal(s *discordgo.Session, i *discord
 	clanTag := util.StringOptionByName(ClanTagOptionName, opts)
 	memberTag := util.StringOptionByName(MemberTagOptionName, opts)
 	settingName := util.StringOptionByName(SettingOptionName, opts)
+
+	log.Print(clanTag, memberTag, settingName)
+
 	if clanTag == "" || memberTag == "" || settingName == "" {
 		messages.SendInvalidInputError(s, i, "Du musst einen Clan, ein Mitglied und einen Grund angeben.")
 		return

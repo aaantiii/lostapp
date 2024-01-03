@@ -9,9 +9,6 @@ import (
 	"bot/types"
 )
 
-// ScopePaginate applies pagination to the given query.
-//
-// Example: db.Scopes(ScopePaginate(&types.PaginationParams{Page: 1, PageSize: 20})).Find(&users)
 func ScopePaginate(params types.PaginationParams) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		offset := (params.Page - 1) * params.PageSize
@@ -19,23 +16,24 @@ func ScopePaginate(params types.PaginationParams) func(db *gorm.DB) *gorm.DB {
 	}
 }
 
-func ScopeContains(value string, fields ...string) func(db *gorm.DB) *gorm.DB {
+func ScopeContains(value string, fields ...any) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		if value == "" || len(fields) == 0 {
 			return db
 		}
 
+		strFields := make([]string, len(fields))
 		for i, field := range fields {
-			fields[i] = fmt.Sprintf("%s::text", field)
+			strFields[i] = fmt.Sprintf("%s::text", field)
 		}
 
-		concatenatedFields := strings.Join(fields, " || ' ' || ")
-		query := fmt.Sprintf("POSITION(? in LOWER(%s)) > 0", concatenatedFields)
+		find := strings.Join(strFields, " || ' ' || ")
+		query := fmt.Sprintf("POSITION(? in LOWER(%s)) > 0", find)
 		return db.Where(query, strings.ToLower(value))
 	}
 }
 
-func ScopeLimit(limit int) func(db *gorm.DB) *gorm.DB {
+func ScopeLimit(limit int) func(*gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		if limit <= 0 {
 			return db

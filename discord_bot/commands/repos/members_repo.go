@@ -8,9 +8,9 @@ import (
 
 type IMembersRepo interface {
 	MembersByDiscordID(discordID string) (models.Members, error)
-	MemberByID(playerTag, clanTag string) (*models.Member, error)
+	MemberByID(playerTag, clanTag string) (*models.ClanMember, error)
 	MembersByTag(clanTag string, playerTags ...string) (models.Members, error)
-	CreateMember(member *models.Member) error
+	CreateMember(member *models.ClanMember) error
 	UpdateMemberRole(playerTag, clanTag string, role models.ClanRole) error
 	DeleteMember(tag, clanTag string) error
 }
@@ -37,8 +37,8 @@ func (repo *MembersRepo) MembersByDiscordID(discordID string) (models.Members, e
 	return members, err
 }
 
-func (repo *MembersRepo) MemberByID(playerTag, clanTag string) (*models.Member, error) {
-	var members *models.Member
+func (repo *MembersRepo) MemberByID(playerTag, clanTag string) (*models.ClanMember, error) {
+	var members *models.ClanMember
 	err := repo.db.
 		Preload("Player").
 		Preload("Clan").
@@ -64,16 +64,16 @@ func (repo *MembersRepo) MissingClanMembers(clanTag string, playerTags ...string
 	return members, err
 }
 
-func (repo *MembersRepo) CreateMember(member *models.Member) error {
+func (repo *MembersRepo) CreateMember(member *models.ClanMember) error {
 	return repo.db.Create(member).Error
 }
 
 func (repo *MembersRepo) UpdateMemberRole(playerTag, clanTag string, role models.ClanRole) error {
 	return repo.db.
-		Model(&models.Member{PlayerTag: playerTag, ClanTag: clanTag}).
+		Model(&models.ClanMember{PlayerTag: playerTag, ClanTag: clanTag}).
 		Update("clan_role", role).Error
 }
 
 func (repo *MembersRepo) DeleteMember(tag, clanTag string) error {
-	return repo.db.Delete(&models.Member{}, "player_tag = ? AND clan_tag = ?", tag, clanTag).Error
+	return repo.db.Delete(&models.ClanMember{}, "player_tag = ? AND clan_tag = ?", tag, clanTag).Error
 }

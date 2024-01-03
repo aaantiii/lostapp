@@ -16,10 +16,6 @@ type Player struct {
 	Members Members `gorm:"foreignKey:PlayerTag;references:CocTag"`
 }
 
-func (*Player) TableName() string {
-	return "player"
-}
-
 type Players []*Player
 
 func (players Players) Choices() []*discordgo.ApplicationCommandOptionChoice {

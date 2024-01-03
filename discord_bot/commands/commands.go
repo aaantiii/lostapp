@@ -9,24 +9,24 @@ import (
 	"bot/store/postgres"
 )
 
-func Setup(session *discordgo.Session) error {
+func Setup(s *discordgo.Session) ([]*discordgo.ApplicationCommand, error) {
 	db, err := postgres.NewClient()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	cocClient, err := client.NewCocClient()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	interactions := createInteractions(db, cocClient)
-	if _, err = session.ApplicationCommandBulkOverwrite(env.DISCORD_CLIENT_ID.Value(), env.DISCORD_GUILD_ID.Value(), interactions.ApplicationCommands()); err != nil {
-		return err
+	cmds, err := s.ApplicationCommandBulkOverwrite(env.DISCORD_CLIENT_ID.Value(), env.DISCORD_GUILD_ID.Value(), interactions.ApplicationCommands())
+	if err != nil {
+		return nil, err
 	}
-	session.AddHandler(interactionHandler(interactions))
-
-	return nil
+	s.AddHandler(interactionHandler(interactions))
+	return cmds, nil
 }
 
 func sendCommandNotFound(s *discordgo.Session, i *discordgo.InteractionCreate) {

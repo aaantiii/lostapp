@@ -77,7 +77,7 @@ func (repo *PlayersRepo) MembersPlayersByClan(clanTag, query string) (models.Pla
 	if err := repo.db.
 		Scopes(postgres.ScopeContains(query, "coc_tag", "name")).
 		Where("coc_tag IN (?)", repo.db.
-			Model(&models.Member{}).
+			Model(&models.ClanMember{}).
 			Select("player_tag").
 			Where("clan_tag = ?", clanTag),
 		).

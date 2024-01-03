@@ -3,6 +3,7 @@ package client
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"strings"
 	"sync"
 
@@ -59,8 +60,10 @@ func (client *CocClient) GetClans(tags []string) ([]*coc.Clan, error) {
 }
 
 func (client *CocClient) IsMaintenanceErr(err error) bool {
-	if err == nil {
-		return false
+	var apiError *coc.APIError
+	if errors.As(err, &apiError) {
+		return apiError.StatusCode == http.StatusServiceUnavailable
 	}
-	return strings.Contains(err.Error(), ErrCocMaintenance.Error())
+
+	return false
 }

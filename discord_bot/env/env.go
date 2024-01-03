@@ -30,13 +30,11 @@ func (v EnvironmentVariable) Name() string {
 	return string(v)
 }
 
-func Init() error {
-	// docker sets env variables in PROD
-	if MODE.Value() != "PROD" {
-		if err := godotenv.Load("../.env"); err != nil {
+func Load() error {
+	if err := godotenv.Load(); err != nil {
+		if err = godotenv.Load("../.env"); err != nil {
 			return err
 		}
-		log.Println("Environment variables loaded.")
 	}
 
 	required := []EnvironmentVariable{

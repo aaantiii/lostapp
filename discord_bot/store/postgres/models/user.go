@@ -8,10 +8,6 @@ type User struct {
 	IsAdmin   bool   `gorm:"default:false;not null"`
 }
 
-func (*User) TableName() string {
-	return "bot_users"
-}
-
 func (u *User) Mention() string {
 	return "<@" + u.DiscordID + ">"
 }

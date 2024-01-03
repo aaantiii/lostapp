@@ -12,10 +12,6 @@ type Clan struct {
 	Members  Members       `gorm:"foreignKey:ClanTag;references:Tag"`
 }
 
-func (*Clan) TableName() string {
-	return "clan"
-}
-
 type Clans []Clan
 
 func (clans Clans) Tags() []string {

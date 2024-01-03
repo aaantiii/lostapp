@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	maxRetries   = 10
+	maxRetries   = 3
 	retryTimeout = time.Second * 15
 )
 
@@ -51,7 +51,7 @@ func newGormClient() (client *gorm.DB, err error) {
 		}
 
 		log.Println("Connected to postgres database.")
-		return
+		return client, nil
 	}
 
 	return nil, errors.New("max retries reached")

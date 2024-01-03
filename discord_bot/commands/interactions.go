@@ -49,9 +49,9 @@ func interactionHandler(interactions types.Commands[types.InteractionHandler]) f
 				return
 			}
 
-			now := time.Now()
+			start := time.Now()
 			defer func() {
-				took := time.Now().Sub(now).Round(time.Millisecond)
+				took := time.Now().Sub(start).Round(time.Millisecond)
 				if err := recover(); err != nil {
 					log.Printf("Interaction called by %s panicked after %s: %v", i.Member.User.Username, took, err)
 				} else {

@@ -13,10 +13,6 @@ type Guild struct {
 	MemberRoleID   string
 }
 
-func (*Guild) TableName() string {
-	return "guild"
-}
-
 func (g *Guild) IsLeader(roles []string) bool {
 	return slices.Contains(roles, g.LeaderRoleID)
 }

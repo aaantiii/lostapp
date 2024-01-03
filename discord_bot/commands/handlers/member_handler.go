@@ -91,7 +91,7 @@ func (h *MemberHandler) AddMember(s *discordgo.Session, i *discordgo.Interaction
 		return
 	}
 
-	if err := h.members.CreateMember(&models.Member{
+	if err := h.members.CreateMember(&models.ClanMember{
 		PlayerTag:        playerTag,
 		ClanTag:          clanTag,
 		ClanRole:         role,
