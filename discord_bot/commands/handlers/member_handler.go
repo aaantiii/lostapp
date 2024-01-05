@@ -5,6 +5,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 
+	"bot/client"
 	"bot/commands/messages"
 	"bot/commands/middleware"
 	"bot/commands/repos"
@@ -16,6 +17,7 @@ import (
 
 type IMemberHandler interface {
 	ListMembers(s *discordgo.Session, i *discordgo.InteractionCreate)
+	ClanMemberStatus(s *discordgo.Session, i *discordgo.InteractionCreate)
 	AddMember(s *discordgo.Session, i *discordgo.InteractionCreate)
 	RemoveMember(s *discordgo.Session, i *discordgo.InteractionCreate)
 	EditMember(s *discordgo.Session, i *discordgo.InteractionCreate)
@@ -26,15 +28,19 @@ type MemberHandler struct {
 	members        repos.IMembersRepo
 	clans          repos.IClansRepo
 	players        repos.IPlayersRepo
+	guilds         repos.IGuildsRepo
 	authMiddleware middleware.AuthMiddleware
+	cocClient      *client.CocClient
 }
 
-func NewMemberHandler(members repos.IMembersRepo, clans repos.IClansRepo, players repos.IPlayersRepo, guilds repos.IGuildsRepo, users repos.IUsersRepo) IMemberHandler {
+func NewMemberHandler(members repos.IMembersRepo, clans repos.IClansRepo, players repos.IPlayersRepo, guilds repos.IGuildsRepo, authMiddleware middleware.AuthMiddleware, cocClient *client.CocClient) IMemberHandler {
 	return &MemberHandler{
 		members:        members,
 		clans:          clans,
 		players:        players,
-		authMiddleware: middleware.NewAuthMiddleware(guilds, clans, users),
+		guilds:         guilds,
+		authMiddleware: authMiddleware,
+		cocClient:      cocClient,
 	}
 }
 
@@ -53,6 +59,29 @@ func (h *MemberHandler) ListMembers(s *discordgo.Session, i *discordgo.Interacti
 	}
 
 	messages.SendClanMembers(s, i, clan)
+}
+
+func (h *MemberHandler) ClanMemberStatus(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	opts := i.ApplicationCommandData().Options
+	clanTag := util.StringOptionByName(ClanTagOptionName, opts)
+	if clanTag == "" {
+		messages.SendInvalidInputError(s, i, "Bitte gib einen Clan an.")
+		return
+	}
+
+	members, err := h.members.MembersByClanTag(clanTag)
+	if err != nil {
+		messages.SendUnknownError(s, i)
+		return
+	}
+
+	clan, err := h.cocClient.GetClan(clanTag)
+	if err != nil {
+		messages.SendCocApiError(s, i)
+		return
+	}
+
+	messages.SendClansMembersStatus(s, i, members, clan)
 }
 
 func (h *MemberHandler) AddMember(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -82,7 +111,8 @@ func (h *MemberHandler) AddMember(s *discordgo.Session, i *discordgo.Interaction
 		return
 	}
 
-	if player, err := h.players.PlayerByTag(playerTag); err != nil || player.DiscordID == "" {
+	player, err := h.players.PlayerByTag(playerTag)
+	if err != nil || player.DiscordID == "" {
 		messages.SendEmbed(s, i, messages.NewEmbed(
 			"Mitglied nicht verifiziert",
 			"Das Mitglied muss sich zuerst verifizieren, bevor es zu einem Clan hinzugefügt werden kann.",
@@ -91,7 +121,7 @@ func (h *MemberHandler) AddMember(s *discordgo.Session, i *discordgo.Interaction
 		return
 	}
 
-	if err := h.members.CreateMember(&models.ClanMember{
+	if err = h.members.CreateMember(&models.ClanMember{
 		PlayerTag:        playerTag,
 		ClanTag:          clanTag,
 		ClanRole:         role,
@@ -105,9 +135,19 @@ func (h *MemberHandler) AddMember(s *discordgo.Session, i *discordgo.Interaction
 		return
 	}
 
+	guild, roleErr := h.guilds.GuildByClanTag(i.GuildID, clanTag)
+	if roleErr == nil {
+		roleErr = s.GuildMemberRoleAdd(i.GuildID, player.DiscordID, guild.MemberRoleID)
+	}
+
+	desc := fmt.Sprintf("Das Mitglied wurde erfolgreich als %s zum Clan hinzugefügt.", role.Format())
+	if roleErr != nil {
+		desc += "\n\n**ACHTUNG**: Dem Mitglied konnte die Mitglieder-Rolle nicht zugewiesen werden. Bitte weise ihm die Rolle manuell zu."
+	}
+
 	messages.SendEmbed(s, i, messages.NewEmbed(
 		"Mitglied erfolgreich hinzugefügt",
-		fmt.Sprintf("Das Mitglied wurde erfolgreich als %s zum Clan hinzugefügt.", role.Format()),
+		desc,
 		messages.ColorGreen,
 	))
 }
@@ -144,9 +184,22 @@ func (h *MemberHandler) RemoveMember(s *discordgo.Session, i *discordgo.Interact
 		return
 	}
 
+	guild, roleErr := h.guilds.GuildByClanTag(i.GuildID, clanTag)
+	if roleErr == nil {
+		roleErr = s.GuildMemberRoleRemove(i.GuildID, member.Player.DiscordID, guild.MemberRoleID)
+	}
+
+	desc := fmt.Sprintf("Das Mitglied %s wurde aus %s entfernt.", member.Player.Name, member.Clan.Name)
+	if roleErr != nil {
+		desc += "\n\n**ACHTUNG**: Dem Mitglied konnte die Mitglieder-Rolle nicht entfernt werden. Bitte entferne ihm die Rolle manuell."
+	}
+	if member.ClanRole == models.RoleElder {
+		desc += "\n\n**ACHTUNG**: Das Mitglied war Ältester. Bitte entferne ihm die Ältesten-Rolle manuell."
+	}
+
 	messages.SendEmbed(s, i, messages.NewEmbed(
 		"Mitglied entfernt",
-		fmt.Sprintf("Das Mitglied %s wurde aus %s entfernt.", member.Player.Name, member.Clan.Name),
+		desc,
 		messages.ColorGreen,
 	))
 }

@@ -1,33 +1,39 @@
 package util
 
-import "github.com/bwmarrin/discordgo"
+import (
+	"strings"
+
+	"github.com/bwmarrin/discordgo"
+)
 
 func StringOptionByName(name string, options []*discordgo.ApplicationCommandInteractionDataOption) string {
 	for _, o := range options {
 		if o.Name == name {
-			return o.StringValue()
+			return strings.Trim(o.StringValue(), " ")
 		}
 	}
 
 	return ""
 }
 
-func IntOptionByName(name string, options []*discordgo.ApplicationCommandInteractionDataOption) int {
+func IntOptionByName(name string, options []*discordgo.ApplicationCommandInteractionDataOption) *int {
 	for _, o := range options {
 		if o.Name == name {
-			return int(o.IntValue())
+			value := int(o.IntValue())
+			return &value
 		}
 	}
 
-	return 0
+	return nil
 }
 
-func UintOptionByName(name string, options []*discordgo.ApplicationCommandInteractionDataOption) uint {
+func UintOptionByName(name string, options []*discordgo.ApplicationCommandInteractionDataOption) *uint {
 	for _, o := range options {
 		if o.Name == name {
-			return uint(o.IntValue())
+			value := uint(o.IntValue())
+			return &value
 		}
 	}
 
-	return 0
+	return nil
 }

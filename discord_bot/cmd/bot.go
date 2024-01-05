@@ -32,6 +32,8 @@ func main() {
 	}
 	log.Printf("Successfully added %d commands.", len(cmds))
 
+	s.Identify.Intents = discordgo.IntentsAll
+
 	if err = s.Open(); err != nil {
 		log.Fatalf("Failed to open discord session: %v", err)
 	}
@@ -41,9 +43,9 @@ func main() {
 		log.Fatalf("Failed to update game status: %v", err)
 	}
 
-	shutdownSignal := make(chan os.Signal, 1)
-	signal.Notify(shutdownSignal, os.Interrupt)
-	<-shutdownSignal
+	shutdownSig := make(chan os.Signal, 1)
+	signal.Notify(shutdownSig, os.Interrupt)
+	<-shutdownSig
 
 	log.Println("Gracefully shutting down...")
 	if err = removeCommands(s, cmds); err != nil {

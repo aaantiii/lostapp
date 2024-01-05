@@ -16,7 +16,7 @@ func createInteractions(db *gorm.DB, cocClient *client.CocClient) types.Commands
 	interactions := []types.Commands[types.InteractionHandler]{
 		kickpointInteractionCommands(db),
 		playerInteractionCommands(db, cocClient),
-		memberInteractionCommands(db),
+		memberInteractionCommands(db, cocClient),
 	}
 
 	var flat types.Commands[types.InteractionHandler]

@@ -43,7 +43,7 @@ func (repo *ClansRepo) ClanByTagPreload(tag string) (*models.Clan, error) {
 	var clan *models.Clan
 	err := repo.db.
 		Preload(clause.Associations).
-		Preload("Members.Player").
+		Preload("ClanMembers.Player").
 		First(&clan, "tag = ?", tag).Error
 	return clan, err
 }

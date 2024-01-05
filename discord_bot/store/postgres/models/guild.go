@@ -1,6 +1,8 @@
 package models
 
-import "slices"
+import (
+	"slices"
+)
 
 const LostFamilyGuildID = "733857906117574717"
 
@@ -27,4 +29,19 @@ func (g *Guild) IsElder(roles []string) bool {
 
 func (g *Guild) IsMember(roles []string) bool {
 	return slices.Contains(roles, g.MemberRoleID)
+}
+
+func (g *Guild) RoleIDByClanRole(cocRole ClanRole) string {
+	switch cocRole {
+	case RoleLeader:
+		return g.LeaderRoleID
+	case RoleCoLeader:
+		return g.CoLeaderRoleID
+	case RoleElder:
+		return g.ElderRoleID
+	case RoleMember:
+		return g.MemberRoleID
+	default:
+		return ""
+	}
 }

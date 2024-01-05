@@ -11,13 +11,14 @@ import (
 type EnvironmentVariable string // EnvironmentVariable type represents an environment variable.
 
 const (
-	MODE                  EnvironmentVariable = "MODE"
-	POSTGRES_URL          EnvironmentVariable = "POSTGRES_URL"
-	DISCORD_CLIENT_ID     EnvironmentVariable = "DISCORD_CLIENT_ID"
-	DISCORD_CLIENT_SECRET EnvironmentVariable = "DISCORD_CLIENT_SECRET"
-	DISCORD_GUILD_ID      EnvironmentVariable = "DISCORD_GUILD_ID"
-	COC_API_EMAILS        EnvironmentVariable = "COC_API_EMAILS"
-	COC_API_PASSWORDS     EnvironmentVariable = "COC_API_PASSWORDS"
+	MODE                     EnvironmentVariable = "MODE"
+	POSTGRES_URL             EnvironmentVariable = "POSTGRES_URL"
+	DISCORD_VERIFIED_ROLE_ID EnvironmentVariable = "DISCORD_VERIFIED_ROLE_ID"
+	DISCORD_GUILD_ID         EnvironmentVariable = "DISCORD_GUILD_ID"
+	DISCORD_CLIENT_ID        EnvironmentVariable = "DISCORD_CLIENT_ID"
+	DISCORD_CLIENT_SECRET    EnvironmentVariable = "DISCORD_CLIENT_SECRET"
+	COC_API_EMAILS           EnvironmentVariable = "COC_API_EMAILS"
+	COC_API_PASSWORDS        EnvironmentVariable = "COC_API_PASSWORDS"
 )
 
 // Value returns the value of the environment variable as string.
@@ -40,9 +41,10 @@ func Load() error {
 	required := []EnvironmentVariable{
 		MODE,
 		POSTGRES_URL,
+		DISCORD_VERIFIED_ROLE_ID,
+		DISCORD_GUILD_ID,
 		DISCORD_CLIENT_ID,
 		DISCORD_CLIENT_SECRET,
-		DISCORD_GUILD_ID,
 		COC_API_EMAILS,
 		COC_API_PASSWORDS,
 	}

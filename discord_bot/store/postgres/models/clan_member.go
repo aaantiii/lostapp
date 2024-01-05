@@ -39,9 +39,9 @@ func (r ClanRole) Format() string {
 	}
 }
 
-type Members []ClanMember
+type ClanMembers []*ClanMember
 
-func (members Members) Tags() []string {
+func (members ClanMembers) Tags() []string {
 	if members == nil {
 		return nil
 	}
@@ -54,7 +54,7 @@ func (members Members) Tags() []string {
 	return tags
 }
 
-func (members Members) TagsDistinct() []string {
+func (members ClanMembers) TagsDistinct() []string {
 	if len(members) == 0 {
 		return nil
 	}

@@ -7,9 +7,10 @@ import (
 )
 
 type IMembersRepo interface {
-	MembersByDiscordID(discordID string) (models.Members, error)
+	MembersByClanTag(clanTag string) (models.ClanMembers, error)
+	MembersByDiscordID(discordID string) (models.ClanMembers, error)
 	MemberByID(playerTag, clanTag string) (*models.ClanMember, error)
-	MembersByTag(clanTag string, playerTags ...string) (models.Members, error)
+	MembersByTag(clanTag string, playerTags ...string) (models.ClanMembers, error)
 	CreateMember(member *models.ClanMember) error
 	UpdateMemberRole(playerTag, clanTag string, role models.ClanRole) error
 	DeleteMember(tag, clanTag string) error
@@ -23,13 +24,21 @@ func NewMembersRepo(db *gorm.DB) IMembersRepo {
 	return &MembersRepo{db: db}
 }
 
-func (repo *MembersRepo) MembersByDiscordID(discordID string) (models.Members, error) {
+func (repo *MembersRepo) MembersByClanTag(clanTag string) (models.ClanMembers, error) {
+	var members models.ClanMembers
+	err := repo.db.
+		Preload("Player").
+		Find(&members, "clan_tag = ?", clanTag).Error
+	return members, err
+}
+
+func (repo *MembersRepo) MembersByDiscordID(discordID string) (models.ClanMembers, error) {
 	var players []*models.Player
 	err := repo.db.
-		Preload("Members").
+		Preload("ClanMembers").
 		Find(&players, "discord_id = ?", discordID).Error
 
-	var members models.Members
+	var members models.ClanMembers
 	for _, player := range players {
 		members = append(members, player.Members...)
 	}
@@ -46,8 +55,8 @@ func (repo *MembersRepo) MemberByID(playerTag, clanTag string) (*models.ClanMemb
 	return members, err
 }
 
-func (repo *MembersRepo) MembersByTag(clanTag string, playerTags ...string) (models.Members, error) {
-	var members models.Members
+func (repo *MembersRepo) MembersByTag(clanTag string, playerTags ...string) (models.ClanMembers, error) {
+	var members models.ClanMembers
 	err := repo.db.
 		Preload("Player").
 		Preload("Clan").
@@ -55,8 +64,8 @@ func (repo *MembersRepo) MembersByTag(clanTag string, playerTags ...string) (mod
 	return members, err
 }
 
-func (repo *MembersRepo) MissingClanMembers(clanTag string, playerTags ...string) (models.Members, error) {
-	var members models.Members
+func (repo *MembersRepo) MissingClanMembers(clanTag string, playerTags ...string) (models.ClanMembers, error) {
+	var members models.ClanMembers
 	err := repo.db.
 		Preload("Player").
 		Preload("Clan").

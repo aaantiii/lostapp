@@ -147,7 +147,7 @@ func (h *KickpointHandler) KickpointConfig(s *discordgo.Session, i *discordgo.In
 	settingName := util.StringOptionByName(SettingOptionName, opts)
 	settingValue := util.IntOptionByName(AmountOptionName, opts)
 
-	if clanTag == "" || settingName == "" || settingValue == 0 {
+	if clanTag == "" || settingName == "" || settingValue == nil {
 		messages.SendInvalidInputError(s, i, "Du musst einen Clan, eine Einstellung und einen Wert angeben.")
 		return
 	}
@@ -161,12 +161,12 @@ func (h *KickpointHandler) KickpointConfig(s *discordgo.Session, i *discordgo.In
 		return
 	}
 
-	if msg, ok := validation.ValidateKickpointSettings(settingName, settingValue); !ok {
+	if msg, ok := validation.ValidateKickpointSettings(settingName, *settingValue); !ok {
 		messages.SendInvalidInputError(s, i, msg)
 		return
 	}
 
-	if err := h.clanSettings.UpdateKickpointSetting(clanTag, settingName, settingValue); err != nil {
+	if err := h.clanSettings.UpdateKickpointSetting(clanTag, settingName, *settingValue); err != nil {
 		messages.SendEmbed(s, i, messages.NewEmbed("Fehler", "Beim Speichern der Einstellung ist ein Fehler aufgetreten.", messages.ColorRed))
 		return
 	}
@@ -331,12 +331,12 @@ func (h *KickpointHandler) CreateKickpointModalSubmit(s *discordgo.Session, i *d
 func (h *KickpointHandler) EditKickpoint(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	opts := i.ApplicationCommandData().Options
 	id := util.UintOptionByName(IDOptionName, opts)
-	if id == 0 {
+	if id == nil {
 		messages.SendInvalidInputError(s, i, "Du musst eine gültige Kickpunkt ID angeben.")
 		return
 	}
 
-	kickpoint, err := h.kickpoints.KickpointByID(id)
+	kickpoint, err := h.kickpoints.KickpointByID(*id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			messages.SendEmbed(s, i, messages.NewEmbed(
@@ -358,7 +358,7 @@ func (h *KickpointHandler) EditKickpoint(s *discordgo.Session, i *discordgo.Inte
 	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseModal,
 		Data: &discordgo.InteractionResponseData{
-			CustomID: util.BuildCustomID(i.ApplicationCommandData().Name, i.Interaction.Member.User.ID, strconv.Itoa(int(id))),
+			CustomID: util.BuildCustomID(i.ApplicationCommandData().Name, i.Interaction.Member.User.ID, strconv.Itoa(int(*id))),
 			Title:    "Kickpunkt bearbeiten",
 			Components: components.GenModalComponents(
 				components.KickpointReason(kickpoint.Description),
@@ -458,12 +458,12 @@ func (h *KickpointHandler) EditKickpointModalSubmit(s *discordgo.Session, i *dis
 func (h *KickpointHandler) DeleteKickpoint(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	opts := i.ApplicationCommandData().Options
 	id := util.UintOptionByName(IDOptionName, opts)
-	if id == 0 {
+	if id == nil {
 		messages.SendInvalidInputError(s, i, "Du musst eine gültige Kickpunkt ID angeben.")
 		return
 	}
 
-	kickpoint, err := h.kickpoints.KickpointByID(id)
+	kickpoint, err := h.kickpoints.KickpointByID(*id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			messages.SendEmbed(s, i, messages.NewEmbed(
@@ -482,7 +482,7 @@ func (h *KickpointHandler) DeleteKickpoint(s *discordgo.Session, i *discordgo.In
 		return
 	}
 
-	if err = h.kickpoints.DeleteKickpoint(id); err != nil {
+	if err = h.kickpoints.DeleteKickpoint(*id); err != nil {
 		messages.SendUnknownError(s, i)
 		return
 	}

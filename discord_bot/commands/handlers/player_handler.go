@@ -10,6 +10,7 @@ import (
 	"bot/client"
 	"bot/commands/messages"
 	"bot/commands/repos"
+	"bot/env"
 	"bot/store/postgres/models"
 )
 
@@ -65,11 +66,7 @@ func (h *PlayerHandler) VerifyPlayer(s *discordgo.Session, i *discordgo.Interact
 
 	cocPlayer, err := h.cocClient.GetPlayer(playerTag)
 	if err != nil {
-		messages.SendEmbed(s, i, messages.NewEmbed(
-			"Fehler",
-			"Der API-Token konnte erfolgreich verifiziert werden, jedoch konnte der Spieler nicht abgerufen werden.",
-			messages.ColorRed,
-		))
+		messages.SendCocApiError(s, i)
 		return
 	}
 
@@ -88,8 +85,8 @@ func (h *PlayerHandler) VerifyPlayer(s *discordgo.Session, i *discordgo.Interact
 		}); err != nil {
 			messages.SendEmbed(s, i, messages.NewEmbed(
 				"Fehler",
-				"Der Bot konnte deinen Discord Namen nicht zu deinem Clash of Clans Namen ändern.",
-				messages.ColorGreen,
+				"Der Bot konnte deinen Discord Namen nicht zu deinem Clash of Clans Namen ändern. Dies liegt wahrscheinlich an fehlenden Berechtigungen des Bots.",
+				messages.ColorRed,
 			))
 			return
 		}
@@ -104,6 +101,19 @@ func (h *PlayerHandler) VerifyPlayer(s *discordgo.Session, i *discordgo.Interact
 			"Datenbankfehler",
 			"Beim Speichern deines Accounts in der Datenbank ist ein Fehler aufgetreten. Bitte versuche es erneut.",
 			messages.ColorRed,
+		))
+		return
+	}
+
+	if err = s.GuildMemberRoleAdd(i.GuildID, i.Member.User.ID, env.DISCORD_VERIFIED_ROLE_ID.Value()); err != nil {
+		messages.SendEmbed(s, i, messages.NewEmbed(
+			"Erfolgreich verifiziert",
+			fmt.Sprintf(
+				"%s, dein Clash of Clans Account %s (%s) wurde erfolgreich verifiziert und mit deinem Discord Account verknüpft!\n**Achtung**: Der Bot konnte dir die Verified-Rolle nicht automatisch zuweisen. Bitte frage einen Vize, ob er sie dir manuell geben kann.",
+				i.Member.Mention(),
+				cocPlayer.Name,
+				cocPlayer.Tag),
+			messages.ColorGreen,
 		))
 		return
 	}

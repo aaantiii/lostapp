@@ -4,20 +4,23 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"gorm.io/gorm"
 
+	"bot/client"
 	"bot/commands/handlers"
+	"bot/commands/middleware"
 	"bot/commands/repos"
 	"bot/commands/util"
 	"bot/store/postgres/models"
 	"bot/types"
 )
 
-func memberInteractionCommands(db *gorm.DB) types.Commands[types.InteractionHandler] {
+func memberInteractionCommands(db *gorm.DB, cocClient *client.CocClient) types.Commands[types.InteractionHandler] {
 	handler := handlers.NewMemberHandler(
 		repos.NewMembersRepo(db),
 		repos.NewClansRepo(db),
 		repos.NewPlayersRepo(db),
 		repos.NewGuildsRepo(db),
-		repos.NewUsersRepo(db),
+		middleware.NewAuthMiddleware(repos.NewGuildsRepo(db), repos.NewClansRepo(db), repos.NewUsersRepo(db)),
+		cocClient,
 	)
 
 	return types.Commands[types.InteractionHandler]{{
@@ -32,6 +35,20 @@ func memberInteractionCommands(db *gorm.DB) types.Commands[types.InteractionHand
 			DMPermission: util.OptionalBool(false),
 			Options: []*discordgo.ApplicationCommandOption{
 				optionClanTag("Clan, dessen Mitglieder aufgelistet werden sollen."),
+			},
+		},
+	}, {
+		Handler: types.InteractionHandler{
+			Main:         handler.ClanMemberStatus,
+			Autocomplete: handler.HandleAutocomplete,
+		},
+		ApplicationCommand: &discordgo.ApplicationCommand{
+			Name:         "memberstatus",
+			Description:  "Prüft den Verifizierungsstatus aller Mitglieder eines Clans.",
+			Type:         discordgo.ChatApplicationCommand,
+			DMPermission: util.OptionalBool(false),
+			Options: []*discordgo.ApplicationCommandOption{
+				optionClanTag("Clan, dessen Mitglieder Status überprüft werden soll."),
 			},
 		},
 	}, {

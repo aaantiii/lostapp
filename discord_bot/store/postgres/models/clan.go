@@ -8,8 +8,8 @@ type Clan struct {
 	Tag  string `gorm:"primaryKey;not null"`
 	Name string
 
-	Settings *ClanSettings `gorm:"foreignKey:ClanTag;references:Tag"`
-	Members  Members       `gorm:"foreignKey:ClanTag;references:Tag"`
+	Settings    *ClanSettings `gorm:"foreignKey:ClanTag;references:Tag"`
+	ClanMembers ClanMembers   `gorm:"foreignKey:ClanTag;references:Tag"`
 }
 
 type Clans []Clan

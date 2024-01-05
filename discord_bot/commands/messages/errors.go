@@ -17,7 +17,7 @@ func SendUnknownError(s *discordgo.Session, i *discordgo.InteractionCreate) {
 func SendClanNotFound(s *discordgo.Session, i *discordgo.InteractionCreate, clanTag string) {
 	SendEmbed(s, i, NewEmbed(
 		"Clan nicht gefunden",
-		fmt.Sprintf("Der Clan mit dem ClanTag '%s' konnte nicht gefunden werden.", clanTag),
+		fmt.Sprintf("Der Clan mit dem Tag '%s' konnte nicht gefunden werden.", clanTag),
 		ColorRed,
 	))
 }
@@ -34,6 +34,14 @@ func SendInvalidInputError(s *discordgo.Session, i *discordgo.InteractionCreate,
 	SendEmbed(s, i, NewEmbed(
 		"Ungültige Eingaben",
 		msg,
+		ColorRed,
+	))
+}
+
+func SendCocApiError(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	SendEmbed(s, i, NewEmbed(
+		"API Fehler",
+		"Beim Abrufen der Daten von der Clash of Clan API ist ein Fehler aufgetreten.",
 		ColorRed,
 	))
 }

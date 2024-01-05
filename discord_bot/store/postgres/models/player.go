@@ -13,7 +13,7 @@ type Player struct {
 	DiscordID   string
 	LastUpdated time.Time `gorm:"->"`
 
-	Members Members `gorm:"foreignKey:PlayerTag;references:CocTag"`
+	Members ClanMembers `gorm:"foreignKey:PlayerTag;references:CocTag"`
 }
 
 type Players []*Player
