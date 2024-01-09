@@ -3,6 +3,7 @@ package types
 type AuthRole string
 
 const (
+	AuthRoleVerified AuthRole = "Verified"
 	AuthRoleMember   AuthRole = "Member"
 	AuthRoleElder    AuthRole = "Elder"
 	AuthRoleCoLeader AuthRole = "Co-Leader"
@@ -12,6 +13,8 @@ const (
 
 func (r AuthRole) String() string {
 	switch r {
+	case AuthRoleVerified:
+		return "Verifiziert"
 	case AuthRoleMember:
 		return "Mitglied"
 	case AuthRoleElder:

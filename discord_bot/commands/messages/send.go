@@ -5,6 +5,8 @@ import (
 	"log"
 
 	"github.com/bwmarrin/discordgo"
+
+	"bot/env"
 )
 
 func SendAutoCompletion(s *discordgo.Session, i *discordgo.InteractionCreate, choices []*discordgo.ApplicationCommandOptionChoice) {
@@ -18,7 +20,7 @@ func SendAutoCompletion(s *discordgo.Session, i *discordgo.InteractionCreate, ch
 
 func SendEmbed(s *discordgo.Session, i *discordgo.InteractionCreate, embed *discordgo.MessageEmbed) {
 	embed.Footer = &discordgo.MessageEmbedFooter{
-		Text: fmt.Sprintf("%s | %s", s.State.User.Username, "Made by Anti"),
+		Text: fmt.Sprintf("%s | %s | v%s", s.State.User.Username, "Made by Anti", env.VERSION.Value()),
 	}
 
 	if err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{

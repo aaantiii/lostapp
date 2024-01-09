@@ -6,6 +6,14 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+func SendError(s *discordgo.Session, i *discordgo.InteractionCreate, msg string) {
+	SendEmbed(s, i, NewEmbed(
+		"Fehler",
+		msg,
+		ColorRed,
+	))
+}
+
 func SendUnknownError(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	SendEmbed(s, i, NewEmbed(
 		"Unbekannter Fehler",

@@ -59,7 +59,7 @@ func (h *KickpointHandler) ClanKickpoints(s *discordgo.Session, i *discordgo.Int
 	}
 
 	clanTag := opts[0].StringValue()
-	if err := h.authMiddleware.NewHandler(clanTag, types.AuthRoleMember)(s, i); err != nil {
+	if err := h.authMiddleware.NewClanHandler(clanTag, types.AuthRoleMember)(s, i); err != nil {
 		return
 	}
 
@@ -96,7 +96,7 @@ func (h *KickpointHandler) MemberKickpoints(s *discordgo.Session, i *discordgo.I
 		return
 	}
 
-	if err := h.authMiddleware.NewHandler(clanTag, types.AuthRoleMember)(s, i); err != nil {
+	if err := h.authMiddleware.NewClanHandler(clanTag, types.AuthRoleMember)(s, i); err != nil {
 		return
 	}
 
@@ -152,7 +152,7 @@ func (h *KickpointHandler) KickpointConfig(s *discordgo.Session, i *discordgo.In
 		return
 	}
 
-	if err := h.authMiddleware.NewHandler(clanTag, types.AuthRoleCoLeader)(s, i); err != nil {
+	if err := h.authMiddleware.NewClanHandler(clanTag, types.AuthRoleCoLeader)(s, i); err != nil {
 		return
 	}
 
@@ -191,7 +191,7 @@ func (h *KickpointHandler) CreateKickpointModal(s *discordgo.Session, i *discord
 		return
 	}
 
-	if err := h.authMiddleware.NewHandler(clanTag, types.AuthRoleCoLeader)(s, i); err != nil {
+	if err := h.authMiddleware.NewClanHandler(clanTag, types.AuthRoleCoLeader)(s, i); err != nil {
 		return
 	}
 
@@ -265,7 +265,7 @@ func (h *KickpointHandler) CreateKickpointModalSubmit(s *discordgo.Session, i *d
 	}
 
 	clanTag := util.ParseStringModalInput(data.Components[4])
-	if err := h.authMiddleware.NewHandler(clanTag, types.AuthRoleCoLeader)(s, i); err != nil {
+	if err := h.authMiddleware.NewClanHandler(clanTag, types.AuthRoleCoLeader)(s, i); err != nil {
 		return
 	}
 
@@ -351,7 +351,7 @@ func (h *KickpointHandler) EditKickpoint(s *discordgo.Session, i *discordgo.Inte
 		return
 	}
 
-	if err = h.authMiddleware.NewHandler(kickpoint.ClanTag, types.AuthRoleCoLeader)(s, i); err != nil {
+	if err = h.authMiddleware.NewClanHandler(kickpoint.ClanTag, types.AuthRoleCoLeader)(s, i); err != nil {
 		return
 	}
 
@@ -416,7 +416,7 @@ func (h *KickpointHandler) EditKickpointModalSubmit(s *discordgo.Session, i *dis
 		return
 	}
 
-	if err = h.authMiddleware.NewHandler(prevKickpoint.ClanTag, types.AuthRoleCoLeader)(s, i); err != nil {
+	if err = h.authMiddleware.NewClanHandler(prevKickpoint.ClanTag, types.AuthRoleCoLeader)(s, i); err != nil {
 		return
 	}
 
@@ -478,7 +478,7 @@ func (h *KickpointHandler) DeleteKickpoint(s *discordgo.Session, i *discordgo.In
 		return
 	}
 
-	if err = h.authMiddleware.NewHandler(kickpoint.ClanTag, types.AuthRoleCoLeader)(s, i); err != nil {
+	if err = h.authMiddleware.NewClanHandler(kickpoint.ClanTag, types.AuthRoleCoLeader)(s, i); err != nil {
 		return
 	}
 

@@ -44,7 +44,7 @@ func memberInteractionCommands(db *gorm.DB, cocClient *client.CocClient) types.C
 		},
 		ApplicationCommand: &discordgo.ApplicationCommand{
 			Name:         "memberstatus",
-			Description:  "Prüft den Verifizierungsstatus aller Mitglieder eines Clans.",
+			Description:  "Vergleicht hinzugefügte Mitglieder der Datenbank mit den ingame-Clan Mitgliedern.",
 			Type:         discordgo.ChatApplicationCommand,
 			DMPermission: util.OptionalBool(false),
 			Options: []*discordgo.ApplicationCommandOption{

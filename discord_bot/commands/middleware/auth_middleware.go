@@ -27,11 +27,25 @@ func NewAuthMiddleware(guilds repos.IGuildsRepo, clans repos.IClansRepo, users r
 	}
 }
 
-// NewHandler returns a middleware handler that checks if the user has the specified role in the specified clan.
-func (m AuthMiddleware) NewHandler(clanTag string, role types.AuthRole) InteractionMiddleware {
+func (m AuthMiddleware) AdminOnlyHandler(s *discordgo.Session, i *discordgo.InteractionCreate) error {
+	user, err := m.users.UserByDiscordID(i.Member.User.ID)
+	if err != nil {
+		messages.SendUnknownError(s, i)
+		return err
+	}
+	if user.IsAdmin {
+		return nil
+	}
+	m.sendAdminRequired(s, i)
+	return errors.New("member is not an admin")
+}
+
+// NewClanHandler returns a middleware handler that checks if the user has the specified role in the specified clan.
+func (m AuthMiddleware) NewClanHandler(clanTag string, role types.AuthRole) InteractionMiddleware {
 	return func(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 		user := models.UserFromGuildMember(i.Member)
 		if err := m.users.CreateOrUpdateUser(user); err != nil {
+			messages.SendUnknownError(s, i)
 			return err
 		}
 		if user.IsAdmin {

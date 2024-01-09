@@ -12,6 +12,7 @@ type EnvironmentVariable string // EnvironmentVariable type represents an enviro
 
 const (
 	MODE                     EnvironmentVariable = "MODE"
+	VERSION                  EnvironmentVariable = "VERSION"
 	POSTGRES_URL             EnvironmentVariable = "POSTGRES_URL"
 	DISCORD_VERIFIED_ROLE_ID EnvironmentVariable = "DISCORD_VERIFIED_ROLE_ID"
 	DISCORD_GUILD_ID         EnvironmentVariable = "DISCORD_GUILD_ID"
@@ -40,6 +41,7 @@ func Load() error {
 
 	required := []EnvironmentVariable{
 		MODE,
+		VERSION,
 		POSTGRES_URL,
 		DISCORD_VERIFIED_ROLE_ID,
 		DISCORD_GUILD_ID,

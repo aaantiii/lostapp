@@ -3,13 +3,16 @@ package handlers
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/amaanq/coc.go"
 	"github.com/bwmarrin/discordgo"
+	"gorm.io/gorm"
 
 	"bot/client"
 	"bot/commands/messages"
 	"bot/commands/repos"
+	"bot/commands/util"
 	"bot/env"
 	"bot/store/postgres/models"
 )
@@ -34,9 +37,10 @@ func NewPlayerHandler(players repos.IPlayersRepo, cocClient *client.CocClient) I
 
 func (h *PlayerHandler) VerifyPlayer(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	opts := i.ApplicationCommandData().Options
+	go util.DeleteInteractionResponseWithTimeout(s, i.Interaction, time.Minute*2)
 
 	if len(opts) != 2 {
-		messages.SendInvalidInputError(s, i, "Bitte gib einen Spieler-Tag und einen API-Token an.")
+		messages.SendInvalidInputError(s, i, "Bitte gib einen gültigen Spieler-Tag und einen API-Token an.")
 		return
 	}
 
@@ -79,7 +83,8 @@ func (h *PlayerHandler) VerifyPlayer(s *discordgo.Session, i *discordgo.Interact
 		return
 	}
 
-	if existingPlayers, _ := h.players.PlayersByDiscordID(i.Member.User.ID); len(existingPlayers) == 0 {
+	existingPlayers, err := h.players.PlayersByDiscordID(i.Member.User.ID)
+	if (err == nil || errors.Is(err, gorm.ErrRecordNotFound)) && len(existingPlayers) == 0 {
 		if _, err = s.GuildMemberEdit(i.GuildID, i.Member.User.ID, &discordgo.GuildMemberParams{
 			Nick: cocPlayer.Name,
 		}); err != nil {

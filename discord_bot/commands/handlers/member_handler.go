@@ -107,7 +107,7 @@ func (h *MemberHandler) AddMember(s *discordgo.Session, i *discordgo.Interaction
 		requiredAuthRole = types.AuthRoleLeader
 	}
 
-	if err := h.authMiddleware.NewHandler(clanTag, requiredAuthRole)(s, i); err != nil {
+	if err := h.authMiddleware.NewClanHandler(clanTag, requiredAuthRole)(s, i); err != nil {
 		return
 	}
 
@@ -146,7 +146,7 @@ func (h *MemberHandler) AddMember(s *discordgo.Session, i *discordgo.Interaction
 	}
 
 	messages.SendEmbed(s, i, messages.NewEmbed(
-		"Mitglied erfolgreich hinzugefügt",
+		"Mitglied hinzugefügt",
 		desc,
 		messages.ColorGreen,
 	))
@@ -175,7 +175,7 @@ func (h *MemberHandler) RemoveMember(s *discordgo.Session, i *discordgo.Interact
 		requiredAuthRole = types.AuthRoleLeader
 	}
 
-	if err = h.authMiddleware.NewHandler(clanTag, requiredAuthRole)(s, i); err != nil {
+	if err = h.authMiddleware.NewClanHandler(clanTag, requiredAuthRole)(s, i); err != nil {
 		return
 	}
 
@@ -227,7 +227,7 @@ func (h *MemberHandler) EditMember(s *discordgo.Session, i *discordgo.Interactio
 		requiredAuthRole = types.AuthRoleLeader
 	}
 
-	if err := h.authMiddleware.NewHandler(clanTag, requiredAuthRole)(s, i); err != nil {
+	if err := h.authMiddleware.NewClanHandler(clanTag, requiredAuthRole)(s, i); err != nil {
 		return
 	}
 

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"bot/store/postgres/models"
 )
 
 const (
@@ -26,6 +28,18 @@ func ParseDateString(s string) (time.Time, error) {
 	}
 
 	return TruncateToDay(date), nil
+}
+
+func FormatFromAt(from *models.User, at time.Time) string {
+	msg := ""
+	if from != nil {
+		msg += fmt.Sprintf("von %s ", from.Name)
+	}
+	if !at.IsZero() {
+		msg += fmt.Sprintf("am %s", FormatDateTime(at))
+	}
+
+	return strings.Trim(msg, " ")
 }
 
 func TruncateToDay(t time.Time) time.Time {

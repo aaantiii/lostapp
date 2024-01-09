@@ -17,6 +17,7 @@ func createInteractions(db *gorm.DB, cocClient *client.CocClient) types.Commands
 		kickpointInteractionCommands(db),
 		playerInteractionCommands(db, cocClient),
 		memberInteractionCommands(db, cocClient),
+		adminInteractionCommands(db),
 	}
 
 	var flat types.Commands[types.InteractionHandler]
@@ -51,7 +52,7 @@ func interactionHandler(interactions types.Commands[types.InteractionHandler]) f
 
 			start := time.Now()
 			defer func() {
-				took := time.Now().Sub(start).Round(time.Millisecond)
+				took := time.Since(start).Round(time.Millisecond)
 				if err := recover(); err != nil {
 					log.Printf("Interaction called by %s panicked after %s: %v", i.Member.User.Username, took, err)
 				} else {

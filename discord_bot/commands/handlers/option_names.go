@@ -8,4 +8,5 @@ const (
 	RoleOptionName      = "role"
 	SettingOptionName   = "setting"
 	AmountOptionName    = "amount"
+	LimitOptionName     = "limit"
 )

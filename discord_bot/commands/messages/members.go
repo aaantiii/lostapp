@@ -46,7 +46,7 @@ func SendClansMembersStatus(s *discordgo.Session, i *discordgo.InteractionCreate
 		fmt.Sprintf("Mitgliederstatus von %s", clan.Name),
 		"Übersicht des Verifizerungsstatus aller Mitglieder.",
 		ColorAqua,
-		[]*discordgo.MessageEmbedField{getUnverifiedMembers(dbMembers, *clan.MemberList), getVerifiedNotInClan(dbMembers, *clan.MemberList)},
+		[]*discordgo.MessageEmbedField{getUnverifiedMembers(dbMembers, *clan.MemberList), getMembersNotInClan(dbMembers, *clan.MemberList)},
 	))
 }
 
@@ -57,7 +57,7 @@ func getUnverifiedMembers(dbMembers models.ClanMembers, currentMembers []coc.Cla
 		dbMemberByTag[member.PlayerTag] = member
 	}
 
-	field := &discordgo.MessageEmbedField{Name: "Nicht verifiziert, ingame im Clan"}
+	field := &discordgo.MessageEmbedField{Name: "Kein Mitglied, ingame im Clan"}
 	for _, member := range currentMembers {
 		if _, ok := dbMemberByTag[member.Tag]; !ok {
 			field.Value += fmt.Sprintf("%s (%s)\n", member.Name, member.Tag)
@@ -65,20 +65,20 @@ func getUnverifiedMembers(dbMembers models.ClanMembers, currentMembers []coc.Cla
 	}
 
 	if field.Value == "" {
-		field.Value = "Alle Mitglieder sind verifiziert."
+		field.Value = "Alle Personen im Clan sind als Mitglied hinzugefügt."
 	}
 
 	return field
 }
 
-// getVerifiedNotInClan returns all members that are in the database but currently not in the clan.
-func getVerifiedNotInClan(members models.ClanMembers, currentMembers []coc.ClanMember) *discordgo.MessageEmbedField {
+// getMembersNotInClan returns all members that are in the database but currently not in the clan.
+func getMembersNotInClan(members models.ClanMembers, currentMembers []coc.ClanMember) *discordgo.MessageEmbedField {
 	currentMembersByTag := make(map[string]coc.ClanMember, len(currentMembers))
 	for _, m := range currentMembers {
 		currentMembersByTag[m.Tag] = m
 	}
 
-	field := &discordgo.MessageEmbedField{Name: "Verifiziert, gerade nicht im Clan"}
+	field := &discordgo.MessageEmbedField{Name: "Mitglied, gerade nicht im Clan"}
 	for _, member := range members {
 		if _, ok := currentMembersByTag[member.PlayerTag]; !ok {
 			field.Value += fmt.Sprintf("%s (%s)\n", member.Player.Name, member.PlayerTag)
@@ -86,7 +86,7 @@ func getVerifiedNotInClan(members models.ClanMembers, currentMembers []coc.ClanM
 	}
 
 	if field.Value == "" {
-		field.Value = "Alle verifizierten Mitglieder sind im Clan."
+		field.Value = "Alle Mitglieder befinden sich momentan im Clan."
 	}
 
 	return field
