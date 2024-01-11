@@ -8,7 +8,9 @@ import (
 	"gorm.io/gorm"
 
 	"bot/client"
+	"bot/commands/messages"
 	"bot/commands/util"
+	"bot/env"
 	"bot/types"
 )
 
@@ -18,6 +20,7 @@ func createInteractions(db *gorm.DB, cocClient *client.CocClient) types.Commands
 		playerInteractionCommands(db, cocClient),
 		memberInteractionCommands(db, cocClient),
 		adminInteractionCommands(db),
+		clanInteractionCommands(db, cocClient),
 	}
 
 	var flat types.Commands[types.InteractionHandler]
@@ -33,7 +36,6 @@ func interactionCommandMap(commands types.Commands[types.InteractionHandler]) ma
 	for _, c := range commands {
 		interactionsMap[c.Name] = c
 	}
-
 	return interactionsMap
 }
 
@@ -49,16 +51,18 @@ func interactionHandler(interactions types.Commands[types.InteractionHandler]) f
 				sendDMNotSupported(s, i)
 				return
 			}
+			defer handleRecovery(i.Interaction.Member.User.Username, time.Now())
 
-			start := time.Now()
-			defer func() {
-				took := time.Since(start).Round(time.Millisecond)
-				if err := recover(); err != nil {
-					log.Printf("Interaction called by %s panicked after %s: %v", i.Member.User.Username, took, err)
-				} else {
-					log.Printf("Interaction called by %s took %s.", i.Member.User.Username, took)
+			if env.MODE.Value() == "TEST" {
+				if i.Member.User.ID != "289735223313301504" {
+					messages.SendEmbed(s, i, messages.NewEmbed(
+						"Wartungsarbeiten",
+						"Der Bot wird gerade gewartet. Bitte versuche es später erneut.",
+						messages.ColorYellow,
+					))
+					return
 				}
-			}()
+			}
 
 			switch i.Type {
 			case discordgo.InteractionApplicationCommandAutocomplete:
@@ -80,6 +84,7 @@ func interactionHandler(interactions types.Commands[types.InteractionHandler]) f
 				commandName, _, _ := util.ParseCustomID(i.ModalSubmitData().CustomID)
 				if command, ok := commands[commandName]; ok {
 					if command.Handler.ModalSubmit == nil {
+						log.Printf("Tried to run modal submit handler for command '%s', but it is nil.", commandName)
 						return
 					}
 					command.Handler.ModalSubmit(s, i)
@@ -88,5 +93,14 @@ func interactionHandler(interactions types.Commands[types.InteractionHandler]) f
 			}
 			sendCommandNotFound(s, i)
 		}()
+	}
+}
+
+func handleRecovery(caller string, start time.Time) {
+	took := time.Since(start).Round(time.Millisecond)
+	if err := recover(); err != nil {
+		log.Printf("Interaction panicked after %s: %v", took, err)
+	} else {
+		log.Printf("Interaction called by %s took %s.", caller, took)
 	}
 }

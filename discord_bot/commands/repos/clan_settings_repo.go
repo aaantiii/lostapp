@@ -10,7 +10,7 @@ import (
 type IClanSettingsRepo interface {
 	ClanSettings(clanTag string) (*models.ClanSettings, error)
 	ClanSettingsPreload(clanTag string) (*models.ClanSettings, error)
-	UpdateKickpointSetting(clanTag, column string, value int) error
+	UpdateKickpointSetting(clanTag string, setting models.KickpointSetting, value int) error
 }
 
 type ClanSettingsRepo struct {
@@ -36,8 +36,8 @@ func (repo *ClanSettingsRepo) ClanSettingsPreload(clanTag string) (*models.ClanS
 	return clanSettings, err
 }
 
-func (repo *ClanSettingsRepo) UpdateKickpointSetting(clanTag, column string, value int) error {
+func (repo *ClanSettingsRepo) UpdateKickpointSetting(clanTag string, setting models.KickpointSetting, value int) error {
 	return repo.db.
 		Model(&models.ClanSettings{ClanTag: clanTag}).
-		Update(column, value).Error
+		Update(string(setting), value).Error
 }

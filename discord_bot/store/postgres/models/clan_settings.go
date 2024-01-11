@@ -26,43 +26,105 @@ type ClanSettings struct {
 	UpdatedByUser *User `gorm:"foreignKey:DiscordID;references:UpdatedByDiscordID"`
 }
 
+type KickpointSetting string
+
 const (
-	ClanSettingsMaxKickpoints   = "max_kickpoints"
-	ClanSettingsMinSeasonWins   = "min_season_wins"
-	ClanSettingsExpireAfterDays = "kickpoints_expire_after_days"
-	ClanSettingsSeasonWins      = "kickpoints_season_wins"
-	ClanSettingsCWMissed        = "kickpoints_cw_missed"
-	ClanSettingsCWFail          = "kickpoints_cw_fail"
-	ClanSettingsCWLMissed       = "kickpoints_cwl_missed"
-	ClanSettingsCWLZero         = "kickpoints_cwl_zero_stars"
-	ClanSettingsCWLOne          = "kickpoints_cwl_one_star"
-	ClanSettingsRaidMissed      = "kickpoints_raid_missed"
-	ClanSettingsRaidFail        = "kickpoints_raid_fail"
-	ClanSettingsClanGames       = "kickpoints_clan_games"
-	ClanSettingsOther           = "kickpoints_other"
+	KickpointSettingMaxKickpoints   KickpointSetting = "max_kickpoints"
+	KickpointSettingMinSeasonWins   KickpointSetting = "min_season_wins"
+	KickpointSettingExpireAfterDays KickpointSetting = "kickpoints_expire_after_days"
+	KickpointSettingSeasonWins      KickpointSetting = "kickpoints_season_wins"
+	KickpointSettingCWMissed        KickpointSetting = "kickpoints_cw_missed"
+	KickpointSettingCWFail          KickpointSetting = "kickpoints_cw_fail"
+	KickpointSettingCWLMissed       KickpointSetting = "kickpoints_cwl_missed"
+	KickpointSettingCWLZeroStars    KickpointSetting = "kickpoints_cwl_zero_stars"
+	KickpointSettingCWLOneStar      KickpointSetting = "kickpoints_cwl_one_star"
+	KickpointSettingRaidMissed      KickpointSetting = "kickpoints_raid_missed"
+	KickpointSettingRaidFail        KickpointSetting = "kickpoints_raid_fail"
+	KickpointSettingClanGames       KickpointSetting = "kickpoints_clan_games"
+	KickpointSettingOther           KickpointSetting = "kickpoints_other"
 )
 
-func (s *ClanSettings) KickpointAmountFromName(name string) (int, error) {
-	switch name {
-	case ClanSettingsSeasonWins:
+func (s KickpointSetting) DisplayString() string {
+	switch s {
+	case KickpointSettingMaxKickpoints:
+		return "Maximale Kickpunkte"
+	case KickpointSettingMinSeasonWins:
+		return "Minimum Season Wins"
+	case KickpointSettingExpireAfterDays:
+		return "Gültigkeitsdauer in Tagen"
+	case KickpointSettingSeasonWins:
+		return "Kickpunkte: Season Wins"
+	case KickpointSettingCWMissed:
+		return "Kickpunkte: CW nicht angegriffen"
+	case KickpointSettingCWFail:
+		return "Kickpunkte: CW 0 Sterne"
+	case KickpointSettingCWLMissed:
+		return "Kickpunte: CKL nicht angegriffen"
+	case KickpointSettingCWLZeroStars:
+		return "Kickpunte: CKL 0 Sterne"
+	case KickpointSettingCWLOneStar:
+		return "Kickpunte: CKL 1 Stern"
+	case KickpointSettingRaidMissed:
+		return "Kickpunte: Raid nicht angegriffen"
+	case KickpointSettingRaidFail:
+		return "Kickpunte: Raid Fail"
+	case KickpointSettingClanGames:
+		return "Kickpunte: Clan Spiele nicht gemacht"
+	case KickpointSettingOther:
+		return "Kickpunkte: Sonstiges"
+	default:
+		return ""
+	}
+}
+
+func (s KickpointSetting) DisplayStringShort() string {
+	switch s {
+	case KickpointSettingSeasonWins:
+		return "Season Wins"
+	case KickpointSettingCWMissed:
+		return "CW nicht angegriffen"
+	case KickpointSettingCWFail:
+		return "CW 0 Sterne"
+	case KickpointSettingCWLMissed:
+		return "CKL nicht angegriffen"
+	case KickpointSettingCWLZeroStars:
+		return "CKL 0 Sterne"
+	case KickpointSettingCWLOneStar:
+		return "CKL 1 Stern"
+	case KickpointSettingRaidMissed:
+		return "Raid nicht angegriffen"
+	case KickpointSettingRaidFail:
+		return "Raid Fail"
+	case KickpointSettingClanGames:
+		return "Clan Spiele nicht gemacht"
+	case KickpointSettingOther:
+		return "Sonstiges"
+	default:
+		return ""
+	}
+}
+
+func (s *ClanSettings) KickpointAmountFromSetting(setting KickpointSetting) (int, error) {
+	switch setting {
+	case KickpointSettingSeasonWins:
 		return s.KickpointsSeasonWins, nil
-	case ClanSettingsCWMissed:
+	case KickpointSettingCWMissed:
 		return s.KickpointsCWMissed, nil
-	case ClanSettingsCWFail:
+	case KickpointSettingCWFail:
 		return s.KickpointsCWFail, nil
-	case ClanSettingsCWLMissed:
+	case KickpointSettingCWLMissed:
 		return s.KickpointsCWLMissed, nil
-	case ClanSettingsCWLZero:
+	case KickpointSettingCWLZeroStars:
 		return s.KickpointsCWLZeroStars, nil
-	case ClanSettingsCWLOne:
+	case KickpointSettingCWLOneStar:
 		return s.KickpointsCWLOneStar, nil
-	case ClanSettingsRaidMissed:
+	case KickpointSettingRaidMissed:
 		return s.KickpointsRaidMissed, nil
-	case ClanSettingsRaidFail:
+	case KickpointSettingRaidFail:
 		return s.KickpointsRaidFail, nil
-	case ClanSettingsClanGames:
+	case KickpointSettingClanGames:
 		return s.KickpointsClanGames, nil
-	case ClanSettingsOther:
+	case KickpointSettingOther:
 		return 1, nil
 	default:
 		return 0, errors.New("invalid name")

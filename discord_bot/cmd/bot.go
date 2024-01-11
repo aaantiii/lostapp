@@ -32,12 +32,12 @@ func main() {
 	}
 	log.Printf("Successfully added %d commands.", len(cmds))
 
-	s.Identify.Intents = discordgo.IntentsAll
-
 	if err = s.Open(); err != nil {
 		log.Fatalf("Failed to open discord session: %v", err)
 	}
 	log.Printf("Bot is now logged in as %s and running. Press CTRL-C to exit.", s.State.User.Username)
+
+	s.Identify.Intents = discordgo.IntentsAll
 
 	if err = s.UpdateGameStatus(0, "mit deinen Kickpunkten"); err != nil {
 		log.Fatalf("Failed to update game status: %v", err)
@@ -57,6 +57,10 @@ func main() {
 }
 
 func removeCommands(s *discordgo.Session, cmds []*discordgo.ApplicationCommand) error {
+	if env.MODE.Value() == "DEBUG" {
+		return nil
+	}
+
 	errChan := make(chan error)
 	log.Printf("Removing %d commands, this takes about a minute...", len(cmds))
 	for _, cmd := range cmds {

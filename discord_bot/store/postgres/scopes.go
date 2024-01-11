@@ -16,7 +16,7 @@ func ScopePaginate(params types.PaginationParams) func(db *gorm.DB) *gorm.DB {
 	}
 }
 
-func ScopeContains(value string, fields ...any) func(db *gorm.DB) *gorm.DB {
+func ScopeContains(value string, fields ...string) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		if value == "" || len(fields) == 0 {
 			return db

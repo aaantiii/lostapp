@@ -2,6 +2,7 @@ package messages
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -12,6 +13,14 @@ func SendError(s *discordgo.Session, i *discordgo.InteractionCreate, msg string)
 		msg,
 		ColorRed,
 	))
+}
+
+func SendChannelWarning(s *discordgo.Session, channelID, msg string) {
+	embed := NewEmbed(":warning: Warnung :warning:", msg, ColorYellow)
+	embed.Footer = newDefaultFooter(s)
+	if _, err := s.ChannelMessageSendEmbed(channelID, embed); err != nil {
+		log.Printf("Error while sending warning message: %v", err)
+	}
 }
 
 func SendUnknownError(s *discordgo.Session, i *discordgo.InteractionCreate) {

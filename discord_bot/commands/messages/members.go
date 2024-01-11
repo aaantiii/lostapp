@@ -2,6 +2,7 @@ package messages
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/amaanq/coc.go"
 	"github.com/bwmarrin/discordgo"
@@ -11,6 +12,9 @@ import (
 )
 
 func SendClanMembers(s *discordgo.Session, i *discordgo.InteractionCreate, clan *models.Clan) {
+	sort.SliceStable(clan.ClanMembers, func(i, j int) bool {
+		return clan.ClanMembers[i].Player.Name < clan.ClanMembers[j].Player.Name
+	})
 	membersByRole := util.SortMembersByRole(clan.ClanMembers)
 
 	var fields []*discordgo.MessageEmbedField
@@ -19,12 +23,11 @@ func SendClanMembers(s *discordgo.Session, i *discordgo.InteractionCreate, clan 
 			continue
 		}
 
-		field := &discordgo.MessageEmbedField{
-			Name: fmt.Sprintf("%s (%d)", members[0].ClanRole.Format(), len(members)),
-		}
+		field := &discordgo.MessageEmbedField{Name: fmt.Sprintf("%s (%d)", members[0].ClanRole.Format(), len(members))}
 		for _, member := range members {
 			field.Value += fmt.Sprintf("%s\n", member.Player.Name)
 		}
+		field.Value += " "
 		fields = append(fields, field)
 	}
 
@@ -44,7 +47,7 @@ func SendClansMembersStatus(s *discordgo.Session, i *discordgo.InteractionCreate
 
 	SendEmbed(s, i, NewFieldEmbed(
 		fmt.Sprintf("Mitgliederstatus von %s", clan.Name),
-		"Übersicht des Verifizerungsstatus aller Mitglieder.",
+		"Übersicht aller Mitglieder, welche sich gerade nicht im Clan befinden, sowie nicht hinzugefügte Mitglieder, welche gerade im Clan sind.",
 		ColorAqua,
 		[]*discordgo.MessageEmbedField{getUnverifiedMembers(dbMembers, *clan.MemberList), getMembersNotInClan(dbMembers, *clan.MemberList)},
 	))

@@ -5,12 +5,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jinzhu/now"
+
 	"bot/store/postgres/models"
 )
 
 const (
-	dateFormat     = "02.01.2006"
-	dateTimeFormat = "02.01.2006, 15:04"
+	dateFormat        = "02.01.2006"
+	dateTimeFormat    = "02.01.2006, 15:04"
+	dateParsingFormat = "2.1.2006"
 )
 
 func FormatDate(t time.Time) string {
@@ -22,7 +25,7 @@ func FormatDateTime(t time.Time) string {
 }
 
 func ParseDateString(s string) (time.Time, error) {
-	date, err := time.Parse(dateFormat, s)
+	date, err := time.Parse(dateParsingFormat, s)
 	if err != nil {
 		return date, err
 	}
@@ -67,4 +70,8 @@ func FormatDuration(d time.Duration) string {
 	}
 
 	return strings.Trim(res, " ")
+}
+
+func KickpointMinDate(expiresAfterDays int) time.Time {
+	return now.BeginningOfDay().AddDate(0, 0, -(expiresAfterDays - 1))
 }

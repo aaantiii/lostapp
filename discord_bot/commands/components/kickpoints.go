@@ -46,7 +46,7 @@ func KickpointAmount(defaultValue int) discordgo.TextInput {
 func KickpointReason(defaultValue string) discordgo.TextInput {
 	return discordgo.TextInput{
 		CustomID:    KickpointReasonID,
-		Label:       "Grund",
+		Label:       autofillLabel("Grund", defaultValue),
 		Placeholder: "z.B. CWL Feb 2. Tag nicht angegriffen",
 		Style:       discordgo.TextInputShort,
 		Value:       defaultValue,
@@ -59,7 +59,7 @@ func KickpointReason(defaultValue string) discordgo.TextInput {
 func KickpointDate(defaultValue string) discordgo.TextInput {
 	return discordgo.TextInput{
 		CustomID:    KickpointDateID,
-		Label:       "Datum",
+		Label:       autofillLabel("Datum", defaultValue),
 		Placeholder: "z.B. 31.01.2023",
 		Style:       discordgo.TextInputShort,
 		Value:       defaultValue,

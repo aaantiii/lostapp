@@ -35,7 +35,9 @@ func (repo *ClansRepo) Clans(query string) (models.Clans, error) {
 
 func (repo *ClansRepo) ClanByTag(tag string) (*models.Clan, error) {
 	var clan *models.Clan
-	err := repo.db.First(&clan, "tag = ?", tag).Error
+	err := repo.db.
+		Preload("ClanMembers").
+		First(&clan, "tag = ?", tag).Error
 	return clan, err
 }
 
@@ -49,10 +51,10 @@ func (repo *ClansRepo) ClanByTagPreload(tag string) (*models.Clan, error) {
 }
 
 func (repo *ClansRepo) ClanNameByTag(tag string) (string, error) {
-	var name string
+	var c struct{ Name string }
 	err := repo.db.
 		Model(&models.Clan{}).
 		Select("name").
-		First(&name, "tag = ?", tag).Error
-	return name, err
+		First(&c, "tag = ?", tag).Error
+	return c.Name, err
 }

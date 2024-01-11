@@ -26,10 +26,13 @@ func NewMembersRepo(db *gorm.DB) IMembersRepo {
 
 func (repo *MembersRepo) MembersByClanTag(clanTag string) (models.ClanMembers, error) {
 	var members models.ClanMembers
-	err := repo.db.
+	if err := repo.db.
 		Preload("Player").
-		Find(&members, "clan_tag = ?", clanTag).Error
-	return members, err
+		Find(&members, "clan_tag = ?", clanTag).Error; err != nil {
+		return nil, err
+	}
+
+	return members, nil
 }
 
 func (repo *MembersRepo) MembersByDiscordID(discordID string) (models.ClanMembers, error) {

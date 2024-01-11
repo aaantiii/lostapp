@@ -19,6 +19,7 @@ func kickpointInteractionCommands(db *gorm.DB) types.Commands[types.InteractionH
 		repos.NewGuildsRepo(db),
 		repos.NewUsersRepo(db),
 		repos.NewClanSettingsRepo(db),
+		repos.NewMemberStatesRepo(db),
 	)
 
 	return types.Commands[types.InteractionHandler]{{
@@ -34,8 +35,7 @@ func kickpointInteractionCommands(db *gorm.DB) types.Commands[types.InteractionH
 			Options: []*discordgo.ApplicationCommandOption{
 				optionClanTag("Clan, dessen Kickpunkte angezeigt werden sollen."),
 			},
-		},
-	}, {
+		}}, {
 		Handler: types.InteractionHandler{
 			Main:         handler.MemberKickpoints,
 			Autocomplete: handler.HandleAutocomplete,
@@ -49,8 +49,7 @@ func kickpointInteractionCommands(db *gorm.DB) types.Commands[types.InteractionH
 				optionClanTag("Clan, aus dem das Mitglied stammt."),
 				optionMemberTag("ClanMember, dessen Kickpunkte angezeigt werden sollen."),
 			},
-		},
-	}, {
+		}}, {
 		Handler: types.InteractionHandler{
 			Main:         handler.KickpointInfo,
 			Autocomplete: handler.HandleAutocomplete,
@@ -63,8 +62,7 @@ func kickpointInteractionCommands(db *gorm.DB) types.Commands[types.InteractionH
 			Options: []*discordgo.ApplicationCommandOption{
 				optionClanTag("Clan, dessen Übersicht angezeigt werden soll."),
 			},
-		},
-	}, {
+		}}, {
 		Handler: types.InteractionHandler{
 			Main:         handler.KickpointConfig,
 			Autocomplete: handler.HandleAutocomplete,
@@ -82,18 +80,18 @@ func kickpointInteractionCommands(db *gorm.DB) types.Commands[types.InteractionH
 					Type:        discordgo.ApplicationCommandOptionString,
 					Required:    true,
 					Choices: []*discordgo.ApplicationCommandOptionChoice{
-						{Name: "Maximale Kickpunkte", Value: models.ClanSettingsMaxKickpoints},
-						{Name: "Gültigkeitsdauer in Tagen", Value: models.ClanSettingsExpireAfterDays},
-						{Name: "Minimum Season Wins", Value: models.ClanSettingsMinSeasonWins},
-						{Name: "Kickpunkte: Season Wins", Value: models.ClanSettingsSeasonWins},
-						{Name: "Kickpunkte: CW nicht angegriffen", Value: models.ClanSettingsCWMissed},
-						{Name: "Kickpunkte: CW 0 Sterne", Value: models.ClanSettingsCWFail},
-						{Name: "Kickpunte: CKL nicht angegriffen", Value: models.ClanSettingsCWLMissed},
-						{Name: "Kickpunte: CKL 0 Sterne", Value: models.ClanSettingsCWLZero},
-						{Name: "Kickpunte: CKL 1 Stern", Value: models.ClanSettingsCWLOne},
-						{Name: "Kickpunte: Raid nicht angegriffen", Value: models.ClanSettingsRaidMissed},
-						{Name: "Kickpunte: Raid Fail", Value: models.ClanSettingsRaidFail},
-						{Name: "Kickpunte: Clan Spiele nicht gemacht", Value: models.ClanSettingsClanGames}},
+						{Name: models.KickpointSettingMaxKickpoints.DisplayString(), Value: models.KickpointSettingMaxKickpoints},
+						{Name: models.KickpointSettingExpireAfterDays.DisplayString(), Value: models.KickpointSettingExpireAfterDays},
+						{Name: models.KickpointSettingMinSeasonWins.DisplayString(), Value: models.KickpointSettingMinSeasonWins},
+						{Name: models.KickpointSettingSeasonWins.DisplayString(), Value: models.KickpointSettingSeasonWins},
+						{Name: models.KickpointSettingCWMissed.DisplayString(), Value: models.KickpointSettingCWMissed},
+						{Name: models.KickpointSettingCWFail.DisplayString(), Value: models.KickpointSettingCWFail},
+						{Name: models.KickpointSettingCWLMissed.DisplayString(), Value: models.KickpointSettingCWLMissed},
+						{Name: models.KickpointSettingCWLZeroStars.DisplayString(), Value: models.KickpointSettingCWLZeroStars},
+						{Name: models.KickpointSettingCWLOneStar.DisplayString(), Value: models.KickpointSettingCWLOneStar},
+						{Name: models.KickpointSettingRaidMissed.DisplayString(), Value: models.KickpointSettingRaidMissed},
+						{Name: models.KickpointSettingRaidFail.DisplayString(), Value: models.KickpointSettingRaidFail},
+						{Name: models.KickpointSettingClanGames.DisplayString(), Value: models.KickpointSettingClanGames}},
 				}, {
 					Name:        "amount",
 					Description: "Wert, auf den die Einstellung geändert werden soll.",
@@ -102,18 +100,14 @@ func kickpointInteractionCommands(db *gorm.DB) types.Commands[types.InteractionH
 					MinValue:    util.OptionalFloat(0),
 					MaxValue:    100,
 				}},
-		},
-	}, {
-		Handler: types.InteractionHandler{
-			Main: handler.KickpointHelp,
-		},
+		}}, {
+		Handler: types.InteractionHandler{Main: handler.KickpointHelp},
 		ApplicationCommand: &discordgo.ApplicationCommand{
 			Name:         "kphelp",
 			Description:  "Erklärung des Kickpunkte Systems vom Bot sowie den wichtigsten Befehlen.",
 			Type:         discordgo.ChatApplicationCommand,
 			DMPermission: util.OptionalBool(false),
-		},
-	}, {
+		}}, {
 		Handler: types.InteractionHandler{
 			Main:         handler.CreateKickpointModal,
 			ModalSubmit:  handler.CreateKickpointModalSubmit,
@@ -133,20 +127,21 @@ func kickpointInteractionCommands(db *gorm.DB) types.Commands[types.InteractionH
 					Type:        discordgo.ApplicationCommandOptionString,
 					Required:    true,
 					Choices: []*discordgo.ApplicationCommandOptionChoice{
-						{Name: "Season Wins", Value: models.ClanSettingsSeasonWins},
-						{Name: "CW nicht angegriffen", Value: models.ClanSettingsCWMissed},
-						{Name: "CW 0 Sterne", Value: models.ClanSettingsCWFail},
-						{Name: "CKL nicht angegriffen", Value: models.ClanSettingsCWLMissed},
-						{Name: "CKL 0 Sterne", Value: models.ClanSettingsCWLZero},
-						{Name: "CKL 1 Stern", Value: models.ClanSettingsCWLOne},
-						{Name: "Raid nicht angegriffen", Value: models.ClanSettingsRaidMissed},
-						{Name: "Raid Fail", Value: models.ClanSettingsRaidFail},
-						{Name: "Clan Spiele nicht gemacht", Value: models.ClanSettingsClanGames},
-						{Name: "Anderer Grund", Value: models.ClanSettingsOther}},
+						{Name: models.KickpointSettingSeasonWins.DisplayStringShort(), Value: models.KickpointSettingSeasonWins},
+						{Name: models.KickpointSettingCWMissed.DisplayStringShort(), Value: models.KickpointSettingCWMissed},
+						{Name: models.KickpointSettingCWFail.DisplayStringShort(), Value: models.KickpointSettingCWFail},
+						{Name: models.KickpointSettingCWLMissed.DisplayStringShort(), Value: models.KickpointSettingCWLMissed},
+						{Name: models.KickpointSettingCWLZeroStars.DisplayStringShort(), Value: models.KickpointSettingCWLZeroStars},
+						{Name: models.KickpointSettingCWLOneStar.DisplayStringShort(), Value: models.KickpointSettingCWLOneStar},
+						{Name: models.KickpointSettingRaidMissed.DisplayStringShort(), Value: models.KickpointSettingRaidMissed},
+						{Name: models.KickpointSettingRaidFail.DisplayStringShort(), Value: models.KickpointSettingRaidFail},
+						{Name: models.KickpointSettingClanGames.DisplayStringShort(), Value: models.KickpointSettingClanGames}},
 				}},
+		}}, {
+		Handler: types.InteractionHandler{
+			Main:        handler.EditKickpoint,
+			ModalSubmit: handler.EditKickpointModalSubmit,
 		},
-	}, {
-		Handler: types.InteractionHandler{Main: handler.EditKickpoint, ModalSubmit: handler.EditKickpointModalSubmit},
 		ApplicationCommand: &discordgo.ApplicationCommand{
 			Name:         "kpedit",
 			Description:  "Bestehenden Kickpunkt bearbeiten",
@@ -159,8 +154,7 @@ func kickpointInteractionCommands(db *gorm.DB) types.Commands[types.InteractionH
 				Required:    true,
 				MinValue:    util.OptionalFloat(1),
 			}},
-		},
-	}, {
+		}}, {
 		Handler: types.InteractionHandler{Main: handler.DeleteKickpoint},
 		ApplicationCommand: &discordgo.ApplicationCommand{
 			Name:         "kpremove",
@@ -174,6 +168,34 @@ func kickpointInteractionCommands(db *gorm.DB) types.Commands[types.InteractionH
 				Required:    true,
 				MinValue:    util.OptionalFloat(1),
 			}},
+		}}, {
+		Handler: types.InteractionHandler{
+			Main:         handler.NewKickpointLockHandler(true),
+			Autocomplete: handler.HandleAutocomplete,
 		},
-	}}
+		ApplicationCommand: &discordgo.ApplicationCommand{
+			Name:         "kplock",
+			Description:  "Mitglied abmelden, sodass es keine Kickpunkte mehr erhalten kann.",
+			Type:         discordgo.ChatApplicationCommand,
+			DMPermission: util.OptionalBool(false),
+			Options: []*discordgo.ApplicationCommandOption{
+				optionClanTag("Clan aus dem das Mitglied stammt."),
+				optionMemberTag("Mitglied, welches abgemeldet werden soll."),
+			},
+		}}, {
+		Handler: types.InteractionHandler{
+			Main:         handler.NewKickpointLockHandler(false),
+			Autocomplete: handler.HandleAutocomplete,
+		},
+		ApplicationCommand: &discordgo.ApplicationCommand{
+			Name:         "kpunlock",
+			Description:  "Mitglied anmelden, sodass es wieder Kickpunkte erhalten kann.",
+			Type:         discordgo.ChatApplicationCommand,
+			DMPermission: util.OptionalBool(false),
+			Options: []*discordgo.ApplicationCommandOption{
+				optionClanTag("Clan aus dem das Mitglied stammt."),
+				optionMemberTag("Mitglied, welches wieder angemeldets werden soll."),
+			},
+		}},
+	}
 }

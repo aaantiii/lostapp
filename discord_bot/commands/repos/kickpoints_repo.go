@@ -1,8 +1,6 @@
 package repos
 
 import (
-	"time"
-
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
@@ -37,17 +35,12 @@ func (repo *KickpointsRepo) KickpointByID(id uint) (*models.Kickpoint, error) {
 }
 
 func (repo *KickpointsRepo) ActiveClanKickpoints(settings *models.ClanSettings) ([]*types.ClanMemberKickpoints, error) {
-	minDate := time.Now().AddDate(0, 0, -settings.KickpointsExpireAfterDays)
+	minDate := util.KickpointMinDate(settings.KickpointsExpireAfterDays)
 
-	var memberKickpoints []struct {
-		Name   string
-		Tag    string
-		Amount int
-	}
+	var memberKickpoints []*types.ClanMemberKickpoints
 	if err := repo.db.
 		Raw("SELECT p.name AS name, p.coc_tag as tag, SUM(k.amount) AS amount FROM kickpoints k INNER JOIN players p ON k.player_tag = p.coc_tag WHERE k.clan_tag = ? AND k.date BETWEEN ? AND NOW() GROUP BY p.name, p.coc_tag ORDER BY amount DESC", settings.ClanTag, minDate).
-		Scan(&memberKickpoints).
-		Error; err != nil {
+		Scan(&memberKickpoints).Error; err != nil {
 		return nil, err
 	}
 
@@ -55,21 +48,11 @@ func (repo *KickpointsRepo) ActiveClanKickpoints(settings *models.ClanSettings) 
 		return nil, gorm.ErrRecordNotFound
 	}
 
-	clanKickpoints := make([]*types.ClanMemberKickpoints, len(memberKickpoints))
-	for i, kp := range memberKickpoints {
-		clanKickpoints[i] = &types.ClanMemberKickpoints{
-			Name:   kp.Name,
-			Tag:    kp.Tag,
-			Amount: kp.Amount,
-		}
-	}
-
-	return clanKickpoints, nil
+	return memberKickpoints, nil
 }
 
 func (repo *KickpointsRepo) ActiveMemberKickpoints(memberTag string, settings *models.ClanSettings) ([]*models.Kickpoint, error) {
-	minDate := util.TruncateToDay(time.Now()).
-		AddDate(0, 0, -settings.KickpointsExpireAfterDays)
+	minDate := util.KickpointMinDate(settings.KickpointsExpireAfterDays)
 
 	var kickpoints []*models.Kickpoint
 	if err := repo.db.
@@ -87,8 +70,7 @@ func (repo *KickpointsRepo) ActiveMemberKickpoints(memberTag string, settings *m
 }
 
 func (repo *KickpointsRepo) ActiveMemberKickpointsSum(memberTag string, settings *models.ClanSettings) (int, error) {
-	minDate := util.TruncateToDay(time.Now()).
-		AddDate(0, 0, -settings.KickpointsExpireAfterDays)
+	minDate := util.KickpointMinDate(settings.KickpointsExpireAfterDays)
 
 	var v struct{ Sum int }
 	if err := repo.db.

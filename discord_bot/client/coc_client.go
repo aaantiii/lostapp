@@ -12,8 +12,6 @@ import (
 	"bot/env"
 )
 
-var ErrCocMaintenance = errors.New("inMaintenance Message: API is currently in maintenance, please come back later")
-
 type CocClient struct {
 	*coc.Client // create new type to extend it
 }

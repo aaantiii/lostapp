@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"log"
+
 	"github.com/bwmarrin/discordgo"
 
 	"bot/client"
@@ -21,10 +23,12 @@ func Setup(s *discordgo.Session) ([]*discordgo.ApplicationCommand, error) {
 	}
 
 	interactions := createInteractions(db, cocClient)
+	log.Println("Overwriting application commands...")
 	cmds, err := s.ApplicationCommandBulkOverwrite(env.DISCORD_CLIENT_ID.Value(), env.DISCORD_GUILD_ID.Value(), interactions.ApplicationCommands())
 	if err != nil {
 		return nil, err
 	}
+
 	s.AddHandler(interactionHandler(interactions))
 	return cmds, nil
 }

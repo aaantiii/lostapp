@@ -9,4 +9,6 @@ const (
 	SettingOptionName   = "setting"
 	AmountOptionName    = "amount"
 	LimitOptionName     = "limit"
+	StatisticOptionName = "statistic"
+	ApiTokenOptionName  = "api_token"
 )

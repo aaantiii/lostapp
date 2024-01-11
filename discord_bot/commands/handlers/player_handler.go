@@ -3,6 +3,7 @@ package handlers
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/amaanq/coc.go"
@@ -44,8 +45,13 @@ func (h *PlayerHandler) VerifyPlayer(s *discordgo.Session, i *discordgo.Interact
 		return
 	}
 
-	playerTag := opts[0].StringValue()
-	apiToken := opts[1].StringValue()
+	playerTag := util.StringOptionByName(PlayerTagOptionName, opts)
+	apiToken := util.StringOptionByName(ApiTokenOptionName, opts)
+
+	if !strings.HasPrefix(playerTag, "#") {
+		messages.SendInvalidInputError(s, i, "Bitte gib einen gültigen Spieler-Tag an.")
+		return
+	}
 
 	verification, err := h.cocClient.VerifyPlayerToken(playerTag, apiToken)
 	if err != nil {

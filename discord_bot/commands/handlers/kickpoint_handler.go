@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"gorm.io/gorm"
@@ -30,6 +31,7 @@ type IKickpointHandler interface {
 	EditKickpoint(s *discordgo.Session, i *discordgo.InteractionCreate)
 	EditKickpointModalSubmit(s *discordgo.Session, i *discordgo.InteractionCreate)
 	DeleteKickpoint(s *discordgo.Session, i *discordgo.InteractionCreate)
+	NewKickpointLockHandler(lock bool) func(s *discordgo.Session, i *discordgo.InteractionCreate)
 	HandleAutocomplete(s *discordgo.Session, i *discordgo.InteractionCreate)
 }
 
@@ -38,15 +40,17 @@ type KickpointHandler struct {
 	clans          repos.IClansRepo
 	players        repos.IPlayersRepo
 	clanSettings   repos.IClanSettingsRepo
+	memberStates   repos.IMemberStatesRepo
 	authMiddleware middleware.AuthMiddleware
 }
 
-func NewKickpointHandler(kickpoints repos.IKickpointsRepo, clans repos.IClansRepo, players repos.IPlayersRepo, guilds repos.IGuildsRepo, users repos.IUsersRepo, clanSettings repos.IClanSettingsRepo) IKickpointHandler {
+func NewKickpointHandler(kickpoints repos.IKickpointsRepo, clans repos.IClansRepo, players repos.IPlayersRepo, guilds repos.IGuildsRepo, users repos.IUsersRepo, clanSettings repos.IClanSettingsRepo, memberStates repos.IMemberStatesRepo) IKickpointHandler {
 	return &KickpointHandler{
 		kickpoints:     kickpoints,
 		clans:          clans,
 		players:        players,
 		clanSettings:   clanSettings,
+		memberStates:   memberStates,
 		authMiddleware: middleware.NewAuthMiddleware(guilds, clans, users),
 	}
 }
@@ -144,7 +148,7 @@ func (h *KickpointHandler) KickpointInfo(s *discordgo.Session, i *discordgo.Inte
 func (h *KickpointHandler) KickpointConfig(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	opts := i.ApplicationCommandData().Options
 	clanTag := util.StringOptionByName(ClanTagOptionName, opts)
-	settingName := util.StringOptionByName(SettingOptionName, opts)
+	settingName := models.KickpointSetting(util.StringOptionByName(SettingOptionName, opts))
 	settingValue := util.IntOptionByName(AmountOptionName, opts)
 
 	if clanTag == "" || settingName == "" || settingValue == nil {
@@ -182,7 +186,7 @@ func (h *KickpointHandler) CreateKickpointModal(s *discordgo.Session, i *discord
 	opts := i.ApplicationCommandData().Options
 	clanTag := util.StringOptionByName(ClanTagOptionName, opts)
 	memberTag := util.StringOptionByName(MemberTagOptionName, opts)
-	settingName := util.StringOptionByName(SettingOptionName, opts)
+	settingName := models.KickpointSetting(util.StringOptionByName(SettingOptionName, opts))
 
 	log.Print(clanTag, memberTag, settingName)
 
@@ -195,13 +199,27 @@ func (h *KickpointHandler) CreateKickpointModal(s *discordgo.Session, i *discord
 		return
 	}
 
+	isLocked, err := h.memberStates.IsKickpointLocked(memberTag, clanTag)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		messages.SendUnknownError(s, i)
+		return
+	}
+	if isLocked {
+		messages.SendEmbed(s, i, messages.NewEmbed(
+			"Mitglied gesperrt",
+			"Dieses Mitglied kann momentan keine Kickpunkte erhalten, da es abgemeldet ist.",
+			messages.ColorRed,
+		))
+		return
+	}
+
 	clanSettings, err := h.clanSettings.ClanSettings(clanTag)
 	if err != nil {
 		messages.SendClanNotFound(s, i, clanTag)
 		return
 	}
 
-	kickpointAmount, err := clanSettings.KickpointAmountFromName(settingName)
+	kickpointAmount, err := clanSettings.KickpointAmountFromSetting(settingName)
 	if err != nil {
 		messages.SendInvalidInputError(s, i, "Es wurde ein ungültiger Grund angegeben.")
 		return
@@ -237,23 +255,21 @@ func (h *KickpointHandler) CreateKickpointModal(s *discordgo.Session, i *discord
 		return
 	}
 
-	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+	if err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseModal,
 		Data: &discordgo.InteractionResponseData{
 			CustomID: util.BuildCustomID(i.ApplicationCommandData().Name, i.Interaction.Member.User.ID, ""),
 			Title:    "Kickpunkt hinzufügen",
 			Components: components.GenModalComponents(
-				components.KickpointReason(""),
+				components.KickpointReason(settingName.DisplayStringShort()),
 				components.KickpointDate(""),
 				components.KickpointAmount(kickpointAmount),
 				components.Tag("Spieler Tag", memberTag, components.PlayerTagID),
 				components.Tag("Clan Tag", clanTag, components.ClanTagID),
 			),
 		},
-	})
-
-	if err != nil {
-		log.Println("Error while handling CreateKickpoint", err)
+	}); err != nil {
+		log.Printf("Error while responding to CreateKickpoint: %v", err)
 	}
 }
 
@@ -271,7 +287,23 @@ func (h *KickpointHandler) CreateKickpointModalSubmit(s *discordgo.Session, i *d
 
 	date, err := util.ParseDateInput(data.Components[1])
 	if err != nil {
-		messages.SendInvalidInputError(s, i, "Das eingegebene Datum ist ungültig. Es muss im Format `DD.MM.YYYY` angegeben werden.")
+		messages.SendInvalidInputError(s, i, "Das eingegebene Datum ist ungültig. Es muss im DisplayString `DD.MM.YYYY` angegeben werden.")
+		return
+	}
+
+	if date.After(time.Now()) {
+		messages.SendInvalidInputError(s, i, "Das eingegebene Datum liegt in der Zukunft.")
+		return
+	}
+
+	settings, err := h.clanSettings.ClanSettingsPreload(clanTag)
+	if err != nil {
+		messages.SendClanNotFound(s, i, clanTag)
+		return
+	}
+
+	if minDate := util.KickpointMinDate(settings.KickpointsExpireAfterDays); minDate.After(date) {
+		messages.SendInvalidInputError(s, i, fmt.Sprintf("Es können keine Kickpunkte vor %s vergeben werden, da diese schon abgelaufen wären.", util.FormatDate(minDate)))
 		return
 	}
 
@@ -302,12 +334,6 @@ func (h *KickpointHandler) CreateKickpointModalSubmit(s *discordgo.Session, i *d
 		return
 	}
 
-	settings, err := h.clanSettings.ClanSettingsPreload(kickpoint.ClanTag)
-	if err != nil {
-		messages.SendClanNotFound(s, i, kickpoint.ClanTag)
-		return
-	}
-
 	if err = h.kickpoints.CreateKickpoint(kickpoint); err != nil {
 		messages.SendEmbed(s, i, messages.NewEmbed(
 			"Datenbankfehler",
@@ -326,6 +352,19 @@ func (h *KickpointHandler) CreateKickpointModalSubmit(s *discordgo.Session, i *d
 			messages.DetailedKickpointFields(kickpoint, settings.KickpointsExpireAfterDays)...,
 		),
 	))
+
+	totalKickpoints, err := h.kickpoints.ActiveMemberKickpointsSum(kickpoint.PlayerTag, settings)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return
+	}
+	if err != nil {
+		messages.SendChannelWarning(s, i.ChannelID, fmt.Sprintf("Bei der Überprüfung ob %s die maximale Anzahl an Kickpunkten erreicht hat, ist ein Fehler aufgetreten. Bitte überprüfe dies manuell.", playerName))
+		return
+	}
+
+	if totalKickpoints >= settings.MaxKickpoints {
+		messages.SendChannelWarning(s, i.ChannelID, fmt.Sprintf("%s hat die maximale Anzahl an Kickpunkten erreicht.", playerName))
+	}
 }
 
 func (h *KickpointHandler) EditKickpoint(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -369,7 +408,7 @@ func (h *KickpointHandler) EditKickpoint(s *discordgo.Session, i *discordgo.Inte
 	})
 
 	if err != nil {
-		log.Println("Error while handling CreateKickpoint", err)
+		log.Printf("Error while handling EditKickpoint: %v", err)
 	}
 }
 
@@ -382,7 +421,7 @@ func (h *KickpointHandler) EditKickpointModalSubmit(s *discordgo.Session, i *dis
 
 	date, err := util.ParseDateInput(data.Components[1])
 	if err != nil {
-		messages.SendInvalidInputError(s, i, "Das eingegebene Datum ist ungültig. Es muss im Format `DD.MM.YYYY` angegeben werden.")
+		messages.SendInvalidInputError(s, i, "Das eingegebene Datum ist ungültig. Es muss im DisplayString `DD.MM.YYYY` angegeben werden.")
 		return
 	}
 
@@ -495,9 +534,51 @@ func (h *KickpointHandler) DeleteKickpoint(s *discordgo.Session, i *discordgo.In
 	))
 }
 
+func (h *KickpointHandler) NewKickpointLockHandler(lock bool) func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	return func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		opts := i.ApplicationCommandData().Options
+		clanTag := util.StringOptionByName(ClanTagOptionName, opts)
+		memberTag := util.StringOptionByName(MemberTagOptionName, opts)
+		if clanTag == "" || memberTag == "" {
+			messages.SendInvalidInputError(s, i, "Du musst einen Clan und ein Mitglied angeben.")
+			return
+		}
+
+		if err := h.authMiddleware.NewClanHandler(clanTag, types.AuthRoleCoLeader)(s, i); err != nil {
+			return
+		}
+
+		if err := h.memberStates.UpdateKickpointLockStatus(memberTag, clanTag, lock); err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				messages.SendEmbed(s, i, messages.NewEmbed(
+					"Ungültiger Spieler Tag",
+					"Es wurde kein Mitglied mit diesem Spieler Tag gefunden.",
+					messages.ColorRed,
+				))
+				return
+			}
+
+			messages.SendUnknownError(s, i)
+			return
+		}
+
+		title := "Mitglied angemeldet"
+		desc := "Das Mitglied kann ab sofort wieder Kickpunkte erhalten."
+		if lock {
+			title = "Mitglied abgemeldet"
+			desc = "Das Mitglied kann ab sofort keine Kickpunkte mehr erhalten."
+		}
+
+		messages.SendEmbed(s, i, messages.NewEmbed(
+			title,
+			desc,
+			messages.ColorGreen,
+		))
+	}
+}
+
 func (h *KickpointHandler) HandleAutocomplete(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	opts := i.ApplicationCommandData().Options
-
 	for _, opt := range opts {
 		if !opt.Focused {
 			continue

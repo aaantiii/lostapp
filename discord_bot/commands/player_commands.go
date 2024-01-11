@@ -35,7 +35,7 @@ func playerInteractionCommands(db *gorm.DB, cocClient *client.CocClient) types.C
 				},
 				{
 					Type:        discordgo.ApplicationCommandOptionString,
-					Name:        "api_token",
+					Name:        handlers.ApiTokenOptionName,
 					Description: "API Token deines Clash of Clans Accounts.",
 					Required:    true,
 					MinLength:   util.OptionalInt(8),
