@@ -7,18 +7,18 @@ import (
 
 type ClanSettings struct {
 	ClanTag                   string `gorm:"size:12;primaryKey;not null"`
-	MaxKickpoints             int    `gorm:"not null;default:10"`
-	MinSeasonWins             int    `gorm:"not null;default:60"`
+	MaxKickpoints             int    `gorm:"not null;default:6"`
+	MinSeasonWins             int    `gorm:"not null;default:80"`
 	KickpointsExpireAfterDays int    `gorm:"not null;default:45"`
-	KickpointsSeasonWins      int    `gorm:"not null;default:3"`
+	KickpointsSeasonWins      int    `gorm:"not null;default:2"`
 	KickpointsCWMissed        int    `gorm:"not null;default:1"`
 	KickpointsCWFail          int    `gorm:"not null;default:0"`
-	KickpointsCWLMissed       int    `gorm:"not null;default:4"`
-	KickpointsCWLZeroStars    int    `gorm:"not null;default:3"`
-	KickpointsCWLOneStar      int    `gorm:"not null;default:1"`
-	KickpointsRaidMissed      int    `gorm:"not null;default:3"`
+	KickpointsCWLMissed       int    `gorm:"not null;default:2"`
+	KickpointsCWLZeroStars    int    `gorm:"not null;default:2"`
+	KickpointsCWLOneStar      int    `gorm:"not null;default:2"`
+	KickpointsRaidMissed      int    `gorm:"not null;default:2"`
 	KickpointsRaidFail        int    `gorm:"not null;default:2"`
-	KickpointsClanGames       int    `gorm:"not null;default:3"`
+	KickpointsClanGames       int    `gorm:"not null;default:2"`
 	UpdatedAt                 time.Time
 	UpdatedByDiscordID        *string
 
