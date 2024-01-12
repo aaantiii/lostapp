@@ -24,3 +24,19 @@ func SendEmbed(s *discordgo.Session, i *discordgo.InteractionCreate, embed *disc
 		log.Printf("Error responding to interaction: %v", err)
 	}
 }
+
+func SendEmptyResponse(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	if err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: ".",
+		},
+	}); err != nil {
+		log.Printf("Error sending empty interaction response: %v", err)
+		return
+	}
+
+	if err := s.InteractionResponseDelete(i.Interaction); err != nil {
+		log.Printf("Error deleting empty interaction response: %v", err)
+	}
+}

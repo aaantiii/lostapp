@@ -11,4 +11,5 @@ const (
 	LimitOptionName     = "limit"
 	StatisticOptionName = "statistic"
 	ApiTokenOptionName  = "api_token"
+	MessageOptionName   = "message"
 )

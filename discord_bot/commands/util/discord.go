@@ -6,6 +6,10 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+func MentionUserID(id string) string {
+	return "<@!" + id + ">"
+}
+
 func MentionRole(roleID string) string {
 	return "<@&" + roleID + ">"
 }

@@ -3,6 +3,7 @@ package handlers
 import (
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -20,6 +21,8 @@ import (
 
 type IPlayerHandler interface {
 	VerifyPlayer(s *discordgo.Session, i *discordgo.InteractionCreate)
+	PingPlayer(s *discordgo.Session, i *discordgo.InteractionCreate)
+	HandleAutocomplete(s *discordgo.Session, i *discordgo.InteractionCreate)
 }
 
 type PlayerHandler struct {
@@ -40,13 +43,12 @@ func (h *PlayerHandler) VerifyPlayer(s *discordgo.Session, i *discordgo.Interact
 	opts := i.ApplicationCommandData().Options
 	go util.DeleteInteractionResponseWithTimeout(s, i.Interaction, time.Minute*2)
 
-	if len(opts) != 2 {
-		messages.SendInvalidInputError(s, i, "Bitte gib einen gültigen Spieler-Tag und einen API-Token an.")
-		return
-	}
-
 	playerTag := util.StringOptionByName(PlayerTagOptionName, opts)
 	apiToken := util.StringOptionByName(ApiTokenOptionName, opts)
+	if playerTag == "" || apiToken == "" {
+		messages.SendInvalidInputError(s, i, "Bitte gib einen Spieler-Tag und einen API-Token an.")
+		return
+	}
 
 	if !strings.HasPrefix(playerTag, "#") {
 		messages.SendInvalidInputError(s, i, "Bitte gib einen gültigen Spieler-Tag an.")
@@ -66,11 +68,7 @@ func (h *PlayerHandler) VerifyPlayer(s *discordgo.Session, i *discordgo.Interact
 	}
 
 	if verification.Status != cocVerificationStatusOK {
-		messages.SendEmbed(s, i, messages.NewEmbed(
-			"Ungültiger API-Token",
-			"Dein API-Token ist ungültig. Bitte versuche es erneut mit einem gültigen Token.",
-			messages.ColorRed,
-		))
+		messages.SendInvalidInputError(s, i, "Dein API-Token oder Spieler Tag ist ungültig. Bitte versuche es erneut mit gültigen Eingaben.")
 		return
 	}
 
@@ -134,4 +132,47 @@ func (h *PlayerHandler) VerifyPlayer(s *discordgo.Session, i *discordgo.Interact
 		fmt.Sprintf("%s, dein Clash of Clans Account %s (%s) wurde erfolgreich verifiziert und mit deinem Discord Account verknüpft!", i.Member.Mention(), cocPlayer.Name, cocPlayer.Tag),
 		messages.ColorGreen,
 	))
+}
+
+func (h *PlayerHandler) PingPlayer(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	opts := i.ApplicationCommandData().Options
+	playerTag := util.StringOptionByName(PlayerTagOptionName, opts)
+	msg := util.StringOptionByName(MessageOptionName, opts)
+
+	if playerTag == "" || msg == "" {
+		messages.SendInvalidInputError(s, i, "Bitte gib einen Spieler-Tag und eine Nachricht ein.")
+		return
+	}
+
+	if !strings.HasPrefix(playerTag, "#") {
+		messages.SendInvalidInputError(s, i, "Bitte gib einen gültigen Spieler-Tag an.")
+		return
+	}
+
+	player, err := h.players.PlayerByTag(playerTag)
+	if err != nil {
+		messages.SendError(s, i, "Es wurde kein Spieler mit dem angegebenen Spieler-Tag gefunden.")
+		return
+	}
+
+	if _, err = s.ChannelMessageSend(i.ChannelID, fmt.Sprintf("%s, du wurdest von %s gepingt:\n%s", util.MentionUserID(player.DiscordID), i.Member.Mention(), msg)); err != nil {
+		log.Printf("PingPlayer failed to send message: %v", err)
+	}
+
+	messages.SendEmptyResponse(s, i)
+}
+
+func (h *PlayerHandler) HandleAutocomplete(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	opts := i.ApplicationCommandData().Options
+
+	for _, opt := range opts {
+		if !opt.Focused {
+			continue
+		}
+
+		switch opt.Name {
+		case PlayerTagOptionName:
+			autocompletePlayers(h.players, opt.StringValue())(s, i)
+		}
+	}
 }

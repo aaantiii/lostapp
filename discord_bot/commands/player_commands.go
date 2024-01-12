@@ -43,5 +43,35 @@ func playerInteractionCommands(db *gorm.DB, cocClient *client.CocClient) types.C
 				},
 			},
 		},
+	}, {
+		Handler: types.InteractionHandler{
+			Main:         handler.PingPlayer,
+			Autocomplete: handler.HandleAutocomplete,
+		},
+		ApplicationCommand: &discordgo.ApplicationCommand{
+			Name:         "pingplayer",
+			Description:  "Pingt einen Spieler auf Discord durch den Spieler Tag.",
+			Type:         discordgo.ChatApplicationCommand,
+			DMPermission: util.OptionalBool(false),
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Type:         discordgo.ApplicationCommandOptionString,
+					Name:         handlers.PlayerTagOptionName,
+					Description:  "Spieler-Tag des Spielers, der gepingt werden soll.",
+					Required:     true,
+					MinLength:    util.OptionalInt(validation.TagMinLength),
+					MaxLength:    validation.TagMaxLength,
+					Autocomplete: true,
+				},
+				{
+					Type:        discordgo.ApplicationCommandOptionString,
+					Name:        handlers.MessageOptionName,
+					Description: "Nachricht, die an den Spieler gesendet werden soll.",
+					Required:    true,
+					MinLength:   util.OptionalInt(1),
+					MaxLength:   200,
+				},
+			},
+		},
 	}}
 }
