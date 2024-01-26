@@ -3,7 +3,7 @@ package util
 import (
 	"github.com/gin-gonic/gin"
 
-	"backend/env"
+	"github.com/aaantiii/lostapp/backend/env"
 )
 
 type FrontendRoute string

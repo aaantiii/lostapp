@@ -3,7 +3,7 @@ package util
 import (
 	"github.com/gin-gonic/gin"
 
-	"backend/api/types"
+	"github.com/aaantiii/lostapp/backend/api/types"
 )
 
 const SessionKey = "session" // SessionKey is the key used to store the session in the gin.Context.

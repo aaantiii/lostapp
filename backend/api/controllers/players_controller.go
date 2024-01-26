@@ -6,10 +6,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"backend/api/middleware"
-	"backend/api/services"
-	"backend/api/types"
-	"backend/api/util"
+	"github.com/aaantiii/lostapp/backend/api/middleware"
+	"github.com/aaantiii/lostapp/backend/api/services"
+	"github.com/aaantiii/lostapp/backend/api/types"
+	"github.com/aaantiii/lostapp/backend/api/util"
 )
 
 type PlayersController struct {
@@ -26,12 +26,11 @@ func (controller *PlayersController) setupWithRouter(router *gin.Engine) {
 	memberRoutes := router.Group(rgName, middleware.AuthMiddleware(types.AuthRoleMember))
 	memberRoutes.GET("", controller.GETPlayers)
 	memberRoutes.GET(":tag", controller.GETPlayerByTag)
-	memberRoutes.GET("leaderboard/:statsId", controller.GETLeaderboard)
+	memberRoutes.GET("leaderboard/:statName", controller.GETLeaderboard)
 	memberRoutes.GET("comparable-stats", controller.GETComparableStats)
 }
 
 // GETPlayers responds with a slice of coc.Player.
-// Filter query parameters: discordId, name, clanTag, page (+itemsPerPage).
 func (controller *PlayersController) GETPlayers(c *gin.Context) {
 	var params types.PlayersParams
 	if err := c.Bind(&params); err != nil {
@@ -39,18 +38,13 @@ func (controller *PlayersController) GETPlayers(c *gin.Context) {
 		return
 	}
 
-	players, err := controller.service.Players(params)
+	res, err := controller.service.Players(params)
 	if err != nil {
 		c.AbortWithStatus(http.StatusNotFound)
 		return
 	}
 
-	if params.Page != 0 {
-		c.JSON(http.StatusOK, types.NewPaginatedResponse(players, params.PaginationParams))
-		return
-	}
-
-	c.JSON(http.StatusOK, players)
+	c.JSON(http.StatusOK, res)
 }
 
 func (controller *PlayersController) GETPlayerByTag(c *gin.Context) {

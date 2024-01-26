@@ -6,10 +6,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	"backend/api/middleware"
-	"backend/api/services"
-	"backend/api/types"
-	"backend/api/util"
+	"github.com/aaantiii/lostapp/backend/api/middleware"
+	"github.com/aaantiii/lostapp/backend/api/services"
+	"github.com/aaantiii/lostapp/backend/api/types"
+	"github.com/aaantiii/lostapp/backend/api/util"
 )
 
 type AuthController struct {

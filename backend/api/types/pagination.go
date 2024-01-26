@@ -1,52 +1,80 @@
 package types
 
-type Pagination struct {
-	Page       int `json:"page"`
-	PageSize   int `json:"pageSize"`
-	TotalItems int `json:"totalItems"`
-	TotalPages int `json:"totalPages"`
-}
+import (
+	"math"
+	"slices"
+	"sort"
+)
 
+// PaginationParams are the parameters used to fetch paginated data.
 type PaginationParams struct {
-	Page     int `form:"page" binding:"required,min=1"`
-	PageSize int `form:"pageSize" binding:"required,min=5,max=50"`
+	Page        int `form:"page"`
+	PageSize    int `form:"pageSize"`
+	ExtraOffset int `form:"extraOffset"` // ExtraOffset is used to offset the pagination by a given amount. E.g. by leaderboard to skip top 3.
 }
 
+// Pagination is the pagination metadata returned by the API.
+type Pagination struct {
+	Page       int   `json:"page"`
+	PageSize   int   `json:"pageSize"`
+	TotalItems int64 `json:"totalItems"`
+	TotalPages int   `json:"totalPages"`
+	Navigation []int `json:"navigation,omitempty"`
+}
+
+// PaginatedResponse is the response returned by the API when fetching paginated data.
 type PaginatedResponse[T any] struct {
 	Pagination Pagination `json:"pagination"`
-	Items      []T        `json:"items"`
+	Items      []T        `json:"items,omitempty"`
 }
 
-func NewPaginatedResponse[T any](data []T, params PaginationParams) *PaginatedResponse[T] {
-	totalItems := len(data)
-
-	if params.PageSize <= 0 {
-		params.PageSize = 10
+// NewPaginatedResponse creates a new PaginatedResponse.
+func NewPaginatedResponse[T any](items []T, params PaginationParams, count int64) *PaginatedResponse[T] {
+	totalPages := int(math.Ceil(float64(count) / float64(params.PageSize)))
+	pagination := Pagination{
+		Page:       params.Page,
+		PageSize:   params.PageSize,
+		TotalItems: count,
+		TotalPages: totalPages,
 	}
-	totalPages := totalItems / params.PageSize
-	if totalItems%params.PageSize > 0 {
-		totalPages++
+	pagination.setNavigation()
+
+	return &PaginatedResponse[T]{
+		Items:      items,
+		Pagination: pagination,
+	}
+}
+
+const pageNavigationSize = 7
+
+func (p *Pagination) setNavigation() {
+	nav := make([]int, 0, pageNavigationSize)
+	if p.TotalPages <= pageNavigationSize {
+		for i := 1; i <= p.TotalPages; i++ {
+			nav = append(nav, i)
+		}
+	} else {
+		quarter := int(math.Ceil(float64(p.TotalPages) / 4))
+		mid := int(math.Ceil(float64(p.TotalPages) / 2))
+		threeQuarter := p.TotalPages - quarter + 1
+		nav = append(nav, 1, quarter, mid, threeQuarter, p.TotalPages)
 	}
 
-	res := &PaginatedResponse[T]{
-		Pagination: Pagination{
-			Page:       params.Page,
-			PageSize:   params.PageSize,
-			TotalItems: totalItems,
-			TotalPages: totalPages,
-		},
+	if !slices.Contains(nav, p.Page) {
+		nav = append(nav, p.Page)
 	}
 
-	start := (params.Page - 1) * params.PageSize
-	if start >= totalItems {
-		return res
+	if oneBelow := p.Page - 1; p.Page > 1 && !slices.Contains(nav, oneBelow) {
+		nav = append(nav, oneBelow)
 	}
 
-	end := start + params.PageSize
-	if end > totalItems {
-		end = totalItems
+	if oneAbove := p.Page + 1; p.Page < p.TotalPages && !slices.Contains(nav, oneAbove) {
+		nav = append(nav, oneAbove)
 	}
 
-	res.Items = data[start:end]
-	return res
+	sort.Slice(nav, func(i, j int) bool {
+		return nav[i] < nav[j]
+	})
+
+	p.Navigation = nav
 }

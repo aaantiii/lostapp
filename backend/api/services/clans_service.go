@@ -3,9 +3,9 @@ package services
 import (
 	"errors"
 
-	"backend/api/repos"
-	"backend/api/types"
-	"backend/store/postgres/models"
+	"github.com/aaantiii/lostapp/backend/api/repos"
+	"github.com/aaantiii/lostapp/backend/api/types"
+	"github.com/aaantiii/lostapp/backend/store/postgres/models"
 )
 
 type IClansService interface {

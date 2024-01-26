@@ -5,13 +5,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"backend/api/types"
-	"backend/api/util"
+	"github.com/aaantiii/lostapp/backend/api/types"
+	"github.com/aaantiii/lostapp/backend/api/util"
 )
 
-// AuthMiddleware stellt die Authentication und Authorization middleware für eingehende Requests zur Verfügung.
-// AuthMiddleware stellt sicher, dass der Session per Discord authentifiziert ist und die benötigte
-// types.AuthRole für die angeforderte Resource hat.
+// AuthMiddleware is a gin middleware that checks if the user is authenticated.
 func AuthMiddleware(requiredRole types.AuthRole) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token, err := util.SessionCookie.Value(c)
@@ -20,8 +18,8 @@ func AuthMiddleware(requiredRole types.AuthRole) gin.HandlerFunc {
 			return
 		}
 
-		session, exists := authService.Session(token)
-		if !exists {
+		session, ok := authService.Session(token)
+		if !ok {
 			session, err = authService.CreateSession(token)
 			if err != nil {
 				util.SessionCookie.Invalidate(c)
@@ -38,12 +36,17 @@ func AuthMiddleware(requiredRole types.AuthRole) gin.HandlerFunc {
 			}
 		}
 
-		if !session.HasPermission(requiredRole) {
-			c.AbortWithStatus(http.StatusForbidden)
+		if session.User.IsAdmin {
+			c.Set(util.SessionKey, session)
 			return
 		}
 
-		defer c.Next()
+		if requiredRole == types.AuthRoleAdmin && !session.User.IsAdmin {
+			c.Set(util.ErrorKey, types.ErrAdminRequired)
+			c.Abort()
+			return
+		}
+
 		c.Set(util.SessionKey, session)
 	}
 }

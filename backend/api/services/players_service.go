@@ -5,8 +5,8 @@ import (
 	"sort"
 	"strings"
 
-	"backend/api/repos"
-	"backend/api/types"
+	"github.com/aaantiii/lostapp/backend/api/repos"
+	"github.com/aaantiii/lostapp/backend/api/types"
 )
 
 type IPlayersService interface {

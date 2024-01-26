@@ -1,7 +1,6 @@
 package types
 
-type LeaderboardPlayersParams struct {
+type LeaderboardParams struct {
 	PaginationParams
-	StatsID int    `binding:"-"`
-	ClanTag string `form:"clanTag"`
+	ClanTag string `form:"clanTag" binding:"omitempty,min=3,max=12"`
 }

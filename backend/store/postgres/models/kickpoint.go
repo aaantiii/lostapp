@@ -10,9 +10,14 @@ type Kickpoint struct {
 	Amount             int       `gorm:"not null"`
 	Description        string    `gorm:"size:100"`
 	CreatedByDiscordID string    `gorm:"size:18;not null"`
-	CreatedByUser      User      `gorm:"foreignKey:CreatedByDiscordID;references:DiscordID"`
-	UpdatedByDiscordID *string   `gorm:"size:18"`
-	UpdatedByUser      *User     `gorm:"foreignKey:UpdatedByDiscordID;references:DiscordID"`
-	CreatedAt          time.Time
-	UpdatedAt          time.Time
+	UpdatedByDiscordID string    `gorm:"size:18"`
+
+	CreatedAt time.Time
+	UpdatedAt time.Time
+
+	Member        *ClanMember `gorm:"foreignKey:PlayerTag,ClanTag;references:PlayerTag,ClanTag"`
+	Clan          *Clan       `gorm:"foreignKey:Tag;references:ClanTag"`
+	Player        *Player     `gorm:"foreignKey:CocTag;references:PlayerTag"`
+	CreatedByUser *User       `gorm:"foreignKey:DiscordID;references:CreatedByDiscordID"`
+	UpdatedByUser *User       `gorm:"foreignKey:DiscordID;references:UpdatedByDiscordID"`
 }

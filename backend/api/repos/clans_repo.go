@@ -1,37 +1,59 @@
 package repos
 
 import (
-	"github.com/amaanq/coc.go"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
-	"backend/store/postgres/models"
+	"github.com/aaantiii/lostapp/backend/store/postgres"
+	"github.com/aaantiii/lostapp/backend/store/postgres/models"
 )
 
 type IClansRepo interface {
-	Clans() ([]*models.Clan, error)
-	Clan(clanTag string) (*models.Clan, error)
+	Clans(params types.ClansParams) (models.Clans, error)
+	ClanByTag(tag string) (*models.Clan, error)
+	ClanByTagPreload(tag string) (*models.Clan, error)
+	Count(params types.ClansParams) (int64, error)
+	ClanNameByTag(tag string) (string, error)
 }
 
 type ClansRepo struct {
-	db        *gorm.DB
-	cocClient *coc.Client
+	db *gorm.DB
 }
 
-func NewClansRepo(db *gorm.DB, cocClient *coc.Client) IClansRepo {
-	return &ClansRepo{db: db, cocClient: cocClient}
+func NewClansRepo(db *gorm.DB) IClansRepo {
+	return &ClansRepo{db: db}
 }
 
-func (repo *ClansRepo) Clans() ([]*models.Clan, error) {
-	var clans []*models.Clan
-	err := repo.db.Order("id").Find(&clans).Error
+func (repo *ClansRepo) Clans(query string) (models.Clans, error) {
+	var clans models.Clans
+	err := repo.db.
+		Scopes(postgres.ScopeContains(query, "name", "tag")).
+		Find(&clans).Error
 	return clans, err
 }
 
-func (repo *ClansRepo) Clan(tag string) (*models.Clan, error) {
+func (repo *ClansRepo) ClanByTag(tag string) (*models.Clan, error) {
 	var clan *models.Clan
-	if err := repo.db.Preload("MemberList").First(&clan, "tag = ?", tag).Error; err != nil {
-		return nil, err
-	}
+	err := repo.db.
+		Preload("ClanMembers").
+		First(&clan, "tag = ?", tag).Error
+	return clan, err
+}
 
-	return clan, nil
+func (repo *ClansRepo) ClanByTagPreload(tag string) (*models.Clan, error) {
+	var clan *models.Clan
+	err := repo.db.
+		Preload(clause.Associations).
+		Preload("ClanMembers.Player").
+		First(&clan, "tag = ?", tag).Error
+	return clan, err
+}
+
+func (repo *ClansRepo) ClanNameByTag(tag string) (string, error) {
+	var c struct{ Name string }
+	err := repo.db.
+		Model(&models.Clan{}).
+		Select("name").
+		First(&c, "tag = ?", tag).Error
+	return c.Name, err
 }

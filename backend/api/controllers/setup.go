@@ -1,29 +1,27 @@
 package controllers
 
 import (
-	"time"
-
 	"github.com/gin-gonic/gin"
 
-	"backend/api/middleware"
-	"backend/api/repos"
-	"backend/api/services"
-	"backend/store/cache"
-	"backend/store/postgres"
+	"github.com/aaantiii/lostapp/backend/api/middleware"
+	"github.com/aaantiii/lostapp/backend/api/repos"
+	"github.com/aaantiii/lostapp/backend/api/services"
+	"github.com/aaantiii/lostapp/backend/client"
+	"github.com/aaantiii/lostapp/backend/store/postgres"
 )
 
 type Controller interface {
 	setupWithRouter(*gin.Engine)
 }
 
-// Setup initializes all controllers and runs Controller.setupWithRouter for every controller.
-func Setup(router *gin.Engine) error {
+// SetupWithRouter initializes all controllers and runs Controller.setupWithRouter for every controller.
+func SetupWithRouter(router *gin.Engine) error {
 	db, err := postgres.NewClient()
 	if err != nil {
 		return err
 	}
 
-	cocCache, err := cache.NewCocCache(db, time.Minute*3)
+	clashClient, err := client.NewClashClient()
 	if err != nil {
 		return err
 	}

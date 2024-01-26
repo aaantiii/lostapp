@@ -3,8 +3,8 @@ package services
 import (
 	"github.com/amaanq/coc.go"
 
-	"backend/api/repos"
-	"backend/store/postgres/models"
+	"github.com/aaantiii/lostapp/backend/api/repos"
+	"github.com/aaantiii/lostapp/backend/store/postgres/models"
 )
 
 type IMembersService interface {

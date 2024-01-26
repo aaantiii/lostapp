@@ -21,6 +21,7 @@ const (
 	DISCORD_CLIENT_ID          EnvironmentVariable = "DISCORD_CLIENT_ID"
 	DISCORD_CLIENT_SECRET      EnvironmentVariable = "DISCORD_CLIENT_SECRET"
 	DISCORD_OAUTH_REDIRECT_URL EnvironmentVariable = "DISCORD_OAUTH_REDIRECT_URL"
+	DISCORD_GUILD_ID           EnvironmentVariable = "DISCORD_GUILD_ID"
 )
 
 // Value returns the value of the environment variable as string.
@@ -52,6 +53,7 @@ func Init() error {
 		DISCORD_CLIENT_ID,
 		DISCORD_CLIENT_SECRET,
 		DISCORD_OAUTH_REDIRECT_URL,
+		DISCORD_GUILD_ID,
 	}
 
 	for _, envVar := range requiredEnv {

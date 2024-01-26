@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	"backend/api"
-	"backend/env"
+	"github.com/aaantiii/lostapp/backend/api"
+	"github.com/aaantiii/lostapp/backend/env"
 )
 
 func init() {

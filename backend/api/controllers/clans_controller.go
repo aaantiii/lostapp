@@ -8,11 +8,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
-	"backend/api/middleware"
-	"backend/api/services"
-	"backend/api/types"
-	"backend/api/util"
-	"backend/store/postgres/models"
+	"github.com/aaantiii/lostapp/backend/api/middleware"
+	"github.com/aaantiii/lostapp/backend/api/services"
+	"github.com/aaantiii/lostapp/backend/api/types"
+	"github.com/aaantiii/lostapp/backend/api/util"
+	"github.com/aaantiii/lostapp/backend/store/postgres/models"
 )
 
 type ClansController struct {
@@ -143,7 +143,7 @@ func (controller *ClansController) PUTClanSettings(c *gin.Context) {
 	}
 
 	session := util.SessionFromContext(c)
-	settings.UpdatedByDiscordID = session.DiscordUser.ID
+	settings.UpdatedByDiscordID = session.User.ID
 	if err = controller.service.UpdateClanSettings(tag, settings); err != nil {
 		c.AbortWithStatus(http.StatusNotFound)
 		return
@@ -157,10 +157,10 @@ func (controller *ClansController) GETLeadingClans(c *gin.Context) {
 
 	var clans []*types.Clan
 	var err error
-	if session.AuthRole == types.AuthRoleAdmin {
+	if session.Role == types.AuthRoleAdmin {
 		clans, err = controller.service.Clans()
 	} else {
-		clans, err = controller.service.ClansWhereMemberIsLeader(session.DiscordUser.ID)
+		clans, err = controller.service.ClansWhereMemberIsLeader(session.User.ID)
 	}
 
 	if err != nil {
@@ -193,7 +193,7 @@ func (controller *ClansController) POSTKickpoint(c *gin.Context) {
 	session := util.SessionFromContext(c)
 	payload.PlayerTag = playerTag
 	payload.ClanTag = clanTag
-	payload.AddedByDiscordID = session.DiscordUser.ID
+	payload.AddedByDiscordID = session.User.ID
 
 	if err = controller.kickpointsService.CreateKickpoint(payload); err != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
@@ -223,7 +223,7 @@ func (controller *ClansController) PUTKickpoint(c *gin.Context) {
 	}
 
 	session := util.SessionFromContext(c)
-	payload.UpdatedByDiscordID = session.DiscordUser.ID
+	payload.UpdatedByDiscordID = session.User.ID
 	if err := controller.kickpointsService.UpdateKickpoint(uint(id), payload); err != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return

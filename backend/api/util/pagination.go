@@ -3,7 +3,7 @@ package util
 import (
 	"github.com/gin-gonic/gin"
 
-	"backend/api/types"
+	"github.com/aaantiii/lostapp/backend/api/types"
 )
 
 const PaginationKey = "pagination"

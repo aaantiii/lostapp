@@ -9,62 +9,23 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
-	"backend/env"
-	"backend/store/postgres/models"
+	"github.com/aaantiii/lostapp/backend/env"
 )
 
 const (
-	maxRetries   = 10
+	maxRetries   = 3
 	retryTimeout = time.Second * 15
 )
 
 func NewClient() (*gorm.DB, error) {
-	db, err := newGormClient()
-	if err != nil {
-		return nil, err
-	}
-
-	if err = migrate(db); err != nil {
-		return nil, err
-	}
-
-	log.Printf("Auto-migrated postgres models.")
-	return db, nil
-}
-
-func migrate(db *gorm.DB) error {
-	if err := db.AutoMigrate(
-		&models.Clan{},
-		&models.ClanMember{},
-		&models.ComparableStats{},
-		&models.Guild{},
-		&models.Kickpoint{},
-		&models.LostClan{},
-		&models.LostClanSettings{},
-		&models.Member{},
-		&models.PlayerClan{},
-		&models.Player{},
-		&models.PlayerStats{},
-		&models.User{},
-	); err != nil {
-		return err
-	}
-
-	if err := models.SeedLostClans(db); err != nil {
-		return err
-	}
-	if err := models.SeedComparableStats(db); err != nil {
-		return err
-	}
-
-	return nil
+	return newGormClient()
 }
 
 func newGormClient() (client *gorm.DB, err error) {
 	dsn := env.POSTGRES_URL.Value()
 	loggerMode := logger.Silent
 	if env.MODE.Value() != "PROD" {
-		loggerMode = logger.Warn
+		loggerMode = logger.Info
 	}
 
 	for i := 0; i < maxRetries; i++ {
@@ -77,7 +38,7 @@ func newGormClient() (client *gorm.DB, err error) {
 		}
 
 		log.Println("Connected to postgres database.")
-		return
+		return client, nil
 	}
 
 	return nil, errors.New("max retries reached")

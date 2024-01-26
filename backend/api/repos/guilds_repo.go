@@ -3,12 +3,12 @@ package repos
 import (
 	"gorm.io/gorm"
 
-	"backend/store/postgres/models"
+	"github.com/aaantiii/lostapp/backend/store/postgres/models"
 )
 
 type IGuildsRepo interface {
-	Guilds() ([]*models.Guild, error)
-	Guild(clanTag string) (*models.Guild, error)
+	GuildsByGuildID(id string) ([]*models.Guild, error)
+	GuildByClanTag(id, clanTag string) (*models.Guild, error)
 }
 
 type GuildsRepo struct {
@@ -19,14 +19,14 @@ func NewGuildsRepo(db *gorm.DB) IGuildsRepo {
 	return &GuildsRepo{db: db}
 }
 
-func (r *GuildsRepo) Guilds() ([]*models.Guild, error) {
+func (r *GuildsRepo) GuildsByGuildID(id string) ([]*models.Guild, error) {
 	var guilds []*models.Guild
-	err := r.db.Find(&guilds, "guild_id = ?", models.LostFamilyGuildID).Error
+	err := r.db.Find(&guilds, "guild_id = ?", id).Error
 	return guilds, err
 }
 
-func (r *GuildsRepo) Guild(clanTag string) (*models.Guild, error) {
+func (r *GuildsRepo) GuildByClanTag(id, clanTag string) (*models.Guild, error) {
 	var guild *models.Guild
-	err := r.db.First(&guild, "guild_id = ? AND clan_tag = ?", models.LostFamilyGuildID, clanTag).Error
+	err := r.db.First(&guild, "guild_id = ? AND clan_tag = ?", id, clanTag).Error
 	return guild, err
 }

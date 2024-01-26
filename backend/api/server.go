@@ -6,45 +6,44 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
-	"backend/api/controllers"
-	"backend/env"
+	"github.com/aaantiii/lostapp/backend/api/controllers"
+	"github.com/aaantiii/lostapp/backend/api/middleware"
+	"github.com/aaantiii/lostapp/backend/env"
 )
 
-// router is the HTTP router used to serve the API.
-var router *gin.Engine
-
-// Init initializes router with a new gin.Engine instance.
-func Init() error {
+// NewRouter returns a new gin.Engine with everything set up.
+func NewRouter() (*gin.Engine, error) {
 	if env.MODE.Value() == "PROD" {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	router = gin.Default()
+	router := gin.Default()
 	if err := router.SetTrustedProxies(nil); err != nil {
-		return err
+		return nil, err
 	}
 
 	corsConfig := cors.Config{
 		AllowOrigins:     []string{env.FRONTEND_URL.Value()},
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		ExposeHeaders:    []string{"Content-Length", "Content-Type", "Origin"},
 		AllowHeaders:     []string{"Content-Length", "Content-Type", "Origin"},
 		AllowCredentials: true,
 	}
 	if err := corsConfig.Validate(); err != nil {
-		return err
+		return nil, err
 	}
 	router.Use(cors.New(corsConfig))
+	router.Use(middleware.NewErrorMiddleware())
 
-	if err := controllers.Setup(router); err != nil {
-		return err
+	if err := controllers.SetupWithRouter(router); err != nil {
+		return nil, err
 	}
 
-	return nil
+	return router, nil
 }
 
 // ListenAndServe starts the HTTP server.
-func ListenAndServe() error {
+func ListenAndServe(router *gin.Engine) error {
 	port := env.PORT.Value()
 	log.Printf("HTTP server listening on port %s.", port)
 	return router.Run(":" + port)

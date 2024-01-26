@@ -4,27 +4,7 @@ import (
 	"time"
 
 	"github.com/amaanq/coc.go"
-
-	"backend/store/postgres/models"
 )
-
-type Kickpoint struct {
-	ID            uint        `json:"id"`
-	Amount        int         `json:"amount"`
-	Date          time.Time   `json:"date"`
-	Description   string      `json:"description"`
-	CreatedByUser models.User `json:"createdByUser"`
-}
-
-func NewKickpoint(kickpoint *models.Kickpoint) *Kickpoint {
-	return &Kickpoint{
-		ID:            kickpoint.ID,
-		Date:          kickpoint.Date,
-		Amount:        kickpoint.Amount,
-		Description:   kickpoint.Description,
-		CreatedByUser: kickpoint.CreatedByUser,
-	}
-}
 
 type ClanMemberKickpoints struct {
 	Tag    string   `json:"tag"`
