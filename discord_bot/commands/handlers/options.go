@@ -12,4 +12,6 @@ const (
 	StatisticOptionName = "statistic"
 	ApiTokenOptionName  = "api_token"
 	MessageOptionName   = "message"
+	StartsAtOptionName  = "starts_at"
+	EndsAtOptionName    = "ends_at"
 )

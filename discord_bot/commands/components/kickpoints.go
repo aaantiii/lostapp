@@ -51,7 +51,7 @@ func KickpointReason(defaultValue string) discordgo.TextInput {
 		Style:       discordgo.TextInputShort,
 		Value:       defaultValue,
 		Required:    true,
-		MinLength:   10,
+		MinLength:   8,
 		MaxLength:   100,
 	}
 }

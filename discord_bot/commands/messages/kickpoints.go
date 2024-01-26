@@ -12,20 +12,20 @@ import (
 	"bot/types"
 )
 
-func SendClanKickpoints(s *discordgo.Session, i *discordgo.InteractionCreate, clanName string, members []*types.ClanMemberKickpoints) {
+func SendClanKickpoints(i *discordgo.InteractionCreate, clanName string, members []*types.ClanMemberKickpoints) {
 	desc := "" // send in description because of embed field limit
 	for _, m := range members {
 		desc += fmt.Sprintf("%s (%s): %d Kickpunkte\n\n", m.Name, m.Tag, m.Amount)
 	}
 
-	SendEmbed(s, i, NewEmbed(
+	SendEmbedResponse(i, NewEmbed(
 		fmt.Sprintf("Kickpunkte von %s", clanName),
 		desc,
 		ColorAqua,
 	))
 }
 
-func SendMemberKickpoints(s *discordgo.Session, i *discordgo.InteractionCreate, settings *models.ClanSettings, kickpoints []*models.Kickpoint) {
+func SendMemberKickpoints(i *discordgo.InteractionCreate, settings *models.ClanSettings, kickpoints []*models.Kickpoint) {
 	fields := make([]*discordgo.MessageEmbedField, len(kickpoints))
 	var sum int
 	for index, k := range kickpoints {
@@ -42,7 +42,7 @@ func SendMemberKickpoints(s *discordgo.Session, i *discordgo.InteractionCreate, 
 	}
 
 	player := kickpoints[0].Player
-	SendEmbed(s, i, NewFieldEmbed(
+	SendEmbedResponse(i, NewFieldEmbed(
 		"Aktive Kickpunkte",
 		fmt.Sprintf("Aktive Kickpunkte von %s (%s) in %s\n**Gesamt: %d/%d Kickpunkte**", player.Name, player.CocTag, settings.Clan.Name, sum, settings.MaxKickpoints),
 		ColorAqua,
@@ -62,7 +62,7 @@ func DetailedKickpointFields(kickpoint *models.Kickpoint, expireAfterDays int) [
 	}
 }
 
-func SendKickpointHelp(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func SendKickpointHelp(i *discordgo.InteractionCreate) {
 	fields := []*discordgo.MessageEmbedField{
 		{
 			Name: "Keine Verwarnungen mehr",
@@ -117,7 +117,7 @@ Mit diesem Befehl kann jedes Mitglied einsehen
 		},
 	}
 
-	SendEmbed(s, i, NewFieldEmbed(
+	SendEmbedResponse(i, NewFieldEmbed(
 		"Neues Kickpunktesystem - Erklärung",
 		"Das Kickpunkte System vom Bot funktioniert anders, als das alte System. Hier sind die wichtigsten Änderungen:",
 		ColorAqua,

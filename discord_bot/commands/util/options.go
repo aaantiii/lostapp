@@ -2,6 +2,7 @@ package util
 
 import (
 	"strings"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -12,7 +13,6 @@ func StringOptionByName(name string, options []*discordgo.ApplicationCommandInte
 			return strings.Trim(o.StringValue(), " ")
 		}
 	}
-
 	return ""
 }
 
@@ -23,7 +23,6 @@ func IntOptionByName(name string, options []*discordgo.ApplicationCommandInterac
 			return &value
 		}
 	}
-
 	return nil
 }
 
@@ -34,6 +33,14 @@ func UintOptionByName(name string, options []*discordgo.ApplicationCommandIntera
 			return &value
 		}
 	}
-
 	return nil
+}
+
+func DateTimeOptionByName(name string, options []*discordgo.ApplicationCommandInteractionDataOption) (time.Time, error) {
+	for _, o := range options {
+		if o.Name == name {
+			return ParseDateTimeString(o.StringValue())
+		}
+	}
+	return time.Time{}, nil
 }

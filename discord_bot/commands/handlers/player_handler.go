@@ -7,11 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/amaanq/coc.go"
+	"github.com/aaantiii/goclash"
 	"github.com/bwmarrin/discordgo"
 	"gorm.io/gorm"
 
-	"bot/client"
 	"bot/commands/messages"
 	"bot/commands/repos"
 	"bot/commands/util"
@@ -26,16 +25,16 @@ type IPlayerHandler interface {
 }
 
 type PlayerHandler struct {
-	players   repos.IPlayersRepo
-	cocClient *client.CocClient
+	players     repos.IPlayersRepo
+	clashClient *goclash.Client
 }
 
 const cocVerificationStatusOK = "ok"
 
-func NewPlayerHandler(players repos.IPlayersRepo, cocClient *client.CocClient) IPlayerHandler {
+func NewPlayerHandler(players repos.IPlayersRepo, clashClient *goclash.Client) IPlayerHandler {
 	return &PlayerHandler{
-		players:   players,
-		cocClient: cocClient,
+		players:     players,
+		clashClient: clashClient,
 	}
 }
 
@@ -46,42 +45,42 @@ func (h *PlayerHandler) VerifyPlayer(s *discordgo.Session, i *discordgo.Interact
 	playerTag := util.StringOptionByName(PlayerTagOptionName, opts)
 	apiToken := util.StringOptionByName(ApiTokenOptionName, opts)
 	if playerTag == "" || apiToken == "" {
-		messages.SendInvalidInputError(s, i, "Bitte gib einen Spieler-Tag und einen API-Token an.")
+		messages.SendInvalidInputErr(i, "Bitte gib einen Spieler-Tag und einen API-Token an.")
 		return
 	}
 
 	if !strings.HasPrefix(playerTag, "#") {
-		messages.SendInvalidInputError(s, i, "Bitte gib einen gültigen Spieler-Tag an.")
+		messages.SendInvalidInputErr(i, "Bitte gib einen gültigen Spieler-Tag an.")
 		return
 	}
 
-	verification, err := h.cocClient.VerifyPlayerToken(playerTag, apiToken)
+	verification, err := h.clashClient.VerifyPlayer(playerTag, apiToken)
 	if err != nil {
-		var apiErr *coc.APIError
+		var apiErr *goclash.ClientError
 		if !errors.As(err, &apiErr) {
-			messages.SendUnknownError(s, i)
+			messages.SendUnknownErr(i)
 			return
 		}
 
-		messages.SendInvalidInputError(s, i, fmt.Sprintf("Bei der Anfrage zur Clash of Clans-API ist ein Fehler aufgetreten (Fehlercode %d).", apiErr.StatusCode))
+		messages.SendInvalidInputErr(i, fmt.Sprintf("Bei der Anfrage zur Clash of Clans-API ist ein Fehler aufgetreten (Fehlercode %d).", apiErr.Status))
 		return
 	}
 
 	if verification.Status != cocVerificationStatusOK {
-		messages.SendInvalidInputError(s, i, "Dein API-Token oder Spieler Tag ist ungültig. Bitte versuche es erneut mit gültigen Eingaben.")
+		messages.SendInvalidInputErr(i, "Dein API-Token oder Spieler Tag ist ungültig. Bitte versuche es erneut mit gültigen Eingaben.")
 		return
 	}
 
-	cocPlayer, err := h.cocClient.GetPlayer(playerTag)
+	player, err := h.clashClient.GetPlayer(playerTag)
 	if err != nil {
-		messages.SendCocApiError(s, i)
+		messages.SendCocApiErr(i)
 		return
 	}
 
 	if _, err = h.players.PlayerByTagAndDiscordID(playerTag, i.Member.User.ID); err == nil {
-		messages.SendEmbed(s, i, messages.NewEmbed(
+		messages.SendEmbedResponse(i, messages.NewEmbed(
 			"Account bereits verifiziert",
-			fmt.Sprintf("%s, dein Clash of Clans Account %s (%s) ist bereits verifiziert und mit deinem Discord Account verknüpft!", i.Member.Mention(), cocPlayer.Name, cocPlayer.Tag),
+			fmt.Sprintf("%s, dein Clash of Clans Account %s (%s) ist bereits verifiziert und mit deinem Discord Account verknüpft!", i.Member.Mention(), player.Name, player.Tag),
 			messages.ColorRed,
 		))
 		return
@@ -90,9 +89,9 @@ func (h *PlayerHandler) VerifyPlayer(s *discordgo.Session, i *discordgo.Interact
 	existingPlayers, err := h.players.PlayersByDiscordID(i.Member.User.ID)
 	if (err == nil || errors.Is(err, gorm.ErrRecordNotFound)) && len(existingPlayers) == 0 {
 		if _, err = s.GuildMemberEdit(i.GuildID, i.Member.User.ID, &discordgo.GuildMemberParams{
-			Nick: cocPlayer.Name,
+			Nick: player.Name,
 		}); err != nil {
-			messages.SendEmbed(s, i, messages.NewEmbed(
+			messages.SendEmbedResponse(i, messages.NewEmbed(
 				"Fehler",
 				"Der Bot konnte deinen Discord Namen nicht zu deinem Clash of Clans Namen ändern. Dies liegt wahrscheinlich an fehlenden Berechtigungen des Bots.",
 				messages.ColorRed,
@@ -102,11 +101,11 @@ func (h *PlayerHandler) VerifyPlayer(s *discordgo.Session, i *discordgo.Interact
 	}
 
 	if err = h.players.CreateOrUpdatePlayer(&models.Player{
-		CocTag:    cocPlayer.Tag,
-		Name:      cocPlayer.Name,
+		CocTag:    player.Tag,
+		Name:      player.Name,
 		DiscordID: i.Member.User.ID,
 	}); err != nil {
-		messages.SendEmbed(s, i, messages.NewEmbed(
+		messages.SendEmbedResponse(i, messages.NewEmbed(
 			"Datenbankfehler",
 			"Beim Speichern deines Accounts in der Datenbank ist ein Fehler aufgetreten. Bitte versuche es erneut.",
 			messages.ColorRed,
@@ -115,21 +114,21 @@ func (h *PlayerHandler) VerifyPlayer(s *discordgo.Session, i *discordgo.Interact
 	}
 
 	if err = s.GuildMemberRoleAdd(i.GuildID, i.Member.User.ID, env.DISCORD_VERIFIED_ROLE_ID.Value()); err != nil {
-		messages.SendEmbed(s, i, messages.NewEmbed(
+		messages.SendEmbedResponse(i, messages.NewEmbed(
 			"Erfolgreich verifiziert",
 			fmt.Sprintf(
 				"%s, dein Clash of Clans Account %s (%s) wurde erfolgreich verifiziert und mit deinem Discord Account verknüpft!\n**Achtung**: Der Bot konnte dir die Verified-Rolle nicht automatisch zuweisen. Bitte frage einen Vize, ob er sie dir manuell geben kann.",
 				i.Member.Mention(),
-				cocPlayer.Name,
-				cocPlayer.Tag),
+				player.Name,
+				player.Tag),
 			messages.ColorGreen,
 		))
 		return
 	}
 
-	messages.SendEmbed(s, i, messages.NewEmbed(
+	messages.SendEmbedResponse(i, messages.NewEmbed(
 		"Erfolgreich verifiziert",
-		fmt.Sprintf("%s, dein Clash of Clans Account %s (%s) wurde erfolgreich verifiziert und mit deinem Discord Account verknüpft!", i.Member.Mention(), cocPlayer.Name, cocPlayer.Tag),
+		fmt.Sprintf("%s, dein Clash of Clans Account %s (%s) wurde erfolgreich verifiziert und mit deinem Discord Account verknüpft!", i.Member.Mention(), player.Name, player.Tag),
 		messages.ColorGreen,
 	))
 }
@@ -140,31 +139,32 @@ func (h *PlayerHandler) PingPlayer(s *discordgo.Session, i *discordgo.Interactio
 	msg := util.StringOptionByName(MessageOptionName, opts)
 
 	if playerTag == "" || msg == "" {
-		messages.SendInvalidInputError(s, i, "Bitte gib einen Spieler-Tag und eine Nachricht ein.")
+		messages.SendInvalidInputErr(i, "Bitte gib einen Spieler-Tag und eine Nachricht ein.")
 		return
 	}
 
 	if !strings.HasPrefix(playerTag, "#") {
-		messages.SendInvalidInputError(s, i, "Bitte gib einen gültigen Spieler-Tag an.")
+		messages.SendInvalidInputErr(i, "Bitte gib einen gültigen Spieler-Tag an.")
 		return
 	}
 
 	player, err := h.players.PlayerByTag(playerTag)
 	if err != nil {
-		messages.SendError(s, i, "Es wurde kein Spieler mit dem angegebenen Spieler-Tag gefunden.")
+		messages.SendErr(i, "Es wurde kein Spieler mit dem angegebenen Spieler-Tag gefunden.")
 		return
 	}
 
 	if _, err = s.ChannelMessageSend(i.ChannelID, fmt.Sprintf("%s, du wurdest von %s gepingt:\n%s", util.MentionUserID(player.DiscordID), i.Member.Mention(), msg)); err != nil {
 		log.Printf("PingPlayer failed to send message: %v", err)
+		messages.SendErr(i, "Beim Senden des Pings ist ein Fehler aufgetreten.")
+		return
 	}
 
-	messages.SendEmptyResponse(s, i)
+	messages.SendEmptyResponse(i)
 }
 
-func (h *PlayerHandler) HandleAutocomplete(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func (h *PlayerHandler) HandleAutocomplete(_ *discordgo.Session, i *discordgo.InteractionCreate) {
 	opts := i.ApplicationCommandData().Options
-
 	for _, opt := range opts {
 		if !opt.Focused {
 			continue
@@ -172,7 +172,7 @@ func (h *PlayerHandler) HandleAutocomplete(s *discordgo.Session, i *discordgo.In
 
 		switch opt.Name {
 		case PlayerTagOptionName:
-			autocompletePlayers(h.players, opt.StringValue())(s, i)
+			autocompletePlayers(i, h.players, opt.StringValue())
 		}
 	}
 }

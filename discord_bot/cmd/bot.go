@@ -4,10 +4,12 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 
 	"bot/commands"
+	"bot/commands/util"
 	"bot/env"
 )
 
@@ -26,22 +28,20 @@ func main() {
 		log.Fatalf("Failed to create discord session: %v", err)
 	}
 
-	cmds, err := commands.Setup(s)
-	if err != nil {
-		log.Fatalf("Failed to add commands: %v", err)
-	}
-	log.Printf("Successfully added %d commands.", len(cmds))
-
+	s.Identify.Intents = discordgo.IntentsAll
 	if err = s.Open(); err != nil {
 		log.Fatalf("Failed to open discord session: %v", err)
 	}
 	log.Printf("Bot is now logged in as %s and running. Press CTRL-C to exit.", s.State.User.Username)
 
-	s.Identify.Intents = discordgo.IntentsAll
+	go autoUpdateStatus(s)
+	util.Session = s
 
-	if err = s.UpdateGameStatus(0, "mit deinen Kickpunkten"); err != nil {
-		log.Fatalf("Failed to update game status: %v", err)
+	cmds, err := commands.Setup(s)
+	if err != nil {
+		log.Fatalf("Failed to add commands: %v", err)
 	}
+	log.Printf("Successfully added %d commands.", len(cmds))
 
 	shutdownSig := make(chan os.Signal, 1)
 	signal.Notify(shutdownSig, os.Interrupt)
@@ -56,6 +56,7 @@ func main() {
 	}
 }
 
+// removeCommands removes all commands from the discord server.
 func removeCommands(s *discordgo.Session, cmds []*discordgo.ApplicationCommand) error {
 	if env.MODE.Value() == "DEBUG" {
 		return nil
@@ -77,4 +78,14 @@ func removeCommands(s *discordgo.Session, cmds []*discordgo.ApplicationCommand) 
 
 	log.Printf("Successfully removed %d commands.", len(cmds))
 	return nil
+}
+
+// autoUpdateStatus updates the game status every hour.
+func autoUpdateStatus(s *discordgo.Session) {
+	for {
+		if err := s.UpdateGameStatus(0, "mit deinen Kickpunkten"); err != nil {
+			log.Printf("Failed to update game status: %v", err)
+		}
+		time.Sleep(time.Hour)
+	}
 }

@@ -2,6 +2,7 @@ package repos
 
 import (
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"bot/store/postgres/models"
 )
@@ -11,6 +12,7 @@ type IMembersRepo interface {
 	MembersByDiscordID(discordID string) (models.ClanMembers, error)
 	MemberByID(playerTag, clanTag string) (*models.ClanMember, error)
 	MembersByTag(clanTag string, playerTags ...string) (models.ClanMembers, error)
+	MembersByPlayerTag(playerTag string) (models.ClanMembers, error)
 	CreateMember(member *models.ClanMember) error
 	UpdateMemberRole(playerTag, clanTag string, role models.ClanRole) error
 	DeleteMember(tag, clanTag string) error
@@ -52,8 +54,7 @@ func (repo *MembersRepo) MembersByDiscordID(discordID string) (models.ClanMember
 func (repo *MembersRepo) MemberByID(playerTag, clanTag string) (*models.ClanMember, error) {
 	var members *models.ClanMember
 	err := repo.db.
-		Preload("Player").
-		Preload("Clan").
+		Preload(clause.Associations).
 		First(&members, "player_tag = ? AND clan_tag = ?", playerTag, clanTag).Error
 	return members, err
 }
@@ -61,17 +62,23 @@ func (repo *MembersRepo) MemberByID(playerTag, clanTag string) (*models.ClanMemb
 func (repo *MembersRepo) MembersByTag(clanTag string, playerTags ...string) (models.ClanMembers, error) {
 	var members models.ClanMembers
 	err := repo.db.
-		Preload("Player").
-		Preload("Clan").
+		Preload(clause.Associations).
 		Find(&members, "clan_tag = ? AND player_tag IN (?)", clanTag, playerTags).Error
+	return members, err
+}
+
+func (repo *MembersRepo) MembersByPlayerTag(playerTag string) (models.ClanMembers, error) {
+	var members models.ClanMembers
+	err := repo.db.
+		Preload(clause.Associations).
+		Find(&members, "player_tag = ?", playerTag).Error
 	return members, err
 }
 
 func (repo *MembersRepo) MissingClanMembers(clanTag string, playerTags ...string) (models.ClanMembers, error) {
 	var members models.ClanMembers
 	err := repo.db.
-		Preload("Player").
-		Preload("Clan").
+		Preload(clause.Associations).
 		Find(&members, "clan_tag = ? AND player_tag NOT IN (?)", clanTag, playerTags).Error
 	return members, err
 }

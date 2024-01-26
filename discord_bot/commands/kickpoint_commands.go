@@ -5,6 +5,7 @@ import (
 	"gorm.io/gorm"
 
 	"bot/commands/handlers"
+	"bot/commands/middleware"
 	"bot/commands/repos"
 	"bot/commands/util"
 	"bot/store/postgres/models"
@@ -16,10 +17,9 @@ func kickpointInteractionCommands(db *gorm.DB) types.Commands[types.InteractionH
 		repos.NewKickpointsRepo(db),
 		repos.NewClansRepo(db),
 		repos.NewPlayersRepo(db),
-		repos.NewGuildsRepo(db),
-		repos.NewUsersRepo(db),
 		repos.NewClanSettingsRepo(db),
 		repos.NewMemberStatesRepo(db),
+		middleware.NewAuthMiddleware(repos.NewGuildsRepo(db), repos.NewClansRepo(db), repos.NewUsersRepo(db)),
 	)
 
 	return types.Commands[types.InteractionHandler]{{

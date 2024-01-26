@@ -5,6 +5,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 
+	"bot/commands/util"
 	"bot/env"
 )
 
@@ -21,6 +22,7 @@ func NewEmbed(title, desc string, color int) *discordgo.MessageEmbed {
 		Description: desc,
 		Color:       color,
 		Type:        discordgo.EmbedTypeRich,
+		Footer:      newDefaultFooter(),
 	}
 }
 
@@ -35,11 +37,12 @@ func NewFieldEmbed(title, desc string, color int, fields []*discordgo.MessageEmb
 		Fields:      fields,
 		Color:       color,
 		Type:        discordgo.EmbedTypeRich,
+		Footer:      newDefaultFooter(),
 	}
 }
 
-func newDefaultFooter(s *discordgo.Session) *discordgo.MessageEmbedFooter {
+func newDefaultFooter() *discordgo.MessageEmbedFooter {
 	return &discordgo.MessageEmbedFooter{
-		Text: fmt.Sprintf("%s | %s | v%s", s.State.User.Username, "Made by Anti", env.VERSION.Value()),
+		Text: fmt.Sprintf("%s | %s | v%s", util.Session.State.User.Username, "Made by Anti", env.VERSION.Value()),
 	}
 }

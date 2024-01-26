@@ -1,7 +1,7 @@
 package types
 
 import (
-	"github.com/amaanq/coc.go"
+	"github.com/aaantiii/goclash"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -12,13 +12,16 @@ type PlayerStatistic struct {
 	Value     int
 }
 
-// ComparableStatistic is a coc.Player statistic that can be compared between players.
+type PlayerStatistics []*PlayerStatistic
+
+// ComparableStatistic is a goclash.Player statistic that can be compared between players.
 type ComparableStatistic struct {
 	Name        string
 	DisplayName string
+	Task        string
 }
 
-func ComparableStatisticChoices(stats []ComparableStatistic) []*discordgo.ApplicationCommandOptionChoice {
+func ComparableStatisticChoices(stats []*ComparableStatistic) []*discordgo.ApplicationCommandOptionChoice {
 	choices := make([]*discordgo.ApplicationCommandOptionChoice, len(stats))
 	for i, stat := range stats {
 		choices[i] = &discordgo.ApplicationCommandOptionChoice{
@@ -26,115 +29,149 @@ func ComparableStatisticChoices(stats []ComparableStatistic) []*discordgo.Applic
 			Value: stat.Name,
 		}
 	}
+	return choices
+}
 
+func ComparableStatisticTaskChoices(stats []*ComparableStatistic) []*discordgo.ApplicationCommandOptionChoice {
+	choices := make([]*discordgo.ApplicationCommandOptionChoice, len(stats))
+	for i, stat := range stats {
+		choices[i] = &discordgo.ApplicationCommandOptionChoice{
+			Name:  stat.Task,
+			Value: stat.Name,
+		}
+	}
 	return choices
 }
 
 var (
-	StatSeasonWins = ComparableStatistic{
+	StatSeasonWins = &ComparableStatistic{
 		Name:        "Season Wins",
 		DisplayName: "Angriffe gewonnen (Saison)",
 	}
-	StatDarkElixirLooted = ComparableStatistic{
-		Name:        coc.HeroicHeist.Name,
+	StatDarkElixirLooted = &ComparableStatistic{
+		Name:        goclash.AchievementHeroicHeist.Name,
 		DisplayName: "Dunkles Elixier gesammelt",
+		Task:        "Dunkles Elixier sammeln",
 	}
-	StatSeasonPoints = ComparableStatistic{
-		Name:        coc.WellSeasoned.Name,
+	StatSeasonPoints = &ComparableStatistic{
+		Name:        goclash.AchievementWellSeasoned.Name,
 		DisplayName: "Season Challenge Punkte",
+		Task:        "Season Challenge Punkte sammeln",
 	}
-	StatObstaclesRemoved = ComparableStatistic{
-		Name:        coc.NiceAndTidy.Name,
+	StatObstaclesRemoved = &ComparableStatistic{
+		Name:        goclash.AchievementNiceAndTidy.Name,
 		DisplayName: "Hindernisse entfernt",
+		Task:        "Hindernisse entfernen",
 	}
-	StatTroopsDonated = ComparableStatistic{
-		Name:        coc.FriendInNeed.Name,
+	StatTroopsDonated = &ComparableStatistic{
+		Name:        goclash.AchievementFriendInNeed.Name,
 		DisplayName: "Truppen gespendet",
+		Task:        "Truppen spenden",
 	}
-	StatSpellsDonated = ComparableStatistic{
-		Name:        coc.SharingIsCaring.Name,
+	StatSpellsDonated = &ComparableStatistic{
+		Name:        goclash.AchievementSharingIsCaring.Name,
 		DisplayName: "Zauber gespendet",
+		Task:        "Zauber spenden",
 	}
-	StatSiegeMachinesDonated = ComparableStatistic{
-		Name:        coc.SiegeSharer.Name,
+	StatSiegeMachinesDonated = &ComparableStatistic{
+		Name:        goclash.AchievementSiegeSharer.Name,
 		DisplayName: "Siege Machines gespendet",
+		Task:        "Siege Machines spenden",
 	}
-	StatWarStars = ComparableStatistic{
-		Name:        coc.WarHero.Name,
+	StatWarStars = &ComparableStatistic{
+		Name:        goclash.AchievementWarHero.Name,
 		DisplayName: "CW Sterne",
+		Task:        "CW Sterne sammeln",
 	}
-	StatCWLStars = ComparableStatistic{
-		Name:        coc.WarLeagueLegend.Name,
+	StatCWLStars = &ComparableStatistic{
+		Name:        goclash.AchievementWarLeagueLegend.Name,
 		DisplayName: "CWL Sterne",
+		Task:        "CWL Sterne sammeln",
 	}
-	StatClanGamesPoints = ComparableStatistic{
-		Name:        coc.GamesChampion.Name,
+	StatClanGamesPoints = &ComparableStatistic{
+		Name:        goclash.AchievementGamesChampion.Name,
 		DisplayName: "Clan Games Punkte",
+		Task:        "Clan Games Punkte sammeln",
 	}
-	StatSuccessfulDefenses = ComparableStatistic{
-		Name:        coc.Unbreakable.Name,
+	StatSuccessfulDefenses = &ComparableStatistic{
+		Name:        goclash.AchievementUnbreakable.Name,
 		DisplayName: "Erfolgreiche Verteidigungen",
+		Task:        "Erfolgreiche Verteidigungen sammeln",
 	}
-	StatHighestTrophies = ComparableStatistic{
-		Name:        coc.SweetVictory.Name,
-		DisplayName: "Meiste Trophäen",
+	StatHighestTrophies = &ComparableStatistic{
+		Name:        goclash.AchievementSweetVictory.Name,
+		DisplayName: "Höchste Trophäen",
+		Task:        "Höchste Trophäen",
 	}
-	StatAttackWins = ComparableStatistic{
-		Name:        coc.Conqueror.Name,
+	StatAttackWins = &ComparableStatistic{
+		Name:        goclash.AchievementConqueror.Name,
 		DisplayName: "Angriffe gewonnen",
+		Task:        "Angriffe gewinnen",
 	}
-	StatTownHallsDestroyed = ComparableStatistic{
-		Name:        coc.Humiliator.Name,
+	StatTownHallsDestroyed = &ComparableStatistic{
+		Name:        goclash.AchievementHumiliator.Name,
 		DisplayName: "Rathäuser zerstört",
+		Task:        "Rathäuser zerstören",
 	}
-	StatWeaponizedTownHallsDestroyed = ComparableStatistic{
-		Name:        coc.NotSoEasyThisTime.Name,
+	StatWeaponizedTownHallsDestroyed = &ComparableStatistic{
+		Name:        goclash.AchievementNotSoEasyThisTime.Name,
 		DisplayName: "Bewaffnete Rathäuser zerstört",
+		Task:        "Bewaffnete Rathäuser zerstören",
 	}
-	StatWallsDestroyed = ComparableStatistic{
-		Name:        coc.WallBuster.Name,
+	StatWallsDestroyed = &ComparableStatistic{
+		Name:        goclash.AchievementWallBuster.Name,
 		DisplayName: "Mauern zerstört",
+		Task:        "Mauern zerstören",
 	}
-	StatXBowsDestroyed = ComparableStatistic{
-		Name:        coc.XBowExterminator.Name,
+	StatXBowsDestroyed = &ComparableStatistic{
+		Name:        goclash.AchievementXBowExterminator.Name,
 		DisplayName: "X-Bögen zerstört",
+		Task:        "X-Bögen zerstören",
 	}
-	StatInfernoTowersDestroyed = ComparableStatistic{
-		Name:        coc.Firefighter.Name,
+	StatInfernoTowersDestroyed = &ComparableStatistic{
+		Name:        goclash.AchievementFirefighter.Name,
 		DisplayName: "Infernotürme zerstört",
+		Task:        "Infernotürme zerstören",
 	}
-	StatEagleArtilleriesDestroyed = ComparableStatistic{
-		Name:        coc.AntiArtillery.Name,
+	StatEagleArtilleriesDestroyed = &ComparableStatistic{
+		Name:        goclash.AchievementAntiArtillery.Name,
 		DisplayName: "Adlerartillerien zerstört",
+		Task:        "Adlerartillerien zerstören",
 	}
-	StatScattershotsDestroyed = ComparableStatistic{
-		Name:        coc.ShatteredAndScattered.Name,
+	StatScattershotsDestroyed = &ComparableStatistic{
+		Name:        goclash.AchievementShatteredAndScattered.Name,
 		DisplayName: "Scattershots zerstört",
+		Task:        "Scattershots zerstören",
 	}
-	StatHighestBuilderBaseTrophies = ComparableStatistic{
-		Name:        coc.ChampionBuilder.Name,
-		DisplayName: "Meiste Trophäen (BB)",
+	StatHighestBuilderBaseTrophies = &ComparableStatistic{
+		Name:        goclash.AchievementChampionBuilder.Name,
+		DisplayName: "Höchste Trophäen (BB)",
+		Task:        "Höchste Trophäen (BB)",
 	}
-	StatSpellTowersDestroyed = ComparableStatistic{
-		Name:        coc.Counterspell.Name,
+	StatSpellTowersDestroyed = &ComparableStatistic{
+		Name:        goclash.AchievementCounterspell.Name,
 		DisplayName: "Zaubertürme zerstört",
+		Task:        "Zaubertürme zerstören",
 	}
-	StatMonolithsDestroyed = ComparableStatistic{
-		Name:        coc.MonolithMasher.Name,
+	StatMonolithsDestroyed = &ComparableStatistic{
+		Name:        goclash.AchievementMonolithMasher.Name,
 		DisplayName: "Monolithen zerstört",
+		Task:        "Monolithen zerstören",
 	}
-	StatClanGoldLooted = ComparableStatistic{
-		Name:        coc.AggressiveCapitalism.Name,
+	StatClanGoldLooted = &ComparableStatistic{
+		Name:        goclash.AchievementAggressiveCapitalism.Name,
 		DisplayName: "Clan Gold aus Raids",
+		Task:        "Clan Gold aus Raids sammeln",
 	}
-	StatClanGoldContributed = ComparableStatistic{
-		Name:        coc.MostValuableClanmate.Name,
+	StatClanGoldContributed = &ComparableStatistic{
+		Name:        goclash.AchievementMostValuableClanmate.Name,
 		DisplayName: "Clan Gold ausgegeben",
+		Task:        "Clan Gold ausgeben",
 	}
 )
 
 // ComparableStats is a list of all comparable stats a coc.Player has. This includes achievements and other stats.
-var ComparableStats = []ComparableStatistic{
+var ComparableStats = []*ComparableStatistic{
 	StatSeasonWins, // player.AttackWins
 	StatDarkElixirLooted,
 	StatSeasonPoints,
@@ -163,7 +200,7 @@ var ComparableStats = []ComparableStatistic{
 }
 
 // ComparableAchievements are the achievements that can be compared between players.
-var ComparableAchievements = []ComparableStatistic{
+var ComparableAchievements = []*ComparableStatistic{
 	StatDarkElixirLooted,
 	StatSeasonPoints,
 	StatObstaclesRemoved,

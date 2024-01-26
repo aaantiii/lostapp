@@ -11,7 +11,7 @@ const (
 	IndexRoleMember
 )
 
-func SortMembersByRole(members models.ClanMembers) []models.ClanMembers {
+func GroupMembersByRole(members models.ClanMembers) []models.ClanMembers {
 	sortedMembers := make([]models.ClanMembers, 4)
 	for _, member := range members {
 		switch member.ClanRole {

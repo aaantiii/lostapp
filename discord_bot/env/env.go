@@ -11,15 +11,16 @@ import (
 type EnvironmentVariable string // EnvironmentVariable type represents an environment variable.
 
 const (
-	MODE                     EnvironmentVariable = "MODE"
-	VERSION                  EnvironmentVariable = "VERSION"
-	POSTGRES_URL             EnvironmentVariable = "POSTGRES_URL"
-	DISCORD_VERIFIED_ROLE_ID EnvironmentVariable = "DISCORD_VERIFIED_ROLE_ID"
-	DISCORD_GUILD_ID         EnvironmentVariable = "DISCORD_GUILD_ID"
-	DISCORD_CLIENT_ID        EnvironmentVariable = "DISCORD_CLIENT_ID"
-	DISCORD_CLIENT_SECRET    EnvironmentVariable = "DISCORD_CLIENT_SECRET"
-	COC_API_EMAILS           EnvironmentVariable = "COC_API_EMAILS"
-	COC_API_PASSWORDS        EnvironmentVariable = "COC_API_PASSWORDS"
+	MODE                      EnvironmentVariable = "MODE"
+	VERSION                   EnvironmentVariable = "VERSION"
+	POSTGRES_URL              EnvironmentVariable = "POSTGRES_URL"
+	DISCORD_VERIFIED_ROLE_ID  EnvironmentVariable = "DISCORD_VERIFIED_ROLE_ID"
+	DISCORD_EX_MEMBER_ROLE_ID EnvironmentVariable = "DISCORD_EX_MEMBER_ROLE_ID"
+	DISCORD_GUILD_ID          EnvironmentVariable = "DISCORD_GUILD_ID"
+	DISCORD_CLIENT_ID         EnvironmentVariable = "DISCORD_CLIENT_ID"
+	DISCORD_CLIENT_SECRET     EnvironmentVariable = "DISCORD_CLIENT_SECRET"
+	COC_API_EMAILS            EnvironmentVariable = "COC_API_EMAILS"
+	COC_API_PASSWORDS         EnvironmentVariable = "COC_API_PASSWORDS"
 )
 
 // Value returns the value of the environment variable as string.
@@ -33,8 +34,8 @@ func (v EnvironmentVariable) Name() string {
 }
 
 func Load() error {
-	if err := godotenv.Load(); err != nil {
-		if err = godotenv.Load("../.env"); err != nil {
+	if MODE.Value() != "PROD" {
+		if err := godotenv.Load("../.env"); err != nil {
 			return err
 		}
 	}
@@ -44,6 +45,7 @@ func Load() error {
 		VERSION,
 		POSTGRES_URL,
 		DISCORD_VERIFIED_ROLE_ID,
+		DISCORD_EX_MEMBER_ROLE_ID,
 		DISCORD_GUILD_ID,
 		DISCORD_CLIENT_ID,
 		DISCORD_CLIENT_SECRET,

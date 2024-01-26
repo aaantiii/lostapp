@@ -7,8 +7,8 @@ import (
 const LostFamilyGuildID = "733857906117574717"
 
 type Guild struct {
-	GuildID        string
-	ClanTag        string
+	GuildID        string `gorm:"primaryKey"`
+	ClanTag        string `gorm:"primaryKey"`
 	LeaderRoleID   string
 	CoLeaderRoleID string
 	ElderRoleID    string

@@ -23,14 +23,14 @@ func NewClient() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	if err = SeedData(db); err != nil {
+	if err = seedDB(db); err != nil {
 		return nil, err
 	}
 
 	return db, nil
 }
 
-func SeedData(db *gorm.DB) error {
+func seedDB(db *gorm.DB) error {
 	return nil
 }
 

@@ -2,25 +2,25 @@ package commands
 
 import (
 	"log"
-	"time"
+	"slices"
 
+	"github.com/aaantiii/goclash"
 	"github.com/bwmarrin/discordgo"
 	"gorm.io/gorm"
 
-	"bot/client"
 	"bot/commands/messages"
 	"bot/commands/util"
 	"bot/env"
 	"bot/types"
 )
 
-func createInteractions(db *gorm.DB, cocClient *client.CocClient) types.Commands[types.InteractionHandler] {
+func createInteractions(db *gorm.DB, clashClient *goclash.Client) types.Commands[types.InteractionHandler] {
 	interactions := []types.Commands[types.InteractionHandler]{
 		kickpointInteractionCommands(db),
-		playerInteractionCommands(db, cocClient),
-		memberInteractionCommands(db, cocClient),
+		playerInteractionCommands(db, clashClient),
+		memberInteractionCommands(db, clashClient),
 		adminInteractionCommands(db),
-		clanInteractionCommands(db, cocClient),
+		clanInteractionCommands(db, clashClient),
 	}
 
 	var flat types.Commands[types.InteractionHandler]
@@ -43,64 +43,60 @@ func interactionCommandMap(commands types.Commands[types.InteractionHandler]) ma
 func interactionHandler(interactions types.Commands[types.InteractionHandler]) func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	commands := interactionCommandMap(interactions)
 	return func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-		go func() {
-			if i.GuildID == "" {
-				if i.User != nil {
-					log.Printf("Aborted interaction called by %s in DMs (not supported).", i.User.Username)
-				}
-				sendDMNotSupported(s, i)
+		if i.GuildID == "" {
+			if i.User != nil {
+				log.Printf("Aborted interaction called by %s in DMs (not supported).", i.User.Username)
+			}
+			sendDMNotSupported(i)
+			return
+		}
+		defer handleRecovery()
+
+		if env.MODE.Value() == "TEST" || env.MODE.Value() == "DEBUG" {
+			if !slices.Contains(i.Member.Roles, "1192095424094408724") {
+				messages.SendEmbedResponse(i, messages.NewEmbed(
+					"Entwicklung",
+					"Dies ist der Test Bot. Bitte verwende den richtigen Bot.",
+					messages.ColorYellow,
+				))
 				return
 			}
-			defer handleRecovery(i.Interaction.Member.User.Username, time.Now())
+		}
 
-			if env.MODE.Value() == "TEST" {
-				if i.Member.User.ID != "289735223313301504" {
-					messages.SendEmbed(s, i, messages.NewEmbed(
-						"Wartungsarbeiten",
-						"Der Bot wird gerade gewartet. Bitte versuche es später erneut.",
-						messages.ColorYellow,
-					))
+		switch i.Type {
+		case discordgo.InteractionApplicationCommandAutocomplete:
+			if command, ok := commands[i.ApplicationCommandData().Name]; ok {
+				if command.Handler.Autocomplete == nil {
 					return
 				}
+				command.Handler.Autocomplete(s, i)
+				return
 			}
 
-			switch i.Type {
-			case discordgo.InteractionApplicationCommandAutocomplete:
-				if command, ok := commands[i.ApplicationCommandData().Name]; ok {
-					if command.Handler.Autocomplete == nil {
-						return
-					}
-					command.Handler.Autocomplete(s, i)
-					return
-				}
-
-			case discordgo.InteractionApplicationCommand:
-				if command, ok := commands[i.ApplicationCommandData().Name]; ok {
-					command.Handler.Main(s, i)
-					return
-				}
-
-			case discordgo.InteractionModalSubmit:
-				commandName, _, _ := util.ParseCustomID(i.ModalSubmitData().CustomID)
-				if command, ok := commands[commandName]; ok {
-					if command.Handler.ModalSubmit == nil {
-						log.Printf("Tried to run modal submit handler for command '%s', but it is nil.", commandName)
-						return
-					}
-					command.Handler.ModalSubmit(s, i)
-					return
-				}
+		case discordgo.InteractionApplicationCommand:
+			if command, ok := commands[i.ApplicationCommandData().Name]; ok {
+				command.Handler.Main(s, i)
+				return
 			}
-			sendCommandNotFound(s, i)
-		}()
+
+		case discordgo.InteractionModalSubmit:
+			commandName, _, _ := util.ParseCustomID(i.ModalSubmitData().CustomID)
+			if command, ok := commands[commandName]; ok {
+				if command.Handler.ModalSubmit == nil {
+					log.Printf("Tried to run modal submit handler for command '%s', but it is nil.", commandName)
+					return
+				}
+				command.Handler.ModalSubmit(s, i)
+				log.Printf("Ran modal submit handler for command '%s', called by %s.", commandName, i.Interaction.Member.User.Username)
+				return
+			}
+		}
+		sendCommandNotFound(i)
 	}
 }
 
-func handleRecovery(caller string, start time.Time) {
-	took := time.Since(start).Round(time.Millisecond)
+func handleRecovery() {
 	if err := recover(); err != nil {
-		log.Printf("Interaction panicked after %s: %v", took, err)
-	} else {
-		log.Printf("Interaction called by %s took %s.", caller, took)
+		log.Printf("Interaction panicked: %v", err)
 	}
 }

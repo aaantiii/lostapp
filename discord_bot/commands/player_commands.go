@@ -1,10 +1,10 @@
 package commands
 
 import (
+	"github.com/aaantiii/goclash"
 	"github.com/bwmarrin/discordgo"
 	"gorm.io/gorm"
 
-	"bot/client"
 	"bot/commands/handlers"
 	"bot/commands/repos"
 	"bot/commands/util"
@@ -12,8 +12,8 @@ import (
 	"bot/types"
 )
 
-func playerInteractionCommands(db *gorm.DB, cocClient *client.CocClient) types.Commands[types.InteractionHandler] {
-	handler := handlers.NewPlayerHandler(repos.NewPlayersRepo(db), cocClient)
+func playerInteractionCommands(db *gorm.DB, client *goclash.Client) types.Commands[types.InteractionHandler] {
+	handler := handlers.NewPlayerHandler(repos.NewPlayersRepo(db), client)
 
 	return types.Commands[types.InteractionHandler]{{
 		Handler: types.InteractionHandler{
@@ -50,7 +50,7 @@ func playerInteractionCommands(db *gorm.DB, cocClient *client.CocClient) types.C
 		},
 		ApplicationCommand: &discordgo.ApplicationCommand{
 			Name:         "pingplayer",
-			Description:  "Pingt einen Spieler auf Discord durch den Spieler Tag.",
+			Description:  "Pingt einen Spieler auf Discord durch seinen Namen oder Spieler Tag.",
 			Type:         discordgo.ChatApplicationCommand,
 			DMPermission: util.OptionalBool(false),
 			Options: []*discordgo.ApplicationCommandOption{

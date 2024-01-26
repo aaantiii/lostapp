@@ -3,19 +3,20 @@ package messages
 import (
 	"fmt"
 	"sort"
+	"strings"
 
-	"github.com/amaanq/coc.go"
+	"github.com/aaantiii/goclash"
 	"github.com/bwmarrin/discordgo"
 
 	"bot/commands/util"
 	"bot/store/postgres/models"
 )
 
-func SendClanMembers(s *discordgo.Session, i *discordgo.InteractionCreate, clan *models.Clan) {
+func SendClanMembers(i *discordgo.InteractionCreate, clan *models.Clan) {
 	sort.SliceStable(clan.ClanMembers, func(i, j int) bool {
-		return clan.ClanMembers[i].Player.Name < clan.ClanMembers[j].Player.Name
+		return strings.ToLower(clan.ClanMembers[i].Player.Name) < strings.ToLower(clan.ClanMembers[j].Player.Name)
 	})
-	membersByRole := util.SortMembersByRole(clan.ClanMembers)
+	membersByRole := util.GroupMembersByRole(clan.ClanMembers)
 
 	var fields []*discordgo.MessageEmbedField
 	for _, members := range membersByRole {
@@ -31,7 +32,7 @@ func SendClanMembers(s *discordgo.Session, i *discordgo.InteractionCreate, clan 
 		fields = append(fields, field)
 	}
 
-	SendEmbed(s, i, NewFieldEmbed(
+	SendEmbedResponse(i, NewFieldEmbed(
 		fmt.Sprintf("Mitglieder von %s", clan.Name),
 		fmt.Sprintf("%s hat momentan %d Mitglieder.", clan.Name, len(clan.ClanMembers)),
 		ColorAqua,
@@ -39,22 +40,22 @@ func SendClanMembers(s *discordgo.Session, i *discordgo.InteractionCreate, clan 
 	))
 }
 
-func SendClansMembersStatus(s *discordgo.Session, i *discordgo.InteractionCreate, dbMembers models.ClanMembers, clan *coc.Clan) {
-	if clan.MemberList == nil || len(*clan.MemberList) == 0 {
-		SendCocApiError(s, i)
+func SendClansMembersStatus(i *discordgo.InteractionCreate, dbMembers models.ClanMembers, clan *goclash.Clan) {
+	if len(clan.MemberList) == 0 {
+		SendCocApiErr(i)
 		return
 	}
 
-	SendEmbed(s, i, NewFieldEmbed(
+	SendEmbedResponse(i, NewFieldEmbed(
 		fmt.Sprintf("Mitgliederstatus von %s", clan.Name),
 		"Übersicht aller Mitglieder, welche sich gerade nicht im Clan befinden, sowie nicht hinzugefügte Mitglieder, welche gerade im Clan sind.",
 		ColorAqua,
-		[]*discordgo.MessageEmbedField{getUnverifiedMembers(dbMembers, *clan.MemberList), getMembersNotInClan(dbMembers, *clan.MemberList)},
+		[]*discordgo.MessageEmbedField{getUnverifiedMembers(dbMembers, clan.MemberList), getMembersNotInClan(dbMembers, clan.MemberList)},
 	))
 }
 
 // getUnverifiedMembers returns all members that are currently in the clan but not in the database.
-func getUnverifiedMembers(dbMembers models.ClanMembers, currentMembers []coc.ClanMember) *discordgo.MessageEmbedField {
+func getUnverifiedMembers(dbMembers models.ClanMembers, currentMembers []goclash.ClanMember) *discordgo.MessageEmbedField {
 	dbMemberByTag := make(map[string]*models.ClanMember, len(dbMembers))
 	for _, member := range dbMembers {
 		dbMemberByTag[member.PlayerTag] = member
@@ -75,8 +76,8 @@ func getUnverifiedMembers(dbMembers models.ClanMembers, currentMembers []coc.Cla
 }
 
 // getMembersNotInClan returns all members that are in the database but currently not in the clan.
-func getMembersNotInClan(members models.ClanMembers, currentMembers []coc.ClanMember) *discordgo.MessageEmbedField {
-	currentMembersByTag := make(map[string]coc.ClanMember, len(currentMembers))
+func getMembersNotInClan(members models.ClanMembers, currentMembers []goclash.ClanMember) *discordgo.MessageEmbedField {
+	currentMembersByTag := make(map[string]goclash.ClanMember, len(currentMembers))
 	for _, m := range currentMembers {
 		currentMembersByTag[m.Tag] = m
 	}

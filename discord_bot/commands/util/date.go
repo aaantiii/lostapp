@@ -11,10 +11,15 @@ import (
 )
 
 const (
-	dateFormat        = "02.01.2006"
-	dateTimeFormat    = "02.01.2006, 15:04"
-	dateParsingFormat = "2.1.2006"
+	dateFormat            = "02.01.2006"
+	dateTimeFormat        = "02.01.2006, 15:04"
+	dateParsingFormat     = "2.1.2006"
+	dateTimeParsingFormat = "2.1.2006 15:04"
 )
+
+func ParseClashDate(d string) (time.Time, error) {
+	return time.Parse("20060102T150405.000Z", d)
+}
 
 func FormatDate(t time.Time) string {
 	return t.Format(dateFormat)
@@ -31,6 +36,14 @@ func ParseDateString(s string) (time.Time, error) {
 	}
 
 	return TruncateToDay(date), nil
+}
+
+func ParseDateTimeString(s string) (time.Time, error) {
+	date, err := time.Parse(dateTimeParsingFormat, s)
+	if err != nil {
+		return date, err
+	}
+	return time.Date(date.Year(), date.Month(), date.Day(), date.Hour(), date.Minute(), 0, 0, time.Local), nil
 }
 
 func FormatFromAt(from *models.User, at time.Time) string {

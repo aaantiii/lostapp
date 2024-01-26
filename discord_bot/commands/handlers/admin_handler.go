@@ -7,7 +7,6 @@ import (
 
 	"bot/commands/messages"
 	"bot/commands/middleware"
-	"bot/commands/repos"
 	"bot/commands/util"
 )
 
@@ -19,32 +18,32 @@ type AdminHandler struct {
 	auth middleware.AuthMiddleware
 }
 
-func NewAdminHandler(users repos.IUsersRepo) IAdminHandler {
+func NewAdminHandler(auth middleware.AuthMiddleware) IAdminHandler {
 	return &AdminHandler{
-		auth: middleware.NewAuthMiddleware(nil, nil, users),
+		auth: auth,
 	}
 }
 
 func (h *AdminHandler) DeleteMessages(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	if err := h.auth.AdminOnlyHandler(s, i); err != nil {
+	if err := h.auth.AuthorizeAdminInteraction(i); err != nil {
 		return
 	}
 
 	opts := i.ApplicationCommandData().Options
 	limit := util.UintOptionByName(LimitOptionName, opts)
 	if len(opts) != 1 || limit == nil {
-		messages.SendInvalidInputError(s, i, "Bitte gib eine gültige Anzahl an Nachrichten an.")
+		messages.SendInvalidInputErr(i, "Bitte gib eine gültige Anzahl an Nachrichten an.")
 		return
 	}
 
 	msgs, err := s.ChannelMessages(i.ChannelID, int(*limit), "", "", "")
 	if err != nil {
-		messages.SendUnknownError(s, i)
+		messages.SendUnknownErr(i)
 		return
 	}
 
 	if len(msgs) == 0 {
-		messages.SendError(s, i, "Es gibt keine Nachrichten, die gelöscht werden können.")
+		messages.SendErr(i, "Es gibt keine Nachrichten, die gelöscht werden können.")
 		return
 	}
 
@@ -54,11 +53,11 @@ func (h *AdminHandler) DeleteMessages(s *discordgo.Session, i *discordgo.Interac
 	}
 
 	if err = s.ChannelMessagesBulkDelete(i.ChannelID, msgIDs); err != nil {
-		messages.SendUnknownError(s, i)
+		messages.SendUnknownErr(i)
 		return
 	}
 
-	messages.SendEmbed(s, i, messages.NewEmbed(
+	messages.SendEmbedResponse(i, messages.NewEmbed(
 		"Nachrichten gelöscht",
 		fmt.Sprintf("%d Nachrichten wurden gelöscht.", len(msgs)),
 		messages.ColorGreen,

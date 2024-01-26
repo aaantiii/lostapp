@@ -5,13 +5,16 @@ import (
 	"gorm.io/gorm"
 
 	"bot/commands/handlers"
+	"bot/commands/middleware"
 	"bot/commands/repos"
 	"bot/commands/util"
 	"bot/types"
 )
 
 func adminInteractionCommands(db *gorm.DB) types.Commands[types.InteractionHandler] {
-	handler := handlers.NewAdminHandler(repos.NewUsersRepo(db))
+	handler := handlers.NewAdminHandler(
+		middleware.NewAuthMiddleware(nil, nil, repos.NewUsersRepo(db)),
+	)
 	return types.Commands[types.InteractionHandler]{
 		{
 			Handler: types.InteractionHandler{
@@ -25,7 +28,7 @@ func adminInteractionCommands(db *gorm.DB) types.Commands[types.InteractionHandl
 				Options: []*discordgo.ApplicationCommandOption{
 					{
 						Type:        discordgo.ApplicationCommandOptionInteger,
-						Name:        "limit",
+						Name:        handlers.LimitOptionName,
 						Description: "Anzahl an Nachrichten, die gelöscht werden sollen.",
 						Required:    true,
 						MinValue:    util.OptionalFloat(1),

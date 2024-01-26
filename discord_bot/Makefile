@@ -1,4 +1,4 @@
-BOT_BINARY=bot
+BOT_BINARY=lostmanager
 
 bot:
 	go build -o bin/$(BOT_BINARY)_dev ./cmd/bot.go
@@ -6,7 +6,6 @@ bot:
 
 build:
 	go build -o bin/$(BOT_BINARY) ./cmd/bot.go
-	GOARCH=arm64 go build -o bin/$(BOT_BINARY)_arm64 ./cmd/bot.go
 
 clean:
 	go clean

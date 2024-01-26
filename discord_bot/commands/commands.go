@@ -33,16 +33,16 @@ func Setup(s *discordgo.Session) ([]*discordgo.ApplicationCommand, error) {
 	return cmds, nil
 }
 
-func sendCommandNotFound(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	messages.SendEmbed(s, i, messages.NewEmbed(
+func sendCommandNotFound(i *discordgo.InteractionCreate) {
+	messages.SendEmbedResponse(i, messages.NewEmbed(
 		"Fehler - Unbekannter Befehl",
 		"Dieser Befehl wurde nicht gefunden.",
 		messages.ColorRed,
 	))
 }
 
-func sendDMNotSupported(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	messages.SendEmbed(s, i, messages.NewEmbed(
+func sendDMNotSupported(i *discordgo.InteractionCreate) {
+	messages.SendEmbedResponse(i, messages.NewEmbed(
 		"Fehler",
 		"DMs werden vom Bot nicht unterstüzt. Bitte führe alle Befehle in einem Server aus.",
 		messages.ColorRed,

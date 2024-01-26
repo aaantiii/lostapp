@@ -1,10 +1,10 @@
 package commands
 
 import (
+	"github.com/aaantiii/goclash"
 	"github.com/bwmarrin/discordgo"
 	"gorm.io/gorm"
 
-	"bot/client"
 	"bot/commands/handlers"
 	"bot/commands/middleware"
 	"bot/commands/repos"
@@ -13,14 +13,14 @@ import (
 	"bot/types"
 )
 
-func memberInteractionCommands(db *gorm.DB, cocClient *client.CocClient) types.Commands[types.InteractionHandler] {
+func memberInteractionCommands(db *gorm.DB, clashClient *goclash.Client) types.Commands[types.InteractionHandler] {
 	handler := handlers.NewMemberHandler(
 		repos.NewMembersRepo(db),
 		repos.NewClansRepo(db),
 		repos.NewPlayersRepo(db),
 		repos.NewGuildsRepo(db),
 		middleware.NewAuthMiddleware(repos.NewGuildsRepo(db), repos.NewClansRepo(db), repos.NewUsersRepo(db)),
-		cocClient,
+		clashClient,
 	)
 
 	return types.Commands[types.InteractionHandler]{{
