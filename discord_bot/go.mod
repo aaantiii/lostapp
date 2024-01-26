@@ -3,7 +3,7 @@ module bot
 go 1.21.5
 
 require (
-	github.com/aaantiii/goclash v1.0.4
+	github.com/aaantiii/goclash v1.0.5
 	github.com/alexeyco/simpletable v1.0.0
 	github.com/bwmarrin/discordgo v0.27.1
 	github.com/google/uuid v1.6.0
