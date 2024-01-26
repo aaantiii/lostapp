@@ -19,7 +19,6 @@ func Setup(s *discordgo.Session) ([]*discordgo.ApplicationCommand, error) {
 
 	cocClient, err := client.NewCocClient()
 	if err != nil {
-		log.Print("Bier")
 		return nil, err
 	}
 
