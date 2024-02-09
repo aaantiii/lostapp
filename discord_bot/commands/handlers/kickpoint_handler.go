@@ -146,7 +146,13 @@ func (h *KickpointHandler) KickpointInfo(_ *discordgo.Session, i *discordgo.Inte
 		return
 	}
 
-	messages.SendClanSettings(i, settings)
+	reasons, err := h.reasons.KickpointReasons(clanTag)
+	if err != nil {
+		messages.SendUnknownErr(i)
+		return
+	}
+
+	messages.SendKickpointInfo(i, settings, reasons)
 }
 
 func (h *KickpointHandler) ClanConfigModal(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -162,7 +168,7 @@ func (h *KickpointHandler) ClanConfigModal(s *discordgo.Session, i *discordgo.In
 		return
 	}
 
-	settings, err := h.clanSettings.ClanSettings(clanTag)
+	settings, err := h.clanSettings.ClanSettingsPreload(clanTag)
 	if err != nil {
 		messages.SendClanNotFound(i, clanTag)
 		return

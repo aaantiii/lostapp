@@ -12,7 +12,7 @@ import (
 func ClanSettingMaxKickpoints(defaultValue int) *discordgo.TextInput {
 	return &discordgo.TextInput{
 		CustomID:    "max_kickpoints",
-		Label:       autofillLabel("Maximale Kickpunkte", defaultValue),
+		Label:       "Maximale Kickpunkte",
 		Placeholder: fmt.Sprintf("Zahl zwischen %d und %d", validation.MinTotalKickpoints, validation.MaxTotalKickpoints),
 		Style:       discordgo.TextInputShort,
 		Value:       strconv.Itoa(defaultValue),
@@ -25,7 +25,7 @@ func ClanSettingMaxKickpoints(defaultValue int) *discordgo.TextInput {
 func ClanSettingSeasonWins(defaultValue int) *discordgo.TextInput {
 	return &discordgo.TextInput{
 		CustomID:    "min_season_wins",
-		Label:       autofillLabel("Season Wins (Minimum)", defaultValue),
+		Label:       "Season Wins (Minimum)",
 		Placeholder: fmt.Sprintf("Zahl zwischen %d und %d", validation.MinSeasonWins, validation.MaxSeasonWins),
 		Style:       discordgo.TextInputShort,
 		Value:       strconv.Itoa(defaultValue),
@@ -38,7 +38,7 @@ func ClanSettingSeasonWins(defaultValue int) *discordgo.TextInput {
 func ClanSettingExpiration(defaultValue int) *discordgo.TextInput {
 	return &discordgo.TextInput{
 		CustomID:    "kickpoints_expire_after_days",
-		Label:       autofillLabel("Kickpunkte - Gültigkeitsdauer", defaultValue),
+		Label:       "Kickpunkte Ablaufdatum",
 		Placeholder: "Anzahl Tage",
 		Style:       discordgo.TextInputShort,
 		Value:       strconv.Itoa(defaultValue),
