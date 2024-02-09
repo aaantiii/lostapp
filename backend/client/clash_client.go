@@ -2,6 +2,7 @@ package client
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -24,7 +25,7 @@ func NewClashClient() (*goclash.Client, error) {
 
 	client, err := goclash.New(credentials)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create COC-API client: %w", err)
 	}
 	client.UseCache(true)
 	client.SetCacheTime(time.Minute * 3)

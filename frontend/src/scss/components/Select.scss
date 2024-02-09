@@ -2,98 +2,187 @@
 @use '../abstracts/mixins';
 
 .Select {
-  display: flex;
-  flex-direction: column;
-  gap: v.$gap-tiny;
+  position: relative;
+  max-width: 100%;
+  height: fit-content;
 
   & > .label {
-    font-size: v.$font-size-smaller;
-    text-transform: uppercase;
-    width: fit-content;
+    @include mixins.label();
+  }
 
-    &::after {
-      content: ':';
+  & > .wrapper {
+    @include mixins.input();
+
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: v.$gap-small;
+    cursor: pointer;
+    height: auto;
+    border-radius: 25px;
+    overflow: hidden;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+
+    & > .value {
+      flex-grow: 1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: v.$gap-tiny;
+
+      & > .option-badge {
+        all: unset;
+        display: flex;
+        gap: v.$gap-tiny;
+        background-color: v.$gray-300;
+        padding: 3px v.$gap-tiny;
+        border-radius: v.$border-radius-small;
+        border: 1px solid v.$gray-400;
+
+        &:hover,
+        &:focus {
+          background-color: rgba(v.$red-100, 0.2);
+          border-color: v.$red-100;
+        }
+      }
+    }
+
+    & > .clear-button {
+      all: unset;
+      font-size: v.$icon-size-medium;
+      cursor: pointer;
+      opacity: 0.7;
+
+      &:hover,
+      &:focus {
+        opacity: 1;
+      }
+    }
+
+    & > .divider {
+      background-color: v.$gray-300;
+      align-self: stretch;
+      width: 2px;
+    }
+
+    & > .caret {
+      translate: 0 -5%;
+      font-size: v.$icon-size-medium;
+    }
+
+    & > .options {
+      z-index: 3;
+      position: absolute;
+      list-style-type: none;
+      margin: 0;
+      padding: v.$gap-small 0;
+      max-height: 25vh;
+      width: 100%;
+      max-width: 500px;
+      overflow: hidden;
+      overflow-y: auto;
+      border: 2px solid v.$gray-300;
+      border-radius: v.$border-radius-large;
+      left: 0;
+      top: calc(100% + v.$gap-small);
+      display: none;
+      gap: 2px;
+      flex-direction: column;
+      background-color: v.$gray-100;
+
+      &.show {
+        display: flex;
+      }
+
+      & > .option {
+        position: relative;
+        padding: 7px;
+        padding-left: 30px;
+        border-radius: v.$border-radius-small;
+        margin-inline: v.$gap-tiny;
+
+        & > .check-mark {
+          position: absolute;
+          left: 5px;
+          top: 50%;
+          translate: 0 -50%;
+          font-size: v.$icon-size-small;
+          display: none;
+        }
+
+        &.selected {
+          background-color: v.$gray-300;
+
+          & > .check-mark {
+            display: block;
+          }
+        }
+
+        &.highlighted {
+          @media screen and (min-width: v.$breakpoint-tablet) {
+            background-color: v.$gray-400;
+          }
+        }
+
+        &.disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+          pointer-events: none;
+
+          &.highlighted {
+            background-color: none;
+          }
+        }
+      }
     }
   }
 }
 
-.SelectTrigger {
-  @include mixins.input();
+body[data-theme='light'] .Select {
+  & > .wrapper {
+    background-color: v.$gray-700;
+    border-color: v.$gray-500;
 
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: v.$gap-small;
+    &:focus {
+      border-color: v.$blue-100;
+    }
 
-  .SelectIcon {
-    font-size: v.$icon-size-medium;
+    & > .value {
+      & > .option-badge {
+        background-color: v.$gray-700;
+        border-color: v.$gray-400;
+
+        &:hover,
+        &:focus {
+          background-color: rgba(v.$red-100, 0.2);
+          border-color: v.$red-100;
+        }
+      }
+    }
+
+    & > .options {
+      background-color: v.$gray-600;
+
+      & > .option {
+        &.selected {
+          background-color: v.$gray-500;
+        }
+
+        &.highlighted {
+          background-color: v.$gray-450;
+        }
+
+        &.disabled {
+          &.highlighted {
+            background-color: none;
+          }
+        }
+      }
+    }
   }
-}
-
-.SelectContent {
-  overflow: hidden;
-  background-color: v.$gray-100;
-  border: 1px solid v.$bright-fade-200;
-  border-radius: v.$border-radius-medium;
-  box-shadow: 0px 10px 38px -10px rgb(22, 23, 24, 0.35), 0px 10px 20px -15px rgb(22, 23, 24, 0.2);
-  z-index: v.$max-z-index;
-}
-
-.SelectViewport {
-  padding: 5px;
-}
-
-.SelectItem {
-  font-size: v.$font-size-larger;
-  line-height: 1;
-  border-radius: v.$border-radius-small;
-  display: flex;
-  align-items: center;
-  height: 2rem;
-  padding: 0 35px;
-  position: relative;
-  user-select: none;
-  outline: none;
-
-  &:hover {
-    cursor: pointer;
-  }
-
-  &[data-disabled] {
-    color: v.$gray-400;
-    pointer-events: none;
-  }
-
-  &[data-highlighted] {
-    background-color: v.$gray-300;
-  }
-}
-
-.SelectLabel {
-  font-size: v.$font-size-larger;
-  color: v.$blue-500;
-  text-align: center;
-  line-height: 25px;
-  user-select: none;
-}
-
-.SelectSeperator {
-  height: 1px;
-  background-color: v.$blue-100;
-  margin: 5px;
-}
-
-.SelectItemIndicator {
-  position: absolute;
-  left: 5px;
-  color: v.$blue-500;
-}
-
-.SelectScrollButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 30px;
-  cursor: default;
-  border-top: 1px solid v.$gray-400;
 }

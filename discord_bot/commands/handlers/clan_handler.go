@@ -86,7 +86,7 @@ func (h *ClanHandler) ClanStats(_ *discordgo.Session, i *discordgo.InteractionCr
 
 	players, err := h.clashClient.GetPlayers(clan.ClanMembers.Tags()...)
 	if err != nil {
-		messages.SendCocApiErr(i)
+		messages.SendCocApiErr(i, err)
 		return
 	}
 
@@ -147,7 +147,7 @@ func (h *ClanHandler) RaidPing(_ *discordgo.Session, i *discordgo.InteractionCre
 		Limit: 1,
 	})
 	if err != nil {
-		messages.SendCocApiErr(i)
+		messages.SendCocApiErr(i, err)
 		return
 	}
 
@@ -207,7 +207,7 @@ func (h *ClanHandler) EventInfo(s *discordgo.Session, i *discordgo.InteractionCr
 
 		currentMembers, err = h.fetchEventMembers(event, time.Now(), tags)
 		if err != nil {
-			messages.SendCocApiErr(i)
+			messages.SendCocApiErr(i, err)
 			return
 		}
 	} else {

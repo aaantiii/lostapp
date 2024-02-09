@@ -24,14 +24,14 @@ func adminInteractionCommands(db *gorm.DB) types.Commands[types.InteractionHandl
 				Name:         "deletemessages",
 				Description:  "Löscht eine bestimmte Anzahl an Nachrichten im aktuellen Channel.",
 				Type:         discordgo.ChatApplicationCommand,
-				DMPermission: util.OptionalBool(false),
+				DMPermission: util.BoolPtr(false),
 				Options: []*discordgo.ApplicationCommandOption{
 					{
 						Type:        discordgo.ApplicationCommandOptionInteger,
 						Name:        handlers.LimitOptionName,
 						Description: "Anzahl an Nachrichten, die gelöscht werden sollen.",
 						Required:    true,
-						MinValue:    util.OptionalFloat(1),
+						MinValue:    util.FloatPtr(1),
 						MaxValue:    100,
 					},
 				},

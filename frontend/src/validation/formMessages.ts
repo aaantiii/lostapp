@@ -1,4 +1,4 @@
-import { dateFormatter } from '@fmt/intlFormatter'
+import { dateFormatter } from '@/utils/intlFormatter'
 import { FormMessageProps } from '@radix-ui/react-form'
 
 namespace FormMessages {

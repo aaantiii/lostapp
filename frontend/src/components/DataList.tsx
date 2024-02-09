@@ -1,13 +1,26 @@
 import '@styles/components/DataList.scss'
+import { ReactNode } from 'react'
 
-interface DataListProps {
-  data: { title: string; value: string | number }[]
+type DataListProps = {
+  children: DataListEntry[]
 }
 
-export default function DataList({ data }: DataListProps) {
+export type DataListEntry = {
+  label: string
+  value: ReactNode
+}
+
+export default function DataList({ children }: DataListProps) {
   return (
     <div className="DataList">
-      <dl>{data.map(({ title, value }) => [<dt key={title}>{title}</dt>, <dd key={`${title}value`}>{value}</dd>])}</dl>
+      <dl>
+        {children.map(({ label, value }) => (
+          <div key={label + value}>
+            <dt>{label}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))}
+      </dl>
     </div>
   )
 }

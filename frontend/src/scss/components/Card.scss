@@ -1,110 +1,109 @@
 @use '../abstracts/variables' as v;
+@use '../abstracts/mixins';
 
 .Card {
+  background-color: v.$gray-100;
+  padding: v.$gap-medium;
   border-radius: v.$border-radius-medium;
-  background-color: v.$bright-fade-200;
-  position: relative;
-  transition: all 2000ms linear;
+  text-overflow: ellipsis;
+  display: flex;
+  flex-direction: column;
+  gap: v.$gap-medium;
+  justify-content: space-between;
+  box-shadow: 3px 5px 4px rgb(black, 0.4);
+  overflow: hidden;
 
-  &::before,
-  & > .border {
-    border-radius: inherit;
-    height: 100%;
-    width: 100%;
-    position: absolute;
-    left: 0;
-    top: 0;
-    content: '';
-    opacity: 0;
-    transition: opacity 200ms;
-  }
-
-  &::before {
-    background: radial-gradient(650px circle at var(--mouse-x) var(--mouse-y), rgba(255, 255, 255, 0.04), transparent 40%);
-    z-index: 3;
-    pointer-events: none;
-  }
-
-  &:hover::before {
-    opacity: 1;
-  }
-
-  & > .border {
-    background: radial-gradient(650px circle at var(--mouse-x) var(--mouse-y), rgba(255, 255, 255, 0.4), transparent 40%);
-  }
-
-  & > .content {
-    flex-direction: column;
+  & > .header {
     display: flex;
-    padding: 1em 1.5em;
-    background-color: v.$gray-200;
-    border-radius: inherit;
-    margin: 1px;
-    width: calc(100% - 2px);
-    height: calc(100% - 2px);
-    z-index: 2;
-    position: relative;
+    flex-direction: column;
+    gap: v.$gap-small;
+    width: 100%;
 
-    & > .head {
+    & > .image {
       display: flex;
+      justify-content: center;
+      flex: 1 1 auto;
+
+      img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        object-position: center;
+      }
+    }
+
+    & > .body {
+      display: flex;
+      width: 100%;
       justify-content: space-between;
 
-      .title {
-        margin: 0;
+      & > .thumbnail {
+        & > img {
+          width: 40px;
+          object-fit: cover;
+          object-position: center;
+          margin-left: v.$gap-small;
+        }
       }
 
-      .description {
+      & > .content {
         display: flex;
         flex-direction: column;
-        font-style: italic;
-        white-space: pre-line;
-      }
+        gap: v.$gap-tiny;
 
-      & > .thumbnail {
-        width: 2.5em;
-        height: 2.5em;
-        overflow: hidden;
-        margin-left: 0.5em;
+        & > .title {
+          @include mixins.textBalance();
 
-        & > img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
+          font: v.$font-size-large v.$heading-font-family;
+          line-clamp: 2;
+          -webkit-line-clamp: 2;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          display: -webkit-box;
+          -webkit-box-orient: vertical;
+        }
+
+        & > .description {
+          font-style: italic;
+          line-clamp: 3;
+          -webkit-line-clamp: 3;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          display: -webkit-box;
+          -webkit-box-orient: vertical;
+          white-space: pre-line;
         }
       }
     }
+  }
 
-    & > .fields {
-      margin-top: v.$gap-large;
-      display: flex;
-      flex-direction: column;
-      gap: v.$gap-tiny;
-    }
+  & > .fields {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
 
-    & > .buttons {
-      height: 100%;
+    & > .field {
       display: flex;
       gap: v.$gap-small;
-      align-content: flex-end;
-      flex-wrap: wrap;
-      margin-top: v.$gap-medium;
+      & > .label {
+        font-weight: 600;
+        &::after {
+          content: ':';
+        }
+      }
     }
+  }
+
+  & > .buttons {
+    width: 100%;
+    display: flex;
+    gap: v.$gap-small;
+    flex-direction: column;
   }
 }
 
-.CardList {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(325px, 1fr));
-  gap: v.$gap-medium;
-
-  &.column {
-    grid-template-columns: repeat(1, 1fr);
-  }
-
-  &:hover > .Card {
-    & > .border,
-    &::before {
-      opacity: 1;
-    }
-  }
+body[data-theme='light'] .Card {
+  border: 1px solid v.$gray-500;
+  background-color: v.$gray-700;
 }

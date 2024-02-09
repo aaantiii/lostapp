@@ -1,14 +1,14 @@
 package models
 
 type Clan struct {
-	Tag  string `gorm:"primaryKey;not null"`
-	Name string
+	Tag  string `gorm:"primaryKey;not null" json:"tag"`
+	Name string `json:"name"`
 
-	Settings    *ClanSettings `gorm:"foreignKey:ClanTag;references:Tag"`
-	ClanMembers ClanMembers   `gorm:"foreignKey:ClanTag;references:Tag"`
+	Settings    *ClanSettings `gorm:"foreignKey:ClanTag;references:Tag" json:"settings,omitempty"`
+	ClanMembers ClanMembers   `gorm:"foreignKey:ClanTag;references:Tag" json:"clanMembers,omitempty"`
 }
 
-type Clans []Clan
+type Clans []*Clan
 
 func (clans Clans) Tags() []string {
 	tags := make([]string, len(clans))

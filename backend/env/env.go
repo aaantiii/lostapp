@@ -15,6 +15,7 @@ const (
 	DOMAIN                     EnvironmentVariable = "DOMAIN"
 	PORT                       EnvironmentVariable = "PORT"
 	FRONTEND_URL               EnvironmentVariable = "FRONTEND_URL"
+	CERT_DIR                   EnvironmentVariable = "CERT_DIR"
 	POSTGRES_URL               EnvironmentVariable = "POSTGRES_URL"
 	COC_API_EMAILS             EnvironmentVariable = "COC_API_EMAILS"
 	COC_API_PASSWORDS          EnvironmentVariable = "COC_API_PASSWORDS"
@@ -34,10 +35,9 @@ func (v EnvironmentVariable) Name() string {
 	return string(v)
 }
 
-func Init() error {
-	// docker sets env variables in PROD
+func Load() error {
 	if MODE.Value() != "PROD" {
-		if err := godotenv.Load(); err != nil {
+		if err := godotenv.Load("../.env"); err != nil {
 			return err
 		}
 		log.Println("Environment variables loaded.")

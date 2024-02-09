@@ -2,15 +2,17 @@
 
 .Center {
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  flex-direction: column;
 
-  & > .content {
-    width: clamp(300px, 100%, 750px);
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    gap: v.$gap-medium;
+  & > * {
+    width: fit-content;
+    min-width: 400px;
+    max-width: 100%;
+
+    @media screen and (max-width: v.$breakpoint-tablet) {
+      min-width: 300px;
+    }
   }
 }

@@ -1,25 +1,27 @@
 package repos
 
 import (
-	"sort"
-	"strings"
-
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
-	"bot/store/postgres"
-	"bot/store/postgres/models"
-	"bot/types"
+	"github.com/aaantiii/lostapp/backend/api/types"
+	"github.com/aaantiii/lostapp/backend/api/utils"
+	"github.com/aaantiii/lostapp/backend/store/postgres"
+	"github.com/aaantiii/lostapp/backend/store/postgres/models"
 )
 
 type IPlayersRepo interface {
-	Players(query string) (models.Players, error)
-	PlayersByDiscordID(discordID string) (models.Players, error)
+	// Players returns a paginated list of players matching given params.
+	Players(params types.PlayersParams) (*types.PaginatedResponse[*models.Player], error)
+	// Count returns the number of players matching given params.
+	Count(params types.PlayersParams) (int64, error)
+	// PlayerByTag returns a player by it's tag.
 	PlayerByTag(tag string) (*models.Player, error)
+	// PlayerByTagAndDiscordID returns a player by tag and discord id.
 	PlayerByTagAndDiscordID(tag, discordID string) (*models.Player, error)
-	CreateOrUpdatePlayer(player *models.Player) error
-	NameByTag(tag string) (string, error)
-	MembersPlayersByClan(clanTag, query string) (models.Players, error)
 }
+
+var playersQueryFields = []string{"name", "coc_tag"}
 
 type PlayersRepo struct {
 	db *gorm.DB
@@ -29,66 +31,51 @@ func NewPlayersRepo(db *gorm.DB) IPlayersRepo {
 	return &PlayersRepo{db: db}
 }
 
-func (repo *PlayersRepo) Players(query string) (models.Players, error) {
+func (r *PlayersRepo) Players(params types.PlayersParams) (*types.PaginatedResponse[*models.Player], error) {
+	count, err := r.Count(params)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = utils.ValidatePagination(params.PaginationParams, count); err != nil {
+		return nil, err
+	}
+
 	var players models.Players
-	err := repo.db.
+	if err = r.db.
 		Scopes(
-			postgres.ScopeLimit(types.MaxCommandChoices),
-			postgres.ScopeContains(query, "name", "coc_tag"),
+			postgres.WithContains(params.Query, playersQueryFields...),
+			postgres.WithPagination(params.PaginationParams),
 		).
-		Find(&players).Error
-	return players, err
-}
-
-func (repo *PlayersRepo) PlayersByDiscordID(discordID string) (models.Players, error) {
-	var players models.Players
-	err := repo.db.Find(&players, "discord_id = ?", discordID).Error
-	return players, err
-}
-
-func (repo *PlayersRepo) PlayerByTag(tag string) (*models.Player, error) {
-	var clan *models.Player
-	err := repo.db.First(&clan, "coc_tag = ?", tag).Error
-	return clan, err
-}
-
-func (repo *PlayersRepo) PlayerByTagAndDiscordID(tag, discordID string) (*models.Player, error) {
-	var clan *models.Player
-	err := repo.db.First(&clan, "coc_tag = ? AND discord_id = ?", tag, discordID).Error
-	return clan, err
-}
-
-// CreateOrUpdatePlayer returns types.ErrNoChanges if player tag exists and discord id did not change.
-func (repo *PlayersRepo) CreateOrUpdatePlayer(player *models.Player) error {
-	return repo.db.Save(player).Error
-}
-
-func (repo *PlayersRepo) NameByTag(tag string) (string, error) {
-	var name string
-	err := repo.db.
-		Model(&models.Player{}).
-		Select("name").
-		First(&name, "coc_tag = ?", tag).Error
-	return name, err
-}
-
-func (repo *PlayersRepo) MembersPlayersByClan(clanTag, query string) (models.Players, error) {
-	var players models.Players
-	if err := repo.db.
-		Scopes(postgres.ScopeContains(query, "coc_tag", "name")).
-		Where("coc_tag IN (?)", repo.db.
-			Model(&models.ClanMember{}).
-			Select("player_tag").
-			Where("clan_tag = ?", clanTag),
-		).
-		Limit(types.MaxCommandChoices).
+		Where(params.Conds()).
+		Preload(clause.Associations).
+		Preload("Members.Clan").
+		Order("name").
 		Find(&players).Error; err != nil {
 		return nil, err
 	}
 
-	sort.Slice(players, func(i, _ int) bool {
-		return strings.HasPrefix(strings.ToLower(players[i].Name), query)
-	})
+	return types.NewPaginatedResponse(players, params.PaginationParams, count), nil
+}
 
-	return players, nil
+func (r *PlayersRepo) Count(params types.PlayersParams) (int64, error) {
+	var count int64
+	err := r.db.
+		Model(&models.Player{}).
+		Where(params.Conds()).
+		Scopes(postgres.WithContains(params.Query, playersQueryFields...)).
+		Count(&count).Error
+	return count, err
+}
+
+func (r *PlayersRepo) PlayerByTag(tag string) (*models.Player, error) {
+	var clan *models.Player
+	err := r.db.First(&clan, "coc_tag = ?", tag).Error
+	return clan, err
+}
+
+func (r *PlayersRepo) PlayerByTagAndDiscordID(tag, discordID string) (*models.Player, error) {
+	var clan *models.Player
+	err := r.db.First(&clan, "coc_tag = ? AND discord_id = ?", tag, discordID).Error
+	return clan, err
 }

@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/aaantiii/lostapp/backend/api/types"
-	"github.com/aaantiii/lostapp/backend/api/util"
+	"github.com/aaantiii/lostapp/backend/api/utils"
 )
 
 const (
@@ -15,7 +15,7 @@ const (
 	maxPageSize = 50
 )
 
-func NewPaginationMiddleware(optional bool) gin.HandlerFunc {
+func PaginationMiddleware(optional bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var pagination types.PaginationParams
 		if err := c.ShouldBindQuery(&pagination); err != nil {
@@ -37,6 +37,6 @@ func NewPaginationMiddleware(optional bool) gin.HandlerFunc {
 			pagination.PageSize = maxPageSize
 		}
 
-		c.Set(util.PaginationKey, pagination)
+		c.Set(utils.PaginationKey, pagination)
 	}
 }

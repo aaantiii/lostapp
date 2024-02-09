@@ -81,7 +81,7 @@ func (h *MemberHandler) ClanMemberStatus(_ *discordgo.Session, i *discordgo.Inte
 
 	clan, err := h.clashClient.GetClan(clanTag)
 	if err != nil {
-		messages.SendCocApiErr(i)
+		messages.SendCocApiErr(i, err)
 		return
 	}
 

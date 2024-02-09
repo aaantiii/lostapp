@@ -1,12 +1,9 @@
 @use '../abstracts/variables' as v;
 
 .DataList {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  & > dl {
+  & > dl > div {
     margin: 0;
-    width: clamp(300px, 70%, 550px);
+
     & > dt {
       font-weight: bold;
       font-size: v.$font-size-larger;

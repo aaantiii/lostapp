@@ -22,6 +22,8 @@ type IPlayerHandler interface {
 	VerifyPlayer(s *discordgo.Session, i *discordgo.InteractionCreate)
 	PingPlayer(s *discordgo.Session, i *discordgo.InteractionCreate)
 	HandleAutocomplete(s *discordgo.Session, i *discordgo.InteractionCreate)
+	UpdateMe(s *discordgo.Session, i *discordgo.InteractionCreate)
+	SetNickname(s *discordgo.Session, i *discordgo.InteractionCreate)
 }
 
 type PlayerHandler struct {
@@ -73,7 +75,7 @@ func (h *PlayerHandler) VerifyPlayer(s *discordgo.Session, i *discordgo.Interact
 
 	player, err := h.clashClient.GetPlayer(playerTag)
 	if err != nil {
-		messages.SendCocApiErr(i)
+		messages.SendCocApiErr(i, err)
 		return
 	}
 
@@ -163,6 +165,94 @@ func (h *PlayerHandler) PingPlayer(s *discordgo.Session, i *discordgo.Interactio
 	messages.SendEmptyResponse(i)
 }
 
+func (h *PlayerHandler) UpdateMe(_ *discordgo.Session, i *discordgo.InteractionCreate) {
+	players, err := h.players.PlayersByDiscordID(i.Member.User.ID)
+	if err != nil {
+		messages.SendErr(i, "Dein Discord Account ist mit keinen Clash of Clans Accounts verknüpft.")
+		return
+	}
+
+	livePlayers, err := h.clashClient.GetPlayers(players.Tags()...)
+	if err != nil {
+		messages.SendCocApiErr(i, err)
+		return
+	}
+
+	var changes string
+	for index, p := range livePlayers {
+		if p.Name == players[index].Name {
+			continue
+		}
+		if err = h.players.CreateOrUpdatePlayer(&models.Player{
+			CocTag:    p.Tag,
+			Name:      p.Name,
+			DiscordID: i.Member.User.ID,
+		}); err != nil {
+			messages.SendErr(i, "Beim Aktualisieren deiner Daten ist ein Fehler aufgetreten.")
+			return
+		}
+		changes += fmt.Sprintf("%s: Namens-Änderung von %s auf %s.\n", p.Tag, players[index].Name, p.Name)
+	}
+
+	if len(changes) == 0 {
+		messages.SendEmbedResponse(i, messages.NewEmbed(
+			"Keine Änderungen",
+			"Deine Clash of Clans Namen sind bereits auf dem aktuellsten Stand.",
+			messages.ColorRed,
+		))
+		return
+	}
+
+	messages.SendEmbedResponse(i, messages.NewEmbed(
+		"Erfolgreich aktualisiert",
+		"Deine Clash of Clans Daten wurden erfolgreich aktualisiert.\n"+changes,
+		messages.ColorGreen,
+	))
+}
+
+func (h *PlayerHandler) SetNickname(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	opts := i.ApplicationCommandData().Options
+	playerTag := util.StringOptionByName(MyPlayerTagOptionName, opts)
+	alias := util.StringOptionByName(AliasOptionName, opts)
+
+	if playerTag == "" {
+		messages.SendInvalidInputErr(i, "Bitte gib einen Spieler-Tag an.")
+		return
+	}
+
+	if !strings.HasPrefix(playerTag, "#") {
+		playerTag = "#" + playerTag
+	}
+
+	player, err := h.players.PlayerByTag(playerTag)
+	if err != nil {
+		messages.SendErr(i, "Es wurde kein Spieler mit dem angegebenen Spieler-Tag gefunden.")
+		return
+	}
+
+	if player.DiscordID != i.Member.User.ID {
+		messages.SendErr(i, fmt.Sprintf("Der Account %s ist nicht mit deinem Discord Account verknüpft.", playerTag))
+		return
+	}
+
+	nick := player.Name
+	if alias != "" {
+		nick += fmt.Sprintf(" | %s", alias)
+	}
+	if _, err = s.GuildMemberEdit(i.GuildID, player.DiscordID, &discordgo.GuildMemberParams{
+		Nick: nick,
+	}); err != nil {
+		messages.SendErr(i, "Beim Ändern deines Nicknamen ist ein Fehler aufgetreten.")
+		return
+	}
+
+	messages.SendEmbedResponse(i, messages.NewEmbed(
+		"Erfolgreich geändert",
+		fmt.Sprintf("Dein Nickname wurde zu %s geändert.", nick),
+		messages.ColorGreen,
+	))
+}
+
 func (h *PlayerHandler) HandleAutocomplete(_ *discordgo.Session, i *discordgo.InteractionCreate) {
 	opts := i.ApplicationCommandData().Options
 	for _, opt := range opts {
@@ -173,6 +263,18 @@ func (h *PlayerHandler) HandleAutocomplete(_ *discordgo.Session, i *discordgo.In
 		switch opt.Name {
 		case PlayerTagOptionName:
 			autocompletePlayers(i, h.players, opt.StringValue())
+		case MyPlayerTagOptionName:
+			h.autocompleteMyPlayers(i, opt.StringValue())
 		}
 	}
+}
+
+func (h *PlayerHandler) autocompleteMyPlayers(i *discordgo.InteractionCreate, query string) {
+	players, err := h.players.MyPlayers(i.Member.User.ID, query)
+	if err != nil {
+		messages.SendAutoCompletion(i, nil)
+		return
+	}
+
+	messages.SendAutoCompletion(i, players.Choices())
 }

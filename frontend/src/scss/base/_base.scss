@@ -1,10 +1,12 @@
 @use '../abstracts/variables' as v;
+@use '../abstracts/mixins';
 
 body {
-  font: v.$font-size-default 'Open Sans', sans-serif;
-  background-color: v.$gray-100;
-  color: v.$font-color;
-  width: 100vw;
+  font: v.$font-size-default v.$default-font-family;
+  background-color: v.$gray-200;
+  color: v.$white;
+  width: 100%;
+  transition: background-color 150ms linear;
 }
 
 .content-wrapper {
@@ -13,38 +15,47 @@ body {
 }
 
 section {
-  padding-bottom: v.$gap-large;
+  margin-block: v.$gap-semi-large;
+  @media screen and (max-width: v.$breakpoint-tablet) {
+    margin-block: v.$gap-medium;
+  }
 }
 
 h1,
 h2,
-h3 {
-  font-family: 'Rubik', sans-serif;
+h3,
+h4 {
+  font-family: v.$heading-font-family;
 }
 
 h1,
 h2 {
+  @include mixins.textBalance();
+
   text-align: center;
-  @supports (text-wrap: balance) {
-    text-wrap: balance;
-  }
+  font-weight: 500;
+}
+
+h3,
+h4 {
+  font-weight: 300;
 }
 
 h1 {
   text-transform: uppercase;
+  color: v.$blue-100;
   font-size: v.$font-size-heading-1;
-  color: v.$blue-300;
-  margin-block: 2em 1.75em;
+  margin-block: 1.75em 1.5em;
 }
 
 h2 {
   font-size: v.$font-size-heading-2;
-  margin-block: 2em 1.5em;
+  margin-block: 1.6em 1.35em;
 }
 
 h3 {
   font-size: v.$font-size-heading-3;
-  margin-block: 1.5em 1em;
+  margin-block: 1.35em 1em;
 }
 
 h4 {
@@ -69,15 +80,13 @@ p {
   text-align: center;
 }
 
-code {
-  background: v.$bright-fade-100;
-  border: 1px solid v.$gray-200;
-  padding: 2px;
-  border-radius: v.$border-radius-small;
+label {
+  user-select: none;
 }
 
 hr {
-  background-color: v.$gray-400;
+  background-color: v.$gray-300;
+  margin-block: v.$gap-medium;
 }
 
 a,
@@ -87,18 +96,38 @@ button {
   }
 }
 
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
 svg,
 img {
   user-select: none;
-  pointer-events: none;
-  color: inherit;
 }
 
 img {
   pointer-events: none;
+  &.icon {
+    height: v.$icon-size-large;
+  }
+}
+
+svg,
+input {
+  color: inherit;
+}
+
+svg.large {
+  font-size: v.$icon-size-medium;
 }
 
 ::selection {
   color: v.$gray-100;
-  background-color: v.$font-color;
+  background-color: v.$white;
+}
+
+[data-nopointer] {
+  pointer-events: none;
+  cursor: default;
 }

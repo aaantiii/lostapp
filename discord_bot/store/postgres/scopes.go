@@ -9,14 +9,14 @@ import (
 	"bot/types"
 )
 
-func ScopePaginate(params types.PaginationParams) func(db *gorm.DB) *gorm.DB {
+func WithPaging(params types.PaginationParams) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		offset := (params.Page - 1) * params.PageSize
 		return db.Offset(offset).Limit(params.PageSize)
 	}
 }
 
-func ScopeContains(value string, fields ...string) func(db *gorm.DB) *gorm.DB {
+func WithSearchQuery(value string, fields ...string) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		if value == "" || len(fields) == 0 {
 			return db
@@ -33,12 +33,24 @@ func ScopeContains(value string, fields ...string) func(db *gorm.DB) *gorm.DB {
 	}
 }
 
-func ScopeLimit(limit int) func(*gorm.DB) *gorm.DB {
+func WithLimit(limit int) func(*gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		if limit <= 0 {
 			return db
 		}
 
 		return db.Limit(limit)
+	}
+}
+
+func WithPreloading(fields ...string) func(*gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		if len(fields) == 0 {
+			return db
+		}
+		for _, field := range fields {
+			db = db.Preload(field)
+		}
+		return db
 	}
 }

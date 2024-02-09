@@ -1,51 +1,22 @@
 {
-  "400": {
-    "title": "Bad Request",
-    "content": ["<p>Bei der Anfrage zum Server ist ein Fehler aufgetreten.</p>"],
-    "gif": "/gifs/pepe_sad.gif"
-  },
   "403": {
-    "title": "Forbidden",
-    "content": ["<p>Du hast keine Berechtigung, diese Seite zu sehen.</p>"],
-    "gif": "/gifs/pepe_sad.gif"
+    "title": "Forbidden - 403",
+    "description": "Du hast keine Berechtigungen, um diese Aktion auszuführen. Wenn du glaubst, dass das ein Fehler ist, kontaktiere bitte jemandem vom Developer Team.",
+    "image": "pepe_sad.gif"
   },
   "404": {
-    "title": "Not Found",
-    "content": ["<p>Die angeforderte Seite konnte nicht gefunden werden.</p>", "<p>Dafür hast du Rainer Winkler gefunden!</p>"],
-    "gif": "/gifs/drachenlord.gif"
-  },
-  "408": {
-    "title": "Request Timeout",
-    "content": ["<p>Die Anfrage zum Server hat zu lange gedauert. Möglicherweise sind gerade Wartungsarbeiten in Gange.</p>"],
-    "gif": "/gifs/pepe_sad.gif"
+    "title": "Not Found - 404",
+    "description": "Die angeforderte Ressource konnte nicht gefunden werden.",
+    "image": "drachenlord.gif"
   },
   "500": {
-    "title": "Internal Server Error",
-    "content": ["<p>Es ist ein Fehler aufgetreten. Bitte versuche es später erneut.</p>"],
-    "gif": "/gifs/pepe_sad.gif"
-  },
-  "503": {
-    "title": "Service Unavailable",
-    "content": ["<p>Die COC-API ist momentan unter Wartungsarbeiten. Bitte versuche es später erneut.</p>"],
-    "gif": "/gifs/pepe_sad.gif"
+    "title": "Internal Server Error - 500",
+    "description": "Ein unbekannter Serverfehler ist aufgetreten. Bitte versuche es später erneut.",
+    "image": "pepe_sad.gif"
   },
   "unknown": {
     "title": "Unbekannter Fehler",
-    "content": ["<p>Es ist ein unbekannter Fehler aufgetreten. Bitte versuche es später erneut.</p>"],
-    "gif": "/gifs/pepe_sad.gif"
-  },
-  "coc-not-linked": {
-    "title": "Keine Clash of Clans Verknüpfung",
-    "content": [
-      "<div class=\"bold\">Um die Web App nutzen zu können, musst du deinen Clash of Clans Account mit deinem Discord Account verknüpfen.</div>",
-      "<p>Dazu musst du auf dem Discord Server in irgend einem Channel <code>/verify</code> eingeben. Dann taucht ein kleines Fenster auf, in welchem du den Lost Bot auswählst. Nun musst du nur noch deinen Clash of Clans Player Tag und -API Token eingeben.</p>",
-      "<p><strong>Hinweis: </strong>Du kannst auch mehrere Clash of Clans Dörfer mit deinem Discord Account verknüpfen.</p>",
-      "<div class=\"bold\">✅ Nachdem du dich verifiziert hast, solltest du innerhalb weniger Minuten Zugriff zur Web-App haben ✅</div>"
-    ]
-  },
-  "not-implemented": {
-    "title": "Noch nicht verfügbar",
-    "content": ["<p>Diese Seite/Funktion wird bald verfügbar sein.</p>"],
-    "gif": "/gifs/pepe_sad.gif"
+    "description": "Ein unbekannter Fehler ist aufgetreten. Bitte versuche es später erneut.",
+    "image": "pepe_sad.gif"
   }
 }

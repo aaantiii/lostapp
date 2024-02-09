@@ -19,7 +19,6 @@ func (clans Clans) Tags() []string {
 	for i, clan := range clans {
 		tags[i] = clan.Tag
 	}
-
 	return tags
 }
 
@@ -31,6 +30,5 @@ func (clans Clans) Choices() []*discordgo.ApplicationCommandOptionChoice {
 			Value: clan.Tag,
 		}
 	}
-
 	return choices
 }

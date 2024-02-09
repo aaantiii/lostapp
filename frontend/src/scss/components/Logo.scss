@@ -12,8 +12,8 @@
   & > .title {
     text-transform: uppercase;
     color: transparent;
-    animation: animate-logo 3s infinite ease-out;
-    background: linear-gradient(90deg, white, v.$blue-600, white) 0 0 / 200% 100%;
+    animation: animate-logo 3s infinite linear;
+    background: linear-gradient(90deg, v.$blue-600, v.$blue-100, v.$blue-600) 0 0 / 200% 100%;
     -webkit-background-clip: text;
     background-clip: text;
   }

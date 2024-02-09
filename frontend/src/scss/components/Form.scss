@@ -1,7 +1,8 @@
 @use '../abstracts/variables' as v;
+@use '../abstracts/mixins';
 
+// source: https://www.radix-ui.com/primitives/docs/components/form (modified)
 .Form {
-  width: 100%;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -10,10 +11,7 @@
     gap: v.$gap-medium;
     display: flex;
     flex-direction: column;
-
-    @media screen and (max-width: v.$breakpoint-mobile) {
-      width: 100%;
-    }
+    width: 100%;
 
     & > .field {
       display: flex;
@@ -21,13 +19,7 @@
       gap: v.$gap-tiny;
 
       & > .label {
-        font-size: v.$font-size-smaller;
-        text-transform: uppercase;
-        width: fit-content;
-
-        &::after {
-          content: ':';
-        }
+        @include mixins.label();
       }
 
       & > .message {
@@ -36,7 +28,7 @@
       }
 
       & .control[data-invalid] {
-        border: 1px solid v.$red-100;
+        border-color: v.$red-100;
       }
     }
 

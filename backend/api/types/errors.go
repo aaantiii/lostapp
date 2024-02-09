@@ -20,7 +20,14 @@ func NewApiError(code int, message string) *ApiError {
 }
 
 var (
-	ErrNotMember     = NewApiError(http.StatusForbidden, "Nur Mitglieder der Lost Family sind berechtigt, auf die Web App zuzugreifen.")
-	ErrNoResults     = NewApiError(http.StatusNotFound, "Es wurden keine Ergebnisse gefunden.")
-	ErrAdminRequired = NewApiError(http.StatusForbidden, "Um diese Aktion auszuführen, benötigst du Administratorrechte.")
+	ErrNotSignedIn      = NewApiError(http.StatusUnauthorized, "Du bist nicht angemeldet.")
+	ErrUnknown          = NewApiError(http.StatusInternalServerError, "Während deiner Anfrage ist ein unerwarteter Fehler aufgetreten.")
+	ErrNotMember        = NewApiError(http.StatusForbidden, "Nur Mitglieder der Lost Family sind berechtigt, auf die Web App zuzugreifen.")
+	ErrNoResults        = NewApiError(http.StatusNotFound, "Es wurden keine Ergebnisse gefunden.")
+	ErrAdminRequired    = NewApiError(http.StatusForbidden, "Um diese Aktion auszuführen, benötigst du Administratorrechte.")
+	ErrPageOutOfBounds  = NewApiError(http.StatusBadRequest, "Die angegebene Seite ist nicht vorhanden.")
+	ErrSignOutFailed    = NewApiError(http.StatusInternalServerError, "Beim Abmelden ist ein Fehler aufgetreten.")
+	ErrValidationFailed = NewApiError(http.StatusBadRequest, "Bitte überprüfe deine Eingaben.")
+	ErrBadRequest       = NewApiError(http.StatusBadRequest, "Der Server konnte deine Anfrage nicht verstehen.")
+	ErrInvalidStatName  = NewApiError(http.StatusBadRequest, "Die angegebene Statistik ist ungültig.")
 )

@@ -1,7 +1,7 @@
 import '@styles/components/DataChangelog.scss'
 import { CreatedByUser, UpdatedByUser } from '@api/types/user'
 import UserAvatar from './UserAvatar'
-import { dateTimeFormatter } from '@fmt/intlFormatter'
+import { dateTimeFormatter } from '@/utils/intlFormatter'
 
 interface DataChangelogProps {
   data?: UpdatedByUser | CreatedByUser

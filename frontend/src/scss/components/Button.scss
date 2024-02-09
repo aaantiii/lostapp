@@ -2,48 +2,55 @@
 @use '../abstracts/mixins';
 
 .Button {
-  @include mixins.hover(v.$blue-200);
+  @include mixins.hover(v.$blue-100, darken);
 
-  max-height: 2.5em;
-  min-width: fit-content;
-  border-radius: 5px;
+  border-radius: v.$border-radius-medium;
   box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
-  background-color: v.$blue-200;
-  padding: 0.5em 1.5em;
-  color: inherit;
+  background-color: v.$blue-100;
+  padding: v.$gap-small v.$gap-medium;
   text-transform: uppercase;
-  font-weight: 600;
-  font-size: v.$font-size-smaller;
+  font-size: inherit;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  flex: 1 1 200px;
 
   &.red {
+    @include mixins.hover(v.$red-100, darken);
     background-color: v.$red-100;
-    &:hover {
-      background-color: v.$red-200;
-    }
+  }
+
+  &.green {
+    @include mixins.hover(v.$green-100, darken);
+    background-color: v.$green-100;
+  }
+
+  &.icon-only {
+    padding: v.$gap-tiny;
+    font-size: v.$icon-size-large;
   }
 
   &:disabled {
-    opacity: 0.6;
+    opacity: 0.65;
     cursor: not-allowed;
   }
 
   & > .loading-spinner {
-    font-size: v.$icon-size-medium;
+    font-size: inherit;
     animation: spin 1s linear infinite;
     display: inline-block;
-    transition: all 1s linear;
 
     @keyframes spin {
-      from {
-        rotate: 0deg;
-      }
       to {
         rotate: 360deg;
       }
     }
   }
+
+  @media only screen and (max-width: v.$breakpoint-mobile) {
+    max-width: unset;
+  }
+}
+
+body[data-theme='light'] .Button {
+  color: v.$white;
 }

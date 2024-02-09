@@ -1,25 +1,73 @@
 @use '../abstracts/variables' as v;
+@use '../abstracts/mixins';
 
 .Paginator {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: v.$gap-medium;
+  flex-direction: column;
+  gap: v.$gap-small;
 
   & > .total-items {
     font-size: v.$font-size-larger;
-    text-transform: uppercase;
     font-weight: 600;
   }
 
-  @media screen and (max-width: v.$breakpoint-mobile) {
-    width: 100%;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: v.$gap-medium;
+  & > .PageSwitcher {
+    display: flex;
+    justify-content: center;
+    margin-top: v.$gap-medium;
 
-    & > * {
-      width: 100%;
+    & > .wrapper {
+      background-color: v.$gray-100;
+      border-radius: v.$border-radius-full;
+      padding: v.$gap-tiny;
+      display: flex;
+      justify-content: space-between;
+      width: fit-content;
+      max-width: 100%;
+      gap: v.$gap-tiny;
+
+      & > button {
+        $size: 35px;
+        @include mixins.hover(v.$gray-100);
+
+        background: none;
+        font-size: v.$font-size-larger;
+        height: $size;
+        width: $size;
+        border-radius: v.$border-radius-full;
+
+        & > svg {
+          font-size: v.$icon-size-small;
+        }
+
+        &:disabled {
+          color: v.$gray-400;
+          cursor: not-allowed;
+
+          &.navigation-element {
+            color: v.$white;
+            background-color: v.$gray-300;
+          }
+        }
+      }
+    }
+  }
+}
+
+body[data-theme='light'] .PageSwitcher > .wrapper {
+  border: 1px solid v.$gray-400;
+  background-color: v.$gray-600;
+
+  & > button {
+    @include mixins.hover(v.$gray-500);
+
+    &:disabled {
+      color: v.$gray-400;
+
+      &.navigation-element {
+        color: v.$white;
+        background-color: v.$gray-450;
+      }
     }
   }
 }

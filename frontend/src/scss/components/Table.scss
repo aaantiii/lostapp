@@ -1,44 +1,43 @@
 @use '../abstracts/variables' as v;
 
 .Table {
-  & > .scrollable-wrapper {
-    overflow: auto;
+  .scrollable-wrapper {
+    display: flex;
+    overflow: hidden;
+    overflow-x: auto;
     max-height: 70vh;
 
     & > table {
       border-spacing: 0;
       border-collapse: separate;
-      width: 100%;
       white-space: nowrap;
+      width: 100%;
 
       & > thead > tr > th {
         padding: v.$gap-small;
         font-size: v.$font-size-larger;
+        &:hover {
+          user-select: none;
+        }
       }
 
       & > tbody {
         & > tr {
+          height: 45px;
+
           &:nth-child(odd) {
             background-color: v.$gray-300;
           }
 
           & > td {
-            padding: v.$gap-small;
-
-            & > a {
-              font-weight: 600;
-
-              & > .icon {
-                font-size: v.$icon-size-tiny;
-              }
-            }
+            padding-inline: v.$gap-small;
           }
         }
       }
 
       & > thead > tr > th,
       & > tbody > tr > td {
-        text-align: right;
+        text-align: center;
         border-color: transparent;
 
         &:first-child {
@@ -53,11 +52,25 @@
         }
 
         &:last-child {
+          text-align: right;
           border-right-style: solid;
           border-top-right-radius: v.$border-radius-medium;
           border-bottom-right-radius: v.$border-radius-medium;
         }
       }
     }
+  }
+
+  .TableOrder {
+    & > svg {
+      font-size: v.$icon-size-small;
+      margin-left: v.$gap-small;
+    }
+  }
+}
+
+body[data-theme='light'] .Table .scrollable-wrapper {
+  & > table > tbody > tr:nth-child(odd) {
+    background-color: v.$gray-700;
   }
 }

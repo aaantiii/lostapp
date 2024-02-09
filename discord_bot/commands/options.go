@@ -15,7 +15,7 @@ func optionClanTag(desc string) *discordgo.ApplicationCommandOption {
 		Type:         discordgo.ApplicationCommandOptionString,
 		Required:     true,
 		Autocomplete: true,
-		MinLength:    util.OptionalInt(validation.TagMinLength),
+		MinLength:    util.IntPtr(validation.TagMinLength),
 		MaxLength:    validation.TagMaxLength,
 	}
 }
@@ -27,7 +27,7 @@ func optionMemberTag(desc string) *discordgo.ApplicationCommandOption {
 		Type:         discordgo.ApplicationCommandOptionString,
 		Required:     true,
 		Autocomplete: true,
-		MinLength:    util.OptionalInt(validation.TagMinLength),
+		MinLength:    util.IntPtr(validation.TagMinLength),
 		MaxLength:    validation.TagMaxLength,
 	}
 }
@@ -39,7 +39,7 @@ func optionPlayerTag(desc string) *discordgo.ApplicationCommandOption {
 		Type:         discordgo.ApplicationCommandOptionString,
 		Required:     true,
 		Autocomplete: true,
-		MinLength:    util.OptionalInt(validation.TagMinLength),
+		MinLength:    util.IntPtr(validation.TagMinLength),
 		MaxLength:    validation.TagMaxLength,
 	}
 }

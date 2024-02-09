@@ -1,9 +1,12 @@
 package messages
 
 import (
+	"errors"
 	"fmt"
 	"log"
+	"net/http"
 
+	"github.com/aaantiii/goclash"
 	"github.com/bwmarrin/discordgo"
 
 	"bot/commands/util"
@@ -71,7 +74,34 @@ func SendInvalidInputErr(i *discordgo.InteractionCreate, msg string) {
 	))
 }
 
-func SendCocApiErr(i *discordgo.InteractionCreate) {
+func SendCocApiErr(i *discordgo.InteractionCreate, err error) {
+	var cErr *goclash.ClientError
+	if errors.As(err, &cErr) {
+		switch cErr.Status {
+		case http.StatusNotFound:
+			SendEmbedResponse(i, NewEmbed(
+				"API Fehler",
+				"Die angeforderten Daten konnten nicht gefunden werden.",
+				ColorRed,
+			))
+			return
+		case http.StatusTooManyRequests:
+			SendEmbedResponse(i, NewEmbed(
+				"API Fehler",
+				"Die Anfrage an die Clash of Clans API wurde zu oft gestellt. Bitte versuche es später erneut.",
+				ColorRed,
+			))
+			return
+		case http.StatusServiceUnavailable:
+			SendEmbedResponse(i, NewEmbed(
+				"API Fehler",
+				"Die Clash of Clans API ist momentan unter Wartungsarbeiten. Bitte versuche es später erneut.",
+				ColorRed,
+			))
+			return
+		}
+	}
+
 	SendEmbedResponse(i, NewEmbed(
 		"API Fehler",
 		"Beim Abrufen der Daten von der Clash of Clan API ist ein Fehler aufgetreten.",

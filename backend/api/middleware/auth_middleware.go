@@ -1,20 +1,19 @@
 package middleware
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 
 	"github.com/aaantiii/lostapp/backend/api/types"
-	"github.com/aaantiii/lostapp/backend/api/util"
+	"github.com/aaantiii/lostapp/backend/api/utils"
 )
 
 // AuthMiddleware is a gin middleware that checks if the user is authenticated.
-func AuthMiddleware(requiredRole types.AuthRole) gin.HandlerFunc {
+func AuthMiddleware(requiresAdmin bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token, err := util.SessionCookie.Value(c)
+		token, err := utils.SessionCookie.Value(c)
 		if err != nil {
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.Set(ErrorKey, types.ErrNotSignedIn)
+			c.Abort()
 			return
 		}
 
@@ -22,31 +21,28 @@ func AuthMiddleware(requiredRole types.AuthRole) gin.HandlerFunc {
 		if !ok {
 			session, err = authService.CreateSession(token)
 			if err != nil {
-				util.SessionCookie.Invalidate(c)
-				c.AbortWithStatus(http.StatusUnauthorized)
+				utils.SessionCookie.Invalidate(c)
+				c.Set(ErrorKey, types.ErrNotSignedIn)
+				c.Abort()
 				return
 			}
 		}
 
-		if session.LastRefreshed() > authService.Config().MaxSessionDataAge {
+		if session.NeedsRefresh(authService.Config().MaxSessionDataAge) {
 			if session, err = authService.RefreshSession(token); err != nil {
-				util.SessionCookie.Invalidate(c)
-				c.AbortWithStatus(http.StatusUnauthorized)
+				utils.SessionCookie.Invalidate(c)
+				c.Set(ErrorKey, types.ErrNotSignedIn)
+				c.Abort()
 				return
 			}
 		}
 
-		if session.User.IsAdmin {
-			c.Set(util.SessionKey, session)
-			return
-		}
-
-		if requiredRole == types.AuthRoleAdmin && !session.User.IsAdmin {
-			c.Set(util.ErrorKey, types.ErrAdminRequired)
+		if requiresAdmin && !session.User.IsAdmin {
+			c.Set(ErrorKey, types.ErrAdminRequired)
 			c.Abort()
 			return
 		}
 
-		c.Set(util.SessionKey, session)
+		c.Set(utils.SessionKey, session)
 	}
 }

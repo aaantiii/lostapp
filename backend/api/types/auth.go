@@ -3,11 +3,15 @@ package types
 import "time"
 
 type Session struct {
-	User  *AuthUser `json:"discordUser"`
+	User  *AuthUser `json:"user"`
 	Token string    `json:"-"`
 
-	LastRefreshed time.Time
-	LastUsed      time.Time
+	LastRefreshed time.Time `json:"-"`
+	LastUsed      time.Time `json:"-"`
+}
+
+func (s *Session) NeedsRefresh(maxAge time.Duration) bool {
+	return time.Since(s.LastRefreshed) > maxAge
 }
 
 type AuthUser struct {

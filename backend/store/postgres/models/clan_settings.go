@@ -6,24 +6,24 @@ import (
 )
 
 type ClanSettings struct {
-	ClanTag                   string `gorm:"size:12;primaryKey;not null"`
-	MaxKickpoints             int    `gorm:"not null;default:6"`
-	MinSeasonWins             int    `gorm:"not null;default:80"`
-	KickpointsExpireAfterDays int    `gorm:"not null;default:45"`
-	KickpointsSeasonWins      int    `gorm:"not null;default:2"`
-	KickpointsCWMissed        int    `gorm:"not null;default:1"`
-	KickpointsCWFail          int    `gorm:"not null;default:0"`
-	KickpointsCWLMissed       int    `gorm:"not null;default:2"`
-	KickpointsCWLZeroStars    int    `gorm:"not null;default:2"`
-	KickpointsCWLOneStar      int    `gorm:"not null;default:2"`
-	KickpointsRaidMissed      int    `gorm:"not null;default:2"`
-	KickpointsRaidFail        int    `gorm:"not null;default:2"`
-	KickpointsClanGames       int    `gorm:"not null;default:2"`
-	UpdatedAt                 time.Time
-	UpdatedByDiscordID        *string
+	ClanTag                   string    `gorm:"size:12;primaryKey;not null" json:"clanTag"`
+	MaxKickpoints             int       `gorm:"not null;default:6" json:"maxKickpoints"`
+	MinSeasonWins             int       `gorm:"not null;default:80" json:"minSeasonWins"`
+	KickpointsExpireAfterDays int       `gorm:"not null;default:45" json:"kickpointsExpireAfterDays"`
+	KickpointsSeasonWins      int       `gorm:"not null;default:2" json:"kickpointsSeasonWins"`
+	KickpointsCWMissed        int       `gorm:"not null;default:1" json:"kickpointsCWMissed"`
+	KickpointsCWFail          int       `gorm:"not null;default:0" json:"kickpointsCWFail"`
+	KickpointsCWLMissed       int       `gorm:"not null;default:2" json:"kickpointsCWLMissed"`
+	KickpointsCWLZeroStars    int       `gorm:"not null;default:2" json:"kickpointsCWLZeroStars"`
+	KickpointsCWLOneStar      int       `gorm:"not null;default:2" json:"kickpointsCWLOneStar"`
+	KickpointsRaidMissed      int       `gorm:"not null;default:2" json:"kickpointsRaidMissed"`
+	KickpointsRaidFail        int       `gorm:"not null;default:2" json:"kickpointsRaidFail"`
+	KickpointsClanGames       int       `gorm:"not null;default:2" json:"kickpointsClanGames"`
+	UpdatedAt                 time.Time `gorm:"autoUpdateTime" json:"updatedAt"`
+	UpdatedByDiscordID        *string   `gorm:"size:18" json:"-"`
 
-	Clan          *Clan `gorm:"foreignKey:Tag;references:ClanTag;onUpdate:CASCADE;onDelete:CASCADE"`
-	UpdatedByUser *User `gorm:"foreignKey:DiscordID;references:UpdatedByDiscordID"`
+	Clan          *Clan `gorm:"foreignKey:Tag;references:ClanTag;onUpdate:CASCADE;onDelete:CASCADE" json:"clan,omitempty"`
+	UpdatedByUser *User `gorm:"foreignKey:DiscordID;references:UpdatedByDiscordID" json:"updatedByUser,omitempty"`
 }
 
 type KickpointSetting string
@@ -43,66 +43,6 @@ const (
 	KickpointSettingClanGames       KickpointSetting = "kickpoints_clan_games"
 	KickpointSettingOther           KickpointSetting = "kickpoints_other"
 )
-
-func (s KickpointSetting) DisplayString() string {
-	switch s {
-	case KickpointSettingMaxKickpoints:
-		return "Maximale Kickpunkte"
-	case KickpointSettingMinSeasonWins:
-		return "Minimum Season Wins"
-	case KickpointSettingExpireAfterDays:
-		return "Gültigkeitsdauer in Tagen"
-	case KickpointSettingSeasonWins:
-		return "Kickpunkte: Season Wins"
-	case KickpointSettingCWMissed:
-		return "Kickpunkte: CW nicht angegriffen"
-	case KickpointSettingCWFail:
-		return "Kickpunkte: CW 0 Sterne"
-	case KickpointSettingCWLMissed:
-		return "Kickpunte: CKL nicht angegriffen"
-	case KickpointSettingCWLZeroStars:
-		return "Kickpunte: CKL 0 Sterne"
-	case KickpointSettingCWLOneStar:
-		return "Kickpunte: CKL 1 Stern"
-	case KickpointSettingRaidMissed:
-		return "Kickpunte: Raid nicht angegriffen"
-	case KickpointSettingRaidFail:
-		return "Kickpunte: Raid Fail"
-	case KickpointSettingClanGames:
-		return "Kickpunte: Clan Spiele nicht gemacht"
-	case KickpointSettingOther:
-		return "Kickpunkte: Sonstiges"
-	default:
-		return ""
-	}
-}
-
-func (s KickpointSetting) DisplayStringShort() string {
-	switch s {
-	case KickpointSettingSeasonWins:
-		return "Season Wins"
-	case KickpointSettingCWMissed:
-		return "CW nicht angegriffen"
-	case KickpointSettingCWFail:
-		return "CW 0 Sterne"
-	case KickpointSettingCWLMissed:
-		return "CKL nicht angegriffen"
-	case KickpointSettingCWLZeroStars:
-		return "CKL 0 Sterne"
-	case KickpointSettingCWLOneStar:
-		return "CKL 1 Stern"
-	case KickpointSettingRaidMissed:
-		return "Raid nicht angegriffen"
-	case KickpointSettingRaidFail:
-		return "Raid Fail"
-	case KickpointSettingClanGames:
-		return "Clan Spiele nicht gemacht"
-	case KickpointSettingOther:
-		return "Sonstiges"
-	default:
-		return ""
-	}
-}
 
 func (s *ClanSettings) KickpointAmountFromSetting(setting KickpointSetting) (int, error) {
 	switch setting {

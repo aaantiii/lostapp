@@ -4,40 +4,80 @@
 .Input {
   display: flex;
   flex-direction: column;
-  gap: 0.25em;
-  position: relative;
-
-  & > input {
-    @include mixins.input();
-  }
 
   & > label {
-    font-size: v.$font-size-smaller;
-    text-transform: uppercase;
-    margin-left: 0.5rem;
-    user-select: none;
+    @include mixins.label();
+    margin-left: v.$gap-small;
   }
 
-  & > .icon {
-    position: absolute;
-    top: 50%;
-    right: v.$gap-medium;
-    translate: 0 -50%;
-  }
-
-  & > input[type='search'] {
-    &::-ms-clear,
-    &::-ms-reveal {
-      display: none;
-      width: 0;
-      height: 0;
+  & > .wrapper {
+    position: relative;
+    & > input {
+      @include mixins.input();
     }
 
-    &::-webkit-search-decoration,
-    &::-webkit-search-cancel-button,
-    &::-webkit-search-results-button,
-    &::-webkit-search-results-decoration {
-      display: none;
+    & > .icon {
+      position: absolute;
+      top: 50%;
+      right: 15px;
+      translate: 0 -50%;
+      pointer-events: none;
+      z-index: 2;
+      background-color: v.$gray-100;
+      padding: 3px 8px;
+    }
+
+    & > input {
+      &[type='date'] {
+        text-transform: uppercase;
+        letter-spacing: 3px;
+
+        &::-webkit-calendar-picker-indicator {
+          background: transparent;
+          bottom: 0;
+          color: transparent;
+          cursor: pointer;
+          height: auto;
+          width: auto;
+          left: 0;
+          position: absolute;
+          right: 0;
+          top: 0;
+        }
+      }
+
+      &[type='search'] {
+        padding-right: 2.5em;
+        &::-ms-clear,
+        &::-ms-reveal {
+          display: none;
+          width: 0;
+          height: 0;
+        }
+      }
+
+      &::-webkit-search-decoration,
+      &::-webkit-search-cancel-button,
+      &::-webkit-search-results-button,
+      &::-webkit-search-results-decoration {
+        display: none;
+      }
+    }
+  }
+}
+
+body[data-theme='light'] .Input > .wrapper {
+  & > .icon {
+    background-color: v.$gray-700;
+  }
+
+  & > input {
+    background-color: v.$gray-700;
+    caret-color: black;
+    border-color: v.$gray-500;
+
+    &:focus {
+      border-color: v.$blue-100;
     }
   }
 }

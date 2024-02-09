@@ -26,3 +26,12 @@ func (players Players) Choices() []*discordgo.ApplicationCommandOptionChoice {
 
 	return choices
 }
+
+func (players Players) Tags() []string {
+	tags := make([]string, len(players))
+	for i, player := range players {
+		tags[i] = player.CocTag
+	}
+
+	return tags
+}

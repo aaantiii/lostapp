@@ -1,28 +1,34 @@
-@use './variables' as v;
+@use '../abstracts/variables' as v;
 
-@mixin hover($color) {
-  transition: background-color 200ms;
+@mixin hover($color, $func: lighten, $intensity: 5%) {
+  transition: background-color 200ms ease-in-out;
   &:hover {
-    background-color: darken($color, 5%);
+    @if $func == darken {
+      background-color: darken($color, $intensity);
+    } @else {
+      background-color: lighten($color, $intensity);
+    }
   }
 }
 
 @mixin input() {
-  font: v.$font-size-larger 'Open Sans', sans-serif;
+  font-size: v.$font-size-larger;
+  font-family: inherit;
+  min-width: 250px;
   width: 100%;
-  height: 2.25em;
-  border-radius: 1.1em;
+  height: 42px;
+  border-radius: 25px;
   padding: 0.5em 1em;
   outline: none;
-  border: 1px solid v.$gray-400;
-  background-color: v.$bright-fade-100;
+  border: 2px solid v.$gray-300;
+  background-color: v.$gray-100;
   caret-color: white;
-  color: white;
   line-height: 1;
   user-select: none;
+  box-shadow: 2px 2px 6px rgb(black, 0.25);
 
   &:focus {
-    border: 1px solid v.$blue-100;
+    border-color: v.$blue-100;
   }
 
   &:disabled {
@@ -32,5 +38,31 @@
 
   &::placeholder {
     color: v.$gray-400;
+  }
+
+  & label {
+    @include label();
+  }
+}
+
+@mixin label() {
+  font-size: v.$font-size-smaller;
+  text-transform: uppercase;
+  color: inherit;
+  width: fit-content;
+
+  &::after {
+    content: ':';
+  }
+}
+
+@mixin sizeTransition($duration: 200ms) {
+  transition: $duration ease;
+  transition-property: width, height, padding, margin;
+}
+
+@mixin textBalance() {
+  @supports (text-wrap: balance) {
+    text-wrap: balance;
   }
 }

@@ -1,0 +1,29 @@
+@use '../abstracts/variables' as v;
+@use '../abstracts/mixins';
+
+$margin-desktop: 12%;
+$margin-tablet: 8%;
+$margin-mobile: 5%;
+
+$margin-left-desktop: calc($margin-desktop + v.$vnav-width-collapsed);
+$margin-left-tablet: calc($margin-tablet + v.$vnav-width-collapsed);
+
+.Layout {
+  @include mixins.sizeTransition(150ms);
+  margin-inline: $margin-mobile;
+  padding-block: 15vh;
+
+  @media screen and (min-width: v.$breakpoint-tablet) and (max-width: v.$breakpoint-desktop) {
+    margin-inline: $margin-left-tablet $margin-tablet;
+  }
+
+  @media screen and (min-width: v.$breakpoint-desktop) {
+    margin-inline: $margin-left-desktop $margin-desktop;
+  }
+}
+
+body[data-nav-open='true'] .Layout {
+  @media screen and (min-width: v.$breakpoint-desktop) {
+    margin-inline: calc($margin-desktop + v.$vnav-width) $margin-desktop;
+  }
+}

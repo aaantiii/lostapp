@@ -13,12 +13,13 @@ import (
 
 type IPlayersRepo interface {
 	Players(query string) (models.Players, error)
-	PlayersByDiscordID(discordID string) (models.Players, error)
+	PlayersByDiscordID(discordID string, preload ...string) (models.Players, error)
 	PlayerByTag(tag string) (*models.Player, error)
 	PlayerByTagAndDiscordID(tag, discordID string) (*models.Player, error)
 	CreateOrUpdatePlayer(player *models.Player) error
 	NameByTag(tag string) (string, error)
 	MembersPlayersByClan(clanTag, query string) (models.Players, error)
+	MyPlayers(discordID string, query string) (models.Players, error)
 }
 
 type PlayersRepo struct {
@@ -33,16 +34,18 @@ func (repo *PlayersRepo) Players(query string) (models.Players, error) {
 	var players models.Players
 	err := repo.db.
 		Scopes(
-			postgres.ScopeLimit(types.MaxCommandChoices),
-			postgres.ScopeContains(query, "name", "coc_tag"),
+			postgres.WithLimit(types.MaxCommandChoices),
+			postgres.WithSearchQuery(query, "name", "coc_tag", "discord_id"),
 		).
 		Find(&players).Error
 	return players, err
 }
 
-func (repo *PlayersRepo) PlayersByDiscordID(discordID string) (models.Players, error) {
+func (repo *PlayersRepo) PlayersByDiscordID(discordID string, preload ...string) (models.Players, error) {
 	var players models.Players
-	err := repo.db.Find(&players, "discord_id = ?", discordID).Error
+	err := repo.db.
+		Scopes(postgres.WithPreloading(preload...)).
+		Find(&players, "discord_id = ?", discordID).Error
 	return players, err
 }
 
@@ -75,7 +78,7 @@ func (repo *PlayersRepo) NameByTag(tag string) (string, error) {
 func (repo *PlayersRepo) MembersPlayersByClan(clanTag, query string) (models.Players, error) {
 	var players models.Players
 	if err := repo.db.
-		Scopes(postgres.ScopeContains(query, "coc_tag", "name")).
+		Scopes(postgres.WithSearchQuery(query, "coc_tag", "name")).
 		Where("coc_tag IN (?)", repo.db.
 			Model(&models.ClanMember{}).
 			Select("player_tag").
@@ -91,4 +94,16 @@ func (repo *PlayersRepo) MembersPlayersByClan(clanTag, query string) (models.Pla
 	})
 
 	return players, nil
+}
+
+func (repo *PlayersRepo) MyPlayers(discordID string, query string) (models.Players, error) {
+	var players models.Players
+	err := repo.db.
+		Scopes(
+			postgres.WithLimit(types.MaxCommandChoices),
+			postgres.WithSearchQuery(query, "name", "coc_tag"),
+		).
+		Where("discord_id = ?", discordID).
+		Find(&players).Error
+	return players, err
 }

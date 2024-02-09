@@ -1,0 +1,51 @@
+@use '../abstracts/variables' as v;
+
+// source: https://www.radix-ui.com/primitives/docs/components/switch (modified)
+.Switch {
+  display: flex;
+  align-items: center;
+  gap: v.$gap-small;
+  z-index: 1;
+
+  & > .root {
+    width: 50px;
+    height: 28px;
+    border-radius: 25px;
+    background-color: v.$gray-300;
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+    box-shadow: 0 2px 10px rgb(0, 0, 0, 0.7);
+
+    &:focus {
+      box-shadow: 0 0 0 2px black;
+    }
+
+    &[data-state='checked'] {
+      background-color: v.$blue-100;
+    }
+
+    & > .thumb {
+      display: block;
+      width: 22px;
+      height: 22px;
+      background-color: v.$gray-700;
+      border-radius: 50%;
+      transition: translate 100ms linear;
+      translate: -2px 0;
+
+      &[data-state='checked'] {
+        translate: 18px 0;
+      }
+    }
+  }
+
+  & > .label {
+    &::after {
+      content: ':';
+    }
+  }
+}
+
+body[data-theme='light'] .Switch > .root[data-state='unchecked'] {
+  background-color: v.$gray-500;
+}

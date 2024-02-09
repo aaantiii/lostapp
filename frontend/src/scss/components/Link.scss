@@ -1,9 +1,0 @@
-@use '../abstracts/variables' as v;
-
-.Link {
-  color: v.$blue-200;
-
-  &:hover {
-    text-decoration: underline;
-  }
-}

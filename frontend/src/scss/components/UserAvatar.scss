@@ -1,36 +1,18 @@
 @use '../abstracts/variables' as v;
-@use '../abstracts/mixins';
 
 .UserAvatar {
-  $size: clamp(50px, 5vh, 60px);
+  $size: 40px;
+  height: $size;
+  width: $size;
 
-  @include mixins.hover(v.$bright-fade-200);
-
-  display: flex;
-  align-items: center;
-  gap: 0.75em;
-  white-space: nowrap;
-  border-radius: 5px;
-
-  &.noauth {
-    padding: 10px;
-  }
-
-  &.reverse {
-    flex-direction: row-reverse;
-  }
-
-  img {
-    border-radius: 50%;
+  & > img {
     height: $size;
-    padding: 0.25em;
+    width: $size;
+    border-radius: 50%;
+    object-fit: cover;
   }
+}
 
-  span {
-    color: white;
-    display: block;
-    font-weight: 300;
-    text-overflow: ellipsis;
-    overflow: hidden;
-  }
+body[data-theme='light'] .UserAvatar > img {
+  border: 1px solid v.$gray-500;
 }

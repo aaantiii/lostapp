@@ -27,7 +27,7 @@ func NewClansRepo(db *gorm.DB) IClansRepo {
 func (repo *ClansRepo) Clans(query string) (models.Clans, error) {
 	var clans models.Clans
 	err := repo.db.
-		Scopes(postgres.ScopeContains(query, "name", "tag")).
+		Scopes(postgres.WithSearchQuery(query, "name", "tag")).
 		Limit(types.MaxCommandChoices).
 		Find(&clans).Error
 	return clans, err

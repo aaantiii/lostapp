@@ -32,7 +32,7 @@ func memberInteractionCommands(db *gorm.DB, clashClient *goclash.Client) types.C
 			Name:         "listmembers",
 			Description:  "Listet alle Mitglieder eines Clans auf.",
 			Type:         discordgo.ChatApplicationCommand,
-			DMPermission: util.OptionalBool(false),
+			DMPermission: util.BoolPtr(false),
 			Options: []*discordgo.ApplicationCommandOption{
 				optionClanTag("Clan, dessen Mitglieder aufgelistet werden sollen."),
 			},
@@ -46,7 +46,7 @@ func memberInteractionCommands(db *gorm.DB, clashClient *goclash.Client) types.C
 			Name:         "memberstatus",
 			Description:  "Vergleicht hinzugefügte Mitglieder der Datenbank mit den ingame-Clan Mitgliedern.",
 			Type:         discordgo.ChatApplicationCommand,
-			DMPermission: util.OptionalBool(false),
+			DMPermission: util.BoolPtr(false),
 			Options: []*discordgo.ApplicationCommandOption{
 				optionClanTag("Clan, dessen Mitglieder Status überprüft werden soll."),
 			},
@@ -60,7 +60,7 @@ func memberInteractionCommands(db *gorm.DB, clashClient *goclash.Client) types.C
 			Name:         "addmember",
 			Description:  "Fügt ein Mitglied zu einem Clan hinzu.",
 			Type:         discordgo.ChatApplicationCommand,
-			DMPermission: util.OptionalBool(false),
+			DMPermission: util.BoolPtr(false),
 			Options: []*discordgo.ApplicationCommandOption{
 				optionClanTag("Clan, zu dem das Mitglied hinzugefügt werden soll."),
 				optionPlayerTag("Mitglied, das zum Clan hinzugefügt werden soll."),
@@ -87,7 +87,7 @@ func memberInteractionCommands(db *gorm.DB, clashClient *goclash.Client) types.C
 			Name:         "editmember",
 			Description:  "Ändere die Rolle eines Mitglieds in einem Clan.",
 			Type:         discordgo.ChatApplicationCommand,
-			DMPermission: util.OptionalBool(false),
+			DMPermission: util.BoolPtr(false),
 			Options: []*discordgo.ApplicationCommandOption{
 				optionClanTag("Clan, zu dem das Mitglied gehört."),
 				optionMemberTag("Mitglied, dessen Rolle bearbeitet werden soll."),
@@ -114,7 +114,7 @@ func memberInteractionCommands(db *gorm.DB, clashClient *goclash.Client) types.C
 			Name:         "removemember",
 			Description:  "Mitglied von einem Clan entfernen.",
 			Type:         discordgo.ChatApplicationCommand,
-			DMPermission: util.OptionalBool(false),
+			DMPermission: util.BoolPtr(false),
 			Options: []*discordgo.ApplicationCommandOption{
 				optionClanTag("Clan, von dem das Mitglied entfernt werden soll."),
 				optionMemberTag("Mitglied, das vom Clan entfernt werden soll."),

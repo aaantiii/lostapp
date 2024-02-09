@@ -9,7 +9,7 @@ import (
 	"github.com/aaantiii/lostapp/backend/api/middleware"
 	"github.com/aaantiii/lostapp/backend/api/services"
 	"github.com/aaantiii/lostapp/backend/api/types"
-	"github.com/aaantiii/lostapp/backend/api/util"
+	"github.com/aaantiii/lostapp/backend/api/utils"
 )
 
 type AuthController struct {
@@ -24,59 +24,60 @@ func (controller *AuthController) setupWithRouter(router *gin.Engine) {
 	const rgName = "auth"
 
 	publicRoutes := router.Group(rgName)
-	publicRoutes.GET("discord/login", controller.GETDiscordLogin)
-	publicRoutes.GET("discord/callback", controller.GETDiscordCallback)
+	publicRoutes.
+		GET("discord/login", controller.GETDiscordLogin).
+		GET("discord/callback", controller.GETDiscordCallback)
 
-	userRoutes := router.Group(rgName, middleware.AuthMiddleware(types.AuthRoleUser))
-	userRoutes.GET("discord/logout", controller.GETDiscordLogout)
-	userRoutes.GET("session", controller.GETSession)
+	userRoutes := router.Group(rgName, middleware.AuthMiddleware(false))
+	userRoutes.
+		GET("discord/logout", controller.GETDiscordLogout).
+		GET("session", controller.GETSession)
 }
 
 func (*AuthController) GETSession(c *gin.Context) {
-	c.JSON(http.StatusOK, util.SessionFromContext(c))
+	c.JSON(http.StatusOK, utils.SessionFromContext(c))
 }
 
 func (controller *AuthController) GETDiscordLogin(c *gin.Context) {
-	randomState := uuid.New().String()
-	util.StateCookie.Set(c, randomState, 120)
-
+	randomState := uuid.NewString()
+	utils.StateCookie.Set(c, randomState, 600)
 	c.Redirect(http.StatusSeeOther, controller.service.AuthCodeURL(randomState))
 }
 
 func (controller *AuthController) GETDiscordCallback(c *gin.Context) {
-	targetState, err := util.StateCookie.Value(c)
+	targetState, err := utils.StateCookie.Value(c)
 	if err != nil {
-		util.FERouteLoginFailed.RedirectWithStatus(c, http.StatusSeeOther)
+		utils.FERouteLoginFailed.RedirectWithStatus(c, http.StatusSeeOther)
 		return
 	}
 
-	util.StateCookie.Invalidate(c)
+	utils.StateCookie.Invalidate(c)
 	currentState := c.Query("state")
 	if currentState != targetState {
-		util.FERouteLoginFailed.RedirectWithStatus(c, http.StatusSeeOther)
+		utils.FERouteLoginFailed.RedirectWithStatus(c, http.StatusSeeOther)
 		return
 	}
 
 	token, err := controller.service.ExchangeCode(c.Query("code"))
 	if err != nil {
-		util.FERouteLoginFailed.RedirectWithStatus(c, http.StatusSeeOther)
+		utils.FERouteLoginFailed.RedirectWithStatus(c, http.StatusSeeOther)
 		return
 	}
 
-	util.SessionCookie.Set(c, token.AccessToken, 600000)
-	util.FERouteLoginSuccess.RedirectWithStatus(c, http.StatusSeeOther)
+	utils.SessionCookie.Set(c, token.AccessToken, 600000)
+	utils.FERouteIndex.RedirectWithStatus(c, http.StatusSeeOther)
 }
 
 func (controller *AuthController) GETDiscordLogout(c *gin.Context) {
-	token, err := util.SessionCookie.Value(c)
+	token, err := utils.SessionCookie.Value(c)
 	if err != nil {
-		c.AbortWithStatus(http.StatusUnauthorized)
+		c.Set(middleware.ErrorKey, types.ErrNotSignedIn)
 		return
 	}
 
-	util.SessionCookie.Invalidate(c)
-	if err = controller.service.DeleteSession(token); err != nil {
-		c.AbortWithStatus(http.StatusUnauthorized)
+	utils.SessionCookie.Invalidate(c)
+	if err = controller.service.RevokeSession(token); err != nil {
+		c.Set(middleware.ErrorKey, types.ErrSignOutFailed)
 		return
 	}
 

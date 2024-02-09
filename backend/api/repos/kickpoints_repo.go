@@ -4,19 +4,19 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
-	"bot/commands/util"
-	"bot/store/postgres/models"
-	"bot/types"
+	"github.com/aaantiii/lostapp/backend/api/types"
+	"github.com/aaantiii/lostapp/backend/api/utils"
+	"github.com/aaantiii/lostapp/backend/store/postgres/models"
 )
 
 type IKickpointsRepo interface {
 	KickpointByID(id uint) (*models.Kickpoint, error)
-	ActiveClanKickpoints(settings *models.ClanSettings) ([]*types.ClanMemberKickpoints, error)
+	ActiveClanKickpoints(settings *models.ClanSettings) ([]*types.ClanKickpointsEntry, error)
 	ActiveMemberKickpoints(memberTag string, settings *models.ClanSettings) ([]*models.Kickpoint, error)
 	ActiveMemberKickpointsSum(memberTag string, settings *models.ClanSettings) (int, error)
 	FutureMemberKickpoints(memberTag, clanTag string) ([]*models.Kickpoint, error)
 	CreateKickpoint(kickpoint *models.Kickpoint) error
-	UpdateKickpoint(kickpoint *models.Kickpoint) (*models.Kickpoint, error)
+	UpdateKickpoint(kickpoint *models.Kickpoint) error
 	DeleteKickpoint(id uint) error
 }
 
@@ -28,17 +28,17 @@ func NewKickpointsRepo(db *gorm.DB) IKickpointsRepo {
 	return &KickpointsRepo{db: db}
 }
 
-func (repo *KickpointsRepo) KickpointByID(id uint) (*models.Kickpoint, error) {
+func (r *KickpointsRepo) KickpointByID(id uint) (*models.Kickpoint, error) {
 	var kickpoint *models.Kickpoint
-	err := repo.db.Preload(clause.Associations).First(&kickpoint, id).Error
+	err := r.db.Preload(clause.Associations).First(&kickpoint, id).Error
 	return kickpoint, err
 }
 
-func (repo *KickpointsRepo) ActiveClanKickpoints(settings *models.ClanSettings) ([]*types.ClanMemberKickpoints, error) {
-	minDate := util.KickpointMinDate(settings.KickpointsExpireAfterDays)
+func (r *KickpointsRepo) ActiveClanKickpoints(settings *models.ClanSettings) ([]*types.ClanKickpointsEntry, error) {
+	minDate := utils.KickpointMinDate(settings.KickpointsExpireAfterDays)
 
-	var memberKickpoints []*types.ClanMemberKickpoints
-	if err := repo.db.
+	var memberKickpoints []*types.ClanKickpointsEntry
+	if err := r.db.
 		Raw("SELECT p.name AS name, p.coc_tag as tag, SUM(k.amount) AS amount FROM kickpoints k INNER JOIN players p ON k.player_tag = p.coc_tag WHERE k.clan_tag = ? AND k.date BETWEEN ? AND NOW() GROUP BY p.name, p.coc_tag ORDER BY amount DESC", settings.ClanTag, minDate).
 		Scan(&memberKickpoints).Error; err != nil {
 		return nil, err
@@ -51,11 +51,11 @@ func (repo *KickpointsRepo) ActiveClanKickpoints(settings *models.ClanSettings) 
 	return memberKickpoints, nil
 }
 
-func (repo *KickpointsRepo) ActiveMemberKickpoints(memberTag string, settings *models.ClanSettings) ([]*models.Kickpoint, error) {
-	minDate := util.KickpointMinDate(settings.KickpointsExpireAfterDays)
+func (r *KickpointsRepo) ActiveMemberKickpoints(memberTag string, settings *models.ClanSettings) ([]*models.Kickpoint, error) {
+	minDate := utils.KickpointMinDate(settings.KickpointsExpireAfterDays)
 
 	var kickpoints []*models.Kickpoint
-	if err := repo.db.
+	if err := r.db.
 		Preload(clause.Associations).
 		Order("created_at").
 		Find(&kickpoints, "player_tag = ? AND clan_tag = ? AND date BETWEEN ? AND NOW()", memberTag, settings.ClanTag, minDate).Error; err != nil {
@@ -69,11 +69,11 @@ func (repo *KickpointsRepo) ActiveMemberKickpoints(memberTag string, settings *m
 	return kickpoints, nil
 }
 
-func (repo *KickpointsRepo) ActiveMemberKickpointsSum(memberTag string, settings *models.ClanSettings) (int, error) {
-	minDate := util.KickpointMinDate(settings.KickpointsExpireAfterDays)
+func (r *KickpointsRepo) ActiveMemberKickpointsSum(memberTag string, settings *models.ClanSettings) (int, error) {
+	minDate := utils.KickpointMinDate(settings.KickpointsExpireAfterDays)
 
 	var v struct{ Sum int }
-	if err := repo.db.
+	if err := r.db.
 		Model(&models.Kickpoint{}).
 		Where("player_tag = ? AND clan_tag = ? AND date BETWEEN ? AND NOW()", memberTag, settings.ClanTag, minDate).
 		Select("SUM(amount) as sum").
@@ -84,12 +84,11 @@ func (repo *KickpointsRepo) ActiveMemberKickpointsSum(memberTag string, settings
 	return v.Sum, nil
 }
 
-func (repo *KickpointsRepo) FutureMemberKickpoints(memberTag, clanTag string) ([]*models.Kickpoint, error) {
+func (r *KickpointsRepo) FutureMemberKickpoints(memberTag, clanTag string) ([]*models.Kickpoint, error) {
 	var kickpoints []*models.Kickpoint
-	if err := repo.db.
+	if err := r.db.
 		Preload(clause.Associations).
 		Order("created_at").
-		Limit(20).
 		Find(&kickpoints, "player_tag = ? AND clan_tag = ? AND date > NOW()", memberTag, clanTag).Error; err != nil {
 		return nil, err
 	}
@@ -101,18 +100,14 @@ func (repo *KickpointsRepo) FutureMemberKickpoints(memberTag, clanTag string) ([
 	return kickpoints, nil
 }
 
-func (repo *KickpointsRepo) CreateKickpoint(kickpoint *models.Kickpoint) error {
-	return repo.db.Create(&kickpoint).Error
+func (r *KickpointsRepo) CreateKickpoint(kickpoint *models.Kickpoint) error {
+	return r.db.Create(&kickpoint).Error
 }
 
-func (repo *KickpointsRepo) UpdateKickpoint(kickpoint *models.Kickpoint) (*models.Kickpoint, error) {
-	if err := repo.db.Updates(kickpoint).Error; err != nil {
-		return nil, err
-	}
-
-	return repo.KickpointByID(kickpoint.ID)
+func (r *KickpointsRepo) UpdateKickpoint(kickpoint *models.Kickpoint) error {
+	return r.db.Save(kickpoint).Error
 }
 
-func (repo *KickpointsRepo) DeleteKickpoint(id uint) error {
-	return repo.db.Delete(&models.Kickpoint{}, id).Error
+func (r *KickpointsRepo) DeleteKickpoint(id uint) error {
+	return r.db.Delete(&models.Kickpoint{}, id).Error
 }

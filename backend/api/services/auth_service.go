@@ -20,6 +20,7 @@ type IAuthService interface {
 	Session(token string) (*types.Session, bool)
 	CreateSession(token string) (*types.Session, error)
 	RefreshSession(token string) (*types.Session, error)
+	RevokeSession(token string) error
 	AuthCodeURL(state string) string
 	ExchangeCode(code string) (*oauth2.Token, error)
 }
@@ -66,35 +67,35 @@ func NewAuthService(guildsRepo repos.IGuildsRepo, usersRepo repos.IUsersRepo) IA
 	return service
 }
 
-func (service *AuthService) Config() AuthServiceConfig {
-	return service.config
+func (s *AuthService) Config() AuthServiceConfig {
+	return s.config
 }
 
 // Session returns a types.Session associated with the provided token. An error is returned if the session does not exist.
-func (service *AuthService) Session(token string) (*types.Session, bool) {
-	session, ok := service.sessions.Get(token)
+func (s *AuthService) Session(token string) (*types.Session, bool) {
+	session, ok := s.sessions.Get(token)
 	if !ok {
 		return nil, false
 	}
 
 	session.LastUsed = time.Now()
-	service.sessions.Set(token, session)
+	s.sessions.Set(token, session)
 	return &session, ok
 }
 
 // CreateSession initializes a new types.Session with the provided token and gets the user and guilds for that token from the discord api.
 // An error is returned if the provided token already exists or if it's not a valid token.
-func (service *AuthService) CreateSession(token string) (*types.Session, error) {
-	if _, found := service.Session(token); found {
+func (s *AuthService) CreateSession(token string) (*types.Session, error) {
+	if _, found := s.Session(token); found {
 		return nil, errors.New("session with provided token already exists")
 	}
 
-	discordUser, err := service.discordClient.FetchDiscordUser(token)
+	discordUser, err := s.discordClient.FetchDiscordUser(token)
 	if err != nil {
 		return nil, err
 	}
 
-	if err = service.users.CreateOrUpdateUser(&models.User{
+	if err = s.users.CreateOrUpdateUser(&models.User{
 		DiscordID: discordUser.ID,
 		AvatarURL: discordUser.AvatarURL,
 		Name:      discordUser.Name,
@@ -102,29 +103,29 @@ func (service *AuthService) CreateSession(token string) (*types.Session, error) 
 		return nil, err
 	}
 
-	authUser, err := service.newAuthUser(discordUser)
+	authUser, err := s.newAuthUser(discordUser)
 	if err != nil {
 		return nil, err
 	}
 	session := types.NewSession(authUser, token)
 
-	service.sessions.Set(token, session)
+	s.sessions.Set(token, session)
 	return &session, nil
 }
 
 // RefreshSession refetches the user from discord and updates the session in cache.
 // An error is returned if the provided token does not exist or if the request to discord fails.
-func (service *AuthService) RefreshSession(token string) (*types.Session, error) {
-	if _, found := service.Session(token); !found {
+func (s *AuthService) RefreshSession(token string) (*types.Session, error) {
+	if _, found := s.Session(token); !found {
 		return nil, errors.New("tried to refresh non-existing session")
 	}
 
-	discordUser, err := service.discordClient.FetchDiscordUser(token)
+	discordUser, err := s.discordClient.FetchDiscordUser(token)
 	if err != nil {
 		return nil, err
 	}
 
-	if err = service.users.CreateOrUpdateUser(&models.User{
+	if err = s.users.CreateOrUpdateUser(&models.User{
 		DiscordID: discordUser.ID,
 		AvatarURL: discordUser.AvatarURL,
 		Name:      discordUser.Name,
@@ -132,39 +133,38 @@ func (service *AuthService) RefreshSession(token string) (*types.Session, error)
 		return nil, err
 	}
 
-	authUser, err := service.newAuthUser(discordUser)
+	authUser, err := s.newAuthUser(discordUser)
 	if err != nil {
 		return nil, err
 	}
 
 	session := types.NewSession(authUser, token)
-	service.sessions.Set(token, session)
+	s.sessions.Set(token, session)
 	return &session, nil
 }
 
-// DeleteSession revokes a user's access token at discord and deletes the session from cache.
+// RevokeSession revokes a user's access token at discord and deletes the session from cache.
 // An error is returned if the request fails or the response status is not http.StatusOK.
-func (service *AuthService) DeleteSession(token string) error {
-
-	service.sessions.Remove(token)
-	return nil
+func (s *AuthService) RevokeSession(token string) error {
+	s.sessions.Remove(token)
+	return s.discordClient.RevokeToken(token)
 }
 
-func (service *AuthService) AuthCodeURL(state string) string {
-	return service.discordClient.AuthCodeURL(state)
+func (s *AuthService) AuthCodeURL(state string) string {
+	return s.discordClient.AuthCodeURL(state)
 }
 
-func (service *AuthService) ExchangeCode(code string) (*oauth2.Token, error) {
-	return service.discordClient.ExchangeCode(code)
+func (s *AuthService) ExchangeCode(code string) (*oauth2.Token, error) {
+	return s.discordClient.ExchangeCode(code)
 }
 
-func (service *AuthService) newAuthUser(discordUser *types.DiscordUser) (*types.AuthUser, error) {
-	guilds, err := service.guilds.GuildsByGuildID(env.DISCORD_GUILD_ID.Value())
+func (s *AuthService) newAuthUser(discordUser *types.DiscordUser) (*types.AuthUser, error) {
+	guilds, err := s.guilds.GuildsByGuildID(env.DISCORD_GUILD_ID.Value())
 	if err != nil {
 		return nil, err
 	}
 
-	isAdmin, err := service.users.UserIsAdmin(discordUser.ID)
+	isAdmin, err := s.users.UserIsAdmin(discordUser.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -179,9 +179,14 @@ func (service *AuthService) newAuthUser(discordUser *types.DiscordUser) (*types.
 	for _, guild := range guilds {
 		if guild.IsLeader(discordUser.Roles) {
 			user.LeaderOf = append(user.LeaderOf, guild.ClanTag)
+			user.CoLeaderOf = append(user.CoLeaderOf, guild.ClanTag)
+			user.MemberOf = append(user.MemberOf, guild.ClanTag)
+			continue
 		}
 		if guild.IsCoLeader(discordUser.Roles) {
 			user.CoLeaderOf = append(user.CoLeaderOf, guild.ClanTag)
+			user.MemberOf = append(user.MemberOf, guild.ClanTag)
+			continue
 		}
 		if guild.IsMember(discordUser.Roles) {
 			user.MemberOf = append(user.MemberOf, guild.ClanTag)
@@ -195,12 +200,12 @@ func (service *AuthService) newAuthUser(discordUser *types.DiscordUser) (*types.
 	return user, nil
 }
 
-// handleUnusedSessions deletes all sessions from cache that have not been used for longer than services.MaxSessionIdleTime.
-func (service *AuthService) handleUnusedSessions() {
+// handleUnusedSessions removes all sessions from cache that have not been used for longer than AuthServiceConfig.MaxSessionIdleTime.
+func (s *AuthService) handleUnusedSessions() {
 	for range time.Tick(time.Hour) {
-		for token, session := range service.sessions.Items() {
-			if time.Since(session.LastUsed) > service.config.MaxSessionIdleTime {
-				service.sessions.Remove(token)
+		for token, session := range s.sessions.Items() {
+			if time.Since(session.LastUsed) > s.config.MaxSessionIdleTime {
+				s.sessions.Remove(token)
 			}
 		}
 	}

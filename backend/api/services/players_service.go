@@ -1,158 +1,117 @@
 package services
 
 import (
-	"errors"
 	"sort"
-	"strings"
+
+	"github.com/aaantiii/goclash"
 
 	"github.com/aaantiii/lostapp/backend/api/repos"
 	"github.com/aaantiii/lostapp/backend/api/types"
+	"github.com/aaantiii/lostapp/backend/api/utils"
+	"github.com/aaantiii/lostapp/backend/store/postgres/models"
 )
 
 type IPlayersService interface {
-	Players(params types.PlayersParams) (types.Players, error)
-	PlayerByTag(tag string) (*types.Player, error)
-	PlayersByTags(tags []string) (types.Players, error)
-	PlayersByDiscordID(discordID string) (types.Players, error)
-	PlayersByClanTag(tag string) (types.Players, error)
-	PlayersLeaderboard(params types.LeaderboardPlayersParams) ([]*types.PlayerStatistic, error)
+	Players(params types.PlayersParams) (*types.PaginatedResponse[*models.Player], error)
+	PlayersLive(params types.PlayersParams) (*types.PaginatedResponse[*types.Player], error)
+	PlayerByTag(tag string) (*models.Player, error)
+	Leaderboard(params types.LeaderboardParams, stat *types.ComparableStatistic) (*types.PaginatedResponse[*types.PlayerStatistic], error)
 }
 
 type PlayersService struct {
-	playersRepo repos.IPlayersRepo
-	clansRepo   repos.IClansRepo
+	players     repos.IPlayersRepo
+	members     repos.IMembersRepo
+	clashClient *goclash.Client
 }
 
-func NewPlayersService(playersRepo repos.IPlayersRepo, clansRepo repos.IClansRepo) IPlayersService {
-	return &PlayersService{playersRepo: playersRepo, clansRepo: clansRepo}
+func NewPlayersService(player repos.IPlayersRepo, member repos.IMembersRepo, clashClient *goclash.Client) IPlayersService {
+	return &PlayersService{
+		players:     player,
+		members:     member,
+		clashClient: clashClient,
+	}
 }
 
-func (service *PlayersService) Players(params types.PlayersParams) (types.Players, error) {
-	return service.runPlayersFilter(service.playersRepo.Players(), params)
+func (s *PlayersService) Players(params types.PlayersParams) (*types.PaginatedResponse[*models.Player], error) {
+	return s.players.Players(params)
 }
 
-func (service *PlayersService) PlayerByTag(tag string) (*types.Player, error) {
-	return service.playersRepo.PlayerByTag(tag)
-}
-
-func (service *PlayersService) PlayersByTags(tags []string) (types.Players, error) {
-	return service.playersRepo.PlayersByTags(tags)
-}
-
-func (service *PlayersService) PlayersByDiscordID(discordID string) (types.Players, error) {
-	return service.playersRepo.PlayersByDiscordID(discordID)
-}
-
-func (service *PlayersService) PlayersByClanTag(tag string) (types.Players, error) {
-	return service.playersRepo.PlayersByClanTag(tag)
-}
-
-func (service *PlayersService) PlayersLeaderboard(params types.LeaderboardPlayersParams) ([]*types.PlayerStatistic, error) {
-	players, err := service.Players(types.PlayersParams{ClanTag: params.ClanTag})
-	if err != nil || len(players) == 0 {
+func (s *PlayersService) PlayersLive(params types.PlayersParams) (*types.PaginatedResponse[*types.Player], error) {
+	players, err := s.players.Players(params)
+	if err != nil {
 		return nil, err
 	}
 
-	wantedStatName := ""
-	for _, stat := range types.ComparableStats {
-		if stat.ID == params.StatsID {
-			wantedStatName = stat.Name
-		}
+	tags := make([]string, len(players.Items))
+	for i, player := range players.Items {
+		tags[i] = player.CocTag
 	}
 
-	stats := make([]*types.PlayerStatistic, len(players))
-	for i, player := range players {
-		stats[i] = types.NewPlayerStatistic(player, player.ComparableStatsByName[wantedStatName])
+	livePlayers, err := s.clashClient.GetPlayers(tags...)
+	if err != nil {
+		return nil, err
 	}
 
-	sort.SliceStable(stats, func(i, j int) bool {
-		return stats[i].Value > stats[j].Value
+	sort.SliceStable(livePlayers, func(i, j int) bool {
+		return livePlayers[i].ExpLevel > livePlayers[j].ExpLevel
 	})
 
-	return stats, nil
+	res := make([]*types.Player, len(livePlayers))
+	for i, player := range livePlayers {
+		res[i] = &types.Player{
+			PlayerBase:  player.PlayerBase,
+			DiscordID:   players.Items[i].DiscordID,
+			ClanMembers: players.Items[i].Members,
+		}
+	}
+
+	return &types.PaginatedResponse[*types.Player]{Items: res, Pagination: players.Pagination}, nil
 }
 
-func (service *PlayersService) runPlayersFilter(players []*types.Player, params types.PlayersParams) ([]*types.Player, error) {
-	if params.DiscordID != "" {
-		return service.PlayersByDiscordID(params.DiscordID)
-	}
+func (s *PlayersService) PlayerByTag(tag string) (*models.Player, error) {
+	return s.players.PlayerByTag(tag)
+}
 
-	if params.Name != "" {
-		params.Name = strings.ToLower(params.Name)
-		var filteredPlayers []*types.Player
-		for _, player := range players {
-			if strings.Contains(strings.ToLower(player.Name), params.Name) {
-				filteredPlayers = append(filteredPlayers, player)
-			}
-		}
-
-		if filteredPlayers == nil {
-			return nil, errors.New("no players found with the given name")
-		}
-
-		sort.SliceStable(filteredPlayers, func(i, j int) bool {
-			return strings.HasPrefix(filteredPlayers[i].Name, params.Name)
-		})
-		players = filteredPlayers
-	}
-
-	if params.Tag != "" {
-		params.Tag = strings.ToUpper(params.Tag)
-		var filteredPlayers []*types.Player
-		for _, player := range players {
-			if strings.Contains(player.Tag, params.Tag) {
-				filteredPlayers = append(filteredPlayers, player)
-			}
-		}
-
-		if filteredPlayers == nil {
-			return nil, errors.New("no players found with the given tag")
-		}
-		players = filteredPlayers
-	}
-
-	if params.ClanName != "" {
-		params.ClanName = strings.ToLower(params.ClanName)
-		var filteredPlayers []*types.Player
-		for _, player := range players {
-			for _, clan := range player.Clans {
-				if strings.Contains(strings.ToLower(clan.Name), params.ClanName) {
-					filteredPlayers = append(filteredPlayers, player)
-					break
-				}
-			}
-		}
-
-		if filteredPlayers == nil {
-			return nil, errors.New("no players found with the given clan name")
-		}
-
-		players = filteredPlayers
-	}
-
+func (s *PlayersService) Leaderboard(params types.LeaderboardParams, stat *types.ComparableStatistic) (*types.PaginatedResponse[*types.PlayerStatistic], error) {
+	var tags []string
 	if params.ClanTag != "" {
-		params.ClanTag = strings.ToUpper(params.ClanTag)
-		var filteredPlayers []*types.Player
-		var matchingClanTags []string
-		for _, clan := range service.clansRepo.Clans() {
-			if strings.Contains(clan.Tag, params.ClanTag) {
-				matchingClanTags = append(matchingClanTags, clan.Tag)
-			}
+		members, err := s.members.MembersByClanTag(params.ClanTag)
+		if err != nil {
+			return nil, err
 		}
-
-		for _, tag := range matchingClanTags {
-			clanMembers, err := service.PlayersByClanTag(tag)
-			if err != nil {
-				continue
-			}
-			filteredPlayers = append(filteredPlayers, clanMembers...)
+		tags = members.Tags()
+	} else {
+		memberTags, err := s.members.AllMemberTagsDistinct()
+		if err != nil {
+			return nil, err
 		}
-
-		if filteredPlayers == nil {
-			return nil, errors.New("no players found with the given clan tag")
-		}
-		players = filteredPlayers
+		tags = memberTags
+	}
+	if err := utils.ValidatePagination(params.PaginationParams, int64(len(tags))); err != nil {
+		return nil, err
 	}
 
-	return players, nil
+	players, err := s.clashClient.GetPlayers(tags...)
+	if err != nil {
+		return nil, err
+	}
+	values, err := utils.StatisticValueFromPlayers(players, stat)
+	if err != nil {
+		return nil, err
+	}
+
+	playerStats := make([]*types.PlayerStatistic, len(players))
+	for i, player := range players {
+		playerStats[i] = &types.PlayerStatistic{
+			Tag:   player.Tag,
+			Name:  player.Name,
+			Value: values[i],
+		}
+	}
+	sort.SliceStable(playerStats, func(i, j int) bool {
+		playerStats[i].Placement = i + 1
+		return playerStats[i].Value > playerStats[j].Value
+	})
+
+	return types.NewPaginatedResponse(playerStats, params.PaginationParams, int64(len(playerStats))), nil
 }

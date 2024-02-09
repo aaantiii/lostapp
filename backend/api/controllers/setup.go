@@ -20,36 +20,32 @@ func SetupWithRouter(router *gin.Engine) error {
 	if err != nil {
 		return err
 	}
-
 	clashClient, err := client.NewClashClient()
 	if err != nil {
 		return err
 	}
 
-	// create repos
-	usersRepo := repos.NewUsersRepo(db)
-	clanSettingsRepo := repos.NewClanSettingsRepo(db)
-	clansRepo := repos.NewClansRepo(db)
-	guildsRepo := repos.NewGuildsRepo(db)
-	kickpointsRepo := repos.NewKickpointsRepo(db)
-	membersRepo := repos.NewMembersRepo(db)
-	playersRepo := repos.NewPlayersRepo(db)
+	authService := services.NewAuthService(
+		repos.NewGuildsRepo(db),
+		repos.NewUsersRepo(db),
+	)
+	middleware.UseAuthService(authService)
 
-	// create services
-	membersService := services.NewMembersService(membersRepo)
-	authService := services.NewAuthService(guildsRepo, usersRepo)
-	clansService := services.NewClansService(clansRepo, playersRepo, clanSettingsRepo)
-	kickpointsService := services.NewKickpointsService(kickpointsRepo, playersRepo, clanSettingsRepo)
-	playersService := services.NewPlayersService(playersRepo, clansRepo)
-
-	// inject services into middleware
-	middleware.InjectServices(authService, clansService)
-
-	// create controllers
 	controllers := []Controller{
 		NewAuthController(authService),
-		NewClansController(clansService, kickpointsService, membersService),
-		NewPlayersController(playersService),
+		NewUsersController(services.NewUsersService(
+			repos.NewUsersRepo(db),
+		)),
+		NewClansController(services.NewClansService(
+			repos.NewClansRepo(db),
+			repos.NewKickpointsRepo(db),
+			repos.NewClanSettingsRepo(db),
+		)),
+		NewPlayersController(services.NewPlayersService(
+			repos.NewPlayersRepo(db),
+			repos.NewMembersRepo(db),
+			clashClient,
+		)),
 	}
 
 	// setup Controllers

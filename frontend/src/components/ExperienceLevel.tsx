@@ -7,7 +7,8 @@ interface ExperienceLevelProps {
 
 export default function ExperienceLevel({ level }: ExperienceLevelProps) {
   return (
-    <div className="ExperienceLevel" style={{ backgroundImage: `url(${experienceLevel})` }}>
+    <div className="ExperienceLevel">
+      <img src={experienceLevel} alt="Erfahrungslevel" loading="lazy" />
       <span>{level}</span>
     </div>
   )

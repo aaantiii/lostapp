@@ -53,12 +53,12 @@ func SendMemberKickpoints(i *discordgo.InteractionCreate, settings *models.ClanS
 func DetailedKickpointFields(kickpoint *models.Kickpoint, expireAfterDays int) []*discordgo.MessageEmbedField {
 	return []*discordgo.MessageEmbedField{
 		{Name: "Grund", Value: kickpoint.Description},
-		{Name: "Anzahl Kickpunkte", Value: strconv.Itoa(kickpoint.Amount)},
-		{Name: "Erhalten am", Value: util.FormatDate(kickpoint.Date)},
-		{Name: "Läuft ab in", Value: util.FormatDuration(time.Until(kickpoint.Date.AddDate(0, 0, expireAfterDays)))},
-		{Name: "Aktiv seit", Value: util.FormatDuration(time.Since(kickpoint.Date))},
-		{Name: "Erstellt", Value: util.FormatFromAt(kickpoint.CreatedByUser, kickpoint.CreatedAt)},
-		{Name: "Zuletzt bearbeitet", Value: util.FormatFromAt(kickpoint.UpdatedByUser, kickpoint.UpdatedAt)},
+		{Name: "Anzahl Kickpunkte", Value: strconv.Itoa(kickpoint.Amount), Inline: true},
+		{Name: "Erhalten am", Value: util.FormatDate(kickpoint.Date), Inline: true},
+		{Name: "Läuft ab in", Value: util.FormatDuration(time.Until(kickpoint.Date.AddDate(0, 0, expireAfterDays))), Inline: true},
+		{Name: "Aktiv seit", Value: util.FormatDuration(time.Since(kickpoint.Date)), Inline: true},
+		{Name: "Erstellt", Value: util.FormatFromAt(kickpoint.CreatedByUser, kickpoint.CreatedAt), Inline: true},
+		{Name: "Zuletzt bearbeitet", Value: util.FormatFromAt(kickpoint.UpdatedByUser, kickpoint.UpdatedAt), Inline: true},
 	}
 }
 

@@ -2,7 +2,11 @@ import '@styles/components/Logo.scss'
 import lostLogo from '@assets/img/lost_logo.webp'
 import { useNavigate } from 'react-router-dom'
 
-export default function Logo() {
+type LogoProps = {
+  className?: string
+}
+
+export default function Logo({ className }: LogoProps) {
   const navigate = useNavigate()
 
   function handleClick() {
@@ -11,7 +15,7 @@ export default function Logo() {
   }
 
   return (
-    <a onClick={handleClick} title="Startseite" className="Logo">
+    <a onClick={handleClick} title="Startseite" className={`Logo ${className}`}>
       <span className="title">Lost Clans</span>
       <img src={lostLogo} alt="Lost Clan Logo" loading="eager" />
     </a>

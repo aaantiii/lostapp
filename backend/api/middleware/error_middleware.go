@@ -3,31 +3,29 @@ package middleware
 import (
 	"errors"
 	"log"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
 	"github.com/aaantiii/lostapp/backend/api/types"
-	"github.com/aaantiii/lostapp/backend/api/util"
 	"github.com/aaantiii/lostapp/backend/env"
 )
 
-var errUnknown = types.NewApiError(http.StatusInternalServerError, "Während deiner Anfrage ist ein unerwarteter Fehler aufgetreten.")
+const ErrorKey = "error"
 
-// NewErrorMiddleware returns a gin.HandlerFunc that handles types.ApiError, if present in gin.Context.
-func NewErrorMiddleware() gin.HandlerFunc {
+// ErrorMiddleware returns a gin.HandlerFunc that handles types.ApiError, if present in gin.Context.
+func ErrorMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
 
-		v, ok := c.Get(util.ErrorKey)
+		v, ok := c.Get(ErrorKey)
 		if !ok {
 			return // no error
 		}
 
 		err, ok := v.(error)
 		if !ok {
-			c.JSON(errUnknown.Code, errUnknown)
+			c.JSON(types.ErrUnknown.Code, types.ErrUnknown)
 			return
 		}
 
@@ -42,12 +40,7 @@ func NewErrorMiddleware() gin.HandlerFunc {
 
 		var apiErr *types.ApiError
 		if !errors.As(err, &apiErr) {
-			c.JSON(errUnknown.Code, errUnknown)
-			return
-		}
-
-		if apiErr.Code == http.StatusNoContent {
-			c.Status(apiErr.Code)
+			c.JSON(types.ErrUnknown.Code, types.ErrUnknown)
 			return
 		}
 

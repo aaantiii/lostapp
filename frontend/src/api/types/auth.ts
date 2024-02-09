@@ -1,13 +1,23 @@
-import { DiscordUser } from './user'
+export type User = {
+  id: string
+  name: string
+  avatarUrl: string
+  memberOf?: string[]
+  coLeaderOf?: string[]
+  leaderOf?: string[]
+  isAdmin: boolean
+}
 
-export interface Session {
-  discordUser?: DiscordUser
-  userRole?: AuthRole
+export type Session = {
+  user?: User
 }
 
 export enum AuthRole {
-  User = 1,
-  Member = 2,
-  Leader = 3,
-  Admin = 4,
+  AnyMember = 'anyMember',
+  ClanMember = 'clanMember',
+  AnyCoLeader = 'anyCoLeader',
+  ClanCoLeader = 'clanCoLeader',
+  AnyLeader = 'anyLeader',
+  ClanLeader = 'clanLeader',
+  Admin = '~~~admin~~~',
 }

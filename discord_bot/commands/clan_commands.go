@@ -29,7 +29,7 @@ func clanInteractionCommands(db *gorm.DB, clashClient *goclash.Client) types.Com
 			Name:         "clanstats",
 			Description:  "Statistiken der Mitglieder eines Clans anzeigen.",
 			Type:         discordgo.ChatApplicationCommand,
-			DMPermission: util.OptionalBool(false),
+			DMPermission: util.BoolPtr(false),
 			Options: []*discordgo.ApplicationCommandOption{
 				optionClanTag("Clan, dessen Statistiken angezeigt werden sollen."),
 				{
@@ -50,7 +50,7 @@ func clanInteractionCommands(db *gorm.DB, clashClient *goclash.Client) types.Com
 			Name:         "raidping",
 			Description:  "Pingt alle Mitglieder, die noch fehlende Raid Angriffe haben.",
 			Type:         discordgo.ChatApplicationCommand,
-			DMPermission: util.OptionalBool(false),
+			DMPermission: util.BoolPtr(false),
 			Options: []*discordgo.ApplicationCommandOption{
 				optionClanTag("Clan, dessen Mitglieder einen Ping erhalten sollen."),
 			},
@@ -63,14 +63,14 @@ func clanInteractionCommands(db *gorm.DB, clashClient *goclash.Client) types.Com
 			Name:         "eventinfo",
 			Description:  "Ruft die aktuellen Informationen zu einem Event ab.",
 			Type:         discordgo.ChatApplicationCommand,
-			DMPermission: util.OptionalBool(false),
+			DMPermission: util.BoolPtr(false),
 			Options: []*discordgo.ApplicationCommandOption{
 				{
 					Type:        discordgo.ApplicationCommandOptionInteger,
 					Name:        handlers.IDOptionName,
 					Description: "ID des Events, dessen Informationen angezeigt werden sollen.",
 					Required:    true,
-					MinValue:    util.OptionalFloat(1),
+					MinValue:    util.FloatPtr(1),
 				},
 			},
 		},
@@ -83,7 +83,7 @@ func clanInteractionCommands(db *gorm.DB, clashClient *goclash.Client) types.Com
 			Name:         "eventcreate",
 			Description:  "Erstellt ein Clan Event, bspw. für das Farmen von dunklem Elixir in einem bestimmten Zeitraum.",
 			Type:         discordgo.ChatApplicationCommand,
-			DMPermission: util.OptionalBool(false),
+			DMPermission: util.BoolPtr(false),
 			Options: []*discordgo.ApplicationCommandOption{
 				optionClanTag("Clan, für den das Event erstellt werden soll."),
 				{
@@ -115,14 +115,14 @@ func clanInteractionCommands(db *gorm.DB, clashClient *goclash.Client) types.Com
 			Name:         "eventremove",
 			Description:  "Löscht ein bereits erstelltes Event, welches noch nicht vorbei ist.",
 			Type:         discordgo.ChatApplicationCommand,
-			DMPermission: util.OptionalBool(false),
+			DMPermission: util.BoolPtr(false),
 			Options: []*discordgo.ApplicationCommandOption{
 				{
 					Type:        discordgo.ApplicationCommandOptionInteger,
 					Name:        handlers.IDOptionName,
 					Description: "ID des Events, das gelöscht werden soll.",
 					Required:    true,
-					MinValue:    util.OptionalFloat(1),
+					MinValue:    util.FloatPtr(1),
 				},
 			},
 		},

@@ -2,6 +2,7 @@ package api
 
 import (
 	"log"
+	"path/filepath"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -33,7 +34,7 @@ func NewRouter() (*gin.Engine, error) {
 		return nil, err
 	}
 	router.Use(cors.New(corsConfig))
-	router.Use(middleware.NewErrorMiddleware())
+	router.Use(middleware.ErrorMiddleware())
 
 	if err := controllers.SetupWithRouter(router); err != nil {
 		return nil, err
@@ -45,7 +46,13 @@ func NewRouter() (*gin.Engine, error) {
 // ListenAndServe starts the HTTP server.
 func ListenAndServe(router *gin.Engine) error {
 	port := env.PORT.Value()
-	log.Printf("HTTP server listening on port %s.", port)
-	return router.Run(":" + port)
-	//return router.RunTLS(":"+port, "/etc/letsencrypt/live/aaantiii.com/cert.pem", "/etc/letsencrypt/live/aaantiii.com/privkey.pem")
+	if env.CERT_DIR.Value() == "" {
+		log.Printf("HTTP server listening on port %s.", port)
+		return router.Run(":" + port)
+	}
+
+	log.Printf("HTTPS server listening on port %s.", port)
+	cert := filepath.Join(env.CERT_DIR.Value(), "cert.pem")
+	key := filepath.Join(env.CERT_DIR.Value(), "privkey.pem")
+	return router.RunTLS(":"+port, cert, key)
 }

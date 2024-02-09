@@ -1,41 +1,26 @@
 import '@styles/components/Paginator.scss'
-import { useEffect, useState } from 'react'
-import Select, { SelectOption, SelectOptionGroup } from './Select'
-import { Pagination } from '@api/types/pagination'
+import React, { useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import usePageSize from '@hooks/usePageSize'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons'
+import { Pagination } from '@api/types/base'
 
-export interface PaginatorProps {
+export type PaginatorProps = {
   pagination?: Pagination
-  pageSize?: number
+  showTotalItems?: boolean
   onPageChange?: (page: number) => void
+  children: React.ReactNode
 }
 
-export default function Paginator({ pagination, pageSize, onPageChange }: PaginatorProps) {
-  const [optionGroup, setOptionGroup] = useState<SelectOptionGroup>({ options: [] })
-  const defaultPageSize = usePageSize(12, 20)
-  const [_, setSearchParams] = useSearchParams()
+type PageSwitcherProps = Required<Omit<PaginatorProps, 'children' | 'showTotalItems'>>
 
-  useEffect(() => {
-    setSearchParams(
-      (prev) => {
-        prev.set('page', prev.get('page') ?? '1')
-        prev.set('pageSize', prev.get('pageSize') ?? pageSize?.toString() ?? defaultPageSize.toString())
-        return prev
-      },
-      { replace: true }
-    )
-  }, [defaultPageSize])
+export default function Paginator({ pagination, onPageChange, children, showTotalItems = true }: PaginatorProps) {
+  const setSearchParams = useSearchParams()[1]
+  const paginatorRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!pagination) return
 
-    const options: SelectOption[] = []
-    for (let i = 1; i <= pagination.totalPages; i++) {
-      options.push({ value: i.toString(), displayText: `Seite ${i}` })
-    }
-
-    setOptionGroup({ options, title: 'Seite wählen' })
     setSearchParams(
       (prev) => {
         prev.set('page', pagination.page.toString())
@@ -58,17 +43,36 @@ export default function Paginator({ pagination, pageSize, onPageChange }: Pagina
   }
 
   return (
-    <div className="Paginator">
+    <div className="Paginator" ref={paginatorRef}>
       {pagination && (
         <>
-          <span className="total-items">
-            {pagination.totalItems} Ergebniss{pagination.totalItems > 1 ? 'e' : ''}
-          </span>
-          {pagination.totalPages > 1 && (
-            <Select onChange={(page) => handlePageChange(Number(page))} value={pagination.page.toString()} optionGroups={[optionGroup]} />
-          )}
+          {showTotalItems && <span className="total-items">{pagination.totalItems} Ergebnisse</span>}
+          {children}
+          <PageSwitcher pagination={pagination} onPageChange={handlePageChange} />
         </>
       )}
+    </div>
+  )
+}
+
+function PageSwitcher({ pagination, onPageChange }: PageSwitcherProps) {
+  if (pagination.totalPages <= 1) return null // dont render
+
+  return (
+    <div className="PageSwitcher">
+      <div className="wrapper">
+        <button onClick={() => onPageChange(pagination.page - 1)} disabled={pagination.page <= 1}>
+          <FontAwesomeIcon icon={faChevronLeft} />
+        </button>
+        {pagination.navigation.map((page) => (
+          <button key={page} onClick={() => onPageChange(page)} disabled={pagination.page === page} className="navigation-element">
+            {page}
+          </button>
+        ))}
+        <button onClick={() => onPageChange(pagination.page + 1)} disabled={pagination.page >= pagination.totalPages}>
+          <FontAwesomeIcon icon={faChevronRight} />
+        </button>
+      </div>
     </div>
   )
 }

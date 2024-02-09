@@ -1,0 +1,25 @@
+@use '../abstracts/variables' as v;
+@use '../abstracts/mixins';
+
+.FileUpload {
+  display: flex;
+  flex-direction: row;
+  gap: v.$gap-small;
+
+  & > .wrapper {
+    display: flex;
+    align-items: center;
+    gap: v.$gap-small;
+    overflow: hidden;
+
+    span {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  & > input[type='file'] {
+    display: none;
+  }
+}

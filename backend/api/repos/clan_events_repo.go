@@ -38,53 +38,53 @@ func NewClanEventsRepo(db *gorm.DB) IClanEventsRepo {
 	}
 }
 
-func (repo *ClanEventsRepo) ClanEventByID(id uint) (*models.ClanEvent, error) {
+func (r *ClanEventsRepo) ClanEventByID(id uint) (*models.ClanEvent, error) {
 	var event *models.ClanEvent
-	err := repo.db.
+	err := r.db.
 		Preload(clause.Associations).
 		First(&event, id).Error
 	return event, err
 }
 
-func (repo *ClanEventsRepo) CurrentClanEvent(clanTag string) (*models.ClanEvent, error) {
+func (r *ClanEventsRepo) CurrentClanEvent(clanTag string) (*models.ClanEvent, error) {
 	var event *models.ClanEvent
-	err := repo.db.
+	err := r.db.
 		Order("timestamp desc").
 		Preload("Clan").
 		First(&event, "clan_tag = ? AND winner_player_tag IS NULL", clanTag).Error
 	return event, err
 }
 
-func (repo *ClanEventsRepo) AllActiveClanEvents() ([]*models.ClanEvent, error) {
+func (r *ClanEventsRepo) AllActiveClanEvents() ([]*models.ClanEvent, error) {
 	var events []*models.ClanEvent
-	err := repo.db.
+	err := r.db.
 		Order("ends_at").
 		Preload("Clan").
 		Find(&events, "winner_player_tag IS NULL").Error
 	return events, err
 }
 
-func (repo *ClanEventsRepo) ClanEventMembers(eventID uint, timestamp time.Time) ([]*models.ClanEventMember, error) {
+func (r *ClanEventsRepo) ClanEventMembers(eventID uint, timestamp time.Time) ([]*models.ClanEventMember, error) {
 	var members []*models.ClanEventMember
-	err := repo.db.Find(&members, "clan_event_id = ? AND timestamp = ?", eventID, timestamp).Error
+	err := r.db.Find(&members, "clan_event_id = ? AND timestamp = ?", eventID, timestamp).Error
 	return members, err
 }
 
-func (repo *ClanEventsRepo) CreateClanEvent(event *models.ClanEvent) (uint, error) {
-	if err := repo.db.Create(&event).Error; err != nil {
+func (r *ClanEventsRepo) CreateClanEvent(event *models.ClanEvent) (uint, error) {
+	if err := r.db.Create(&event).Error; err != nil {
 		return 0, err
 	}
 	return event.ID, nil
 }
 
-func (repo *ClanEventsRepo) CreateClanEventMembers(members []*models.ClanEventMember) error {
-	return repo.db.Create(members).Error
+func (r *ClanEventsRepo) CreateClanEventMembers(members []*models.ClanEventMember) error {
+	return r.db.Create(members).Error
 }
 
-func (repo *ClanEventsRepo) UpdateClanEvent(event *models.ClanEvent) error {
-	return repo.db.Save(event).Error
+func (r *ClanEventsRepo) UpdateClanEvent(event *models.ClanEvent) error {
+	return r.db.Save(event).Error
 }
 
-func (repo *ClanEventsRepo) DeleteClanEvent(id uint) error {
-	return repo.db.Delete(&models.ClanEvent{}, id).Error
+func (r *ClanEventsRepo) DeleteClanEvent(id uint) error {
+	return r.db.Delete(&models.ClanEvent{}, id).Error
 }

@@ -1,84 +1,87 @@
 import '@styles/components/Table.scss'
-import { useNavigate } from 'react-router-dom'
 import Paginator, { PaginatorProps } from './Paginator'
-import { urlEncodeTag } from '@fmt/cocFormatter'
-import { numberFormatter, dateFormatter } from '@fmt/intlFormatter'
+import { ReactNode, useEffect, useRef } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faUpRightFromSquare } from '@fortawesome/free-solid-svg-icons'
-import { useEffect, useRef } from 'react'
+import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons'
 
-interface TableProps extends PaginatorProps {
-  rowCountColumn?: boolean
-  data: any[]
-  columns: TableColumn[]
-  width?: number
+type TableProps = Pick<PaginatorProps, 'pagination' | 'onPageChange' | 'showTotalItems'> & {
+  header: ReactNode[]
+  children: ReactNode
+  className?: string
 }
 
-export interface TableColumn {
-  prop: string
-  heading: string
-  link?: string
-  linkIdProp?: string
-  type?: 'number' | 'date' | 'string'
+type TableColumnProps = {
+  children: ReactNode[]
 }
 
-export function Table({ pagination, data, columns, rowCountColumn, width, onPageChange }: TableProps) {
-  const navigate = useNavigate()
+export default function Table({ children, className = '', header, ...paginatorProps }: TableProps) {
   const wrapperRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    wrapperRef.current?.scrollTo(0, 0)
-  }, [data])
+    wrapperRef.current?.scrollIntoView({
+      behavior: 'smooth',
+    })
+  }, [paginatorProps])
 
-  function formatCellData(row: any, col: TableColumn): string | JSX.Element {
-    let value = row[col.prop]
+  return (
+    <div className={`Table ${className}`}>
+      <Paginator {...paginatorProps}>
+        <div className="scrollable-wrapper" ref={wrapperRef}>
+          <table>
+            <thead>
+              <tr>
+                {header.map((column, i) => (
+                  <th key={i}>{column}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>{children}</tbody>
+          </table>
+        </div>
+      </Paginator>
+    </div>
+  )
+}
 
-    if (col.type === 'number') {
-      value = numberFormatter.format(value)
-    } else if (col.type === 'date') {
-      value = dateFormatter.format(value)
-    }
+export function TableRow({ children }: TableColumnProps) {
+  return (
+    <tr>
+      {children.map((column, i) => (
+        <td key={i}>{column}</td>
+      ))}
+    </tr>
+  )
+}
 
-    if (col.link) {
-      const href = col.linkIdProp ? encodeURI(col.link + '/' + urlEncodeTag(row[col.linkIdProp])) : col.link
+type TableOrderProps = {
+  children: ReactNode
+  queryName: string
+  defaultValue: 'asc' | 'desc'
+}
 
-      return (
-        <a onClick={() => navigate(href)}>
-          {value}
-          <span> </span>
-          <FontAwesomeIcon className="icon" icon={faUpRightFromSquare} />{' '}
-        </a>
-      )
-    }
+export function TableOrder({ children, queryName, defaultValue }: TableOrderProps) {
+  const [searchParams, setSearchParams] = useSearchParams({
+    [queryName]: defaultValue,
+  })
+  const currentOrder = searchParams.get(queryName)
 
-    return value
+  function handleOrderChange() {
+    const newOrder = currentOrder === 'asc' ? 'desc' : 'asc'
+    setSearchParams(
+      (prev) => {
+        prev.set(queryName, newOrder)
+        prev.set('page', '1')
+        return prev
+      },
+      { replace: true }
+    )
   }
 
   return (
-    <div className="Table" style={width ? { width } : {}}>
-      <Paginator pagination={pagination} onPageChange={onPageChange} />
-      <div className="scrollable-wrapper" ref={wrapperRef}>
-        <table>
-          <thead>
-            <tr>
-              {rowCountColumn && <th>#</th>}
-              {columns.map(({ prop, heading }) => (
-                <th key={prop}>{heading}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((row, i) => (
-              <tr key={i}>
-                {rowCountColumn && <td>{pagination ? pagination.page * pagination.pageSize - pagination.pageSize + i + 1 : i + 1}</td>}
-                {columns.map((col) => (
-                  <td key={col.prop}>{formatCellData(row, col)}</td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <a role="button" className="TableOrder" onClick={handleOrderChange}>
+      {children}
+      {currentOrder === 'asc' ? <FontAwesomeIcon icon={faChevronUp} /> : <FontAwesomeIcon icon={faChevronDown} />}
+    </a>
   )
 }

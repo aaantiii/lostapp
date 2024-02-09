@@ -1,13 +1,14 @@
 package models
 
 type ClanMember struct {
-	PlayerTag        string `gorm:"primaryKey;not null"`
-	ClanTag          string `gorm:"primaryKey;not null"`
-	AddedByDiscordID string
-	ClanRole         ClanRole
+	PlayerTag        string   `gorm:"primaryKey;not null" json:"playerTag"`
+	ClanTag          string   `gorm:"primaryKey;not null" json:"clanTag"`
+	AddedByDiscordID string   `gorm:"not null" json:"-"`
+	ClanRole         ClanRole `gorm:"not null" json:"clanRole"`
 
-	Player *Player `gorm:"foreignKey:CocTag;references:PlayerTag"`
-	Clan   *Clan   `gorm:"foreignKey:Tag;references:ClanTag"`
+	AddedByUser *User   `gorm:"foreignKey:DiscordID;references:AddedByDiscordID" json:"addedByUser,omitempty"`
+	Player      *Player `gorm:"foreignKey:CocTag;references:PlayerTag" json:"player,omitempty"`
+	Clan        *Clan   `gorm:"foreignKey:Tag;references:ClanTag" json:"clan,omitempty"`
 }
 
 type ClanRole string

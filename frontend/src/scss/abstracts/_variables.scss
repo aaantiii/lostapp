@@ -1,61 +1,62 @@
-$breakpoint-mobile: 480px;
-$breakpoint-tablet: 768px;
-$breakpoint-desktop: 1024px;
-
-$max-z-index: 100;
-$hnav-z-index: 5;
-
-$font-color: hsl(0, 0%, 90%);
-$font-size-small: 12px;
-$font-size-smaller: 14px;
-$font-size-default: 16px;
-$font-size-larger: 18px;
-$font-size-large: 21px;
-$font-size-huge: clamp(2.5em, 10vw, 7em);
-$font-size-heading-1: 32px;
-$font-size-heading-2: 25px;
-$font-size-heading-3: 22px;
-$font-size-heading-4: 20px;
-
-$icon-size-tiny: 13px;
-$icon-size-small: 16px;
-$icon-size-medium: 20px;
-$icon-size-large: 24px;
-
-$gap-tiny: 5px;
-$gap-small: 10px;
-$gap-default: 15px;
-$gap-medium: 20px;
-$gap-large: 40px;
-
+// color palette
 $blue-100: hsl(210, 99%, 30%);
 $blue-200: hsl(205, 99%, 33%);
 $blue-300: hsl(200, 99%, 36%);
 $blue-400: hsl(195, 99%, 41%);
 $blue-500: hsl(190, 99%, 45%);
 $blue-600: hsl(180, 99%, 45%);
+$gray-100: hsl(0, 0%, 11%);
+$gray-200: hsl(0, 0%, 16%);
+$gray-300: hsl(0, 0%, 21%);
+$gray-400: hsl(0, 0%, 40%);
+$gray-450: hsl(0, 0%, 50%);
+$gray-500: hsl(0, 0%, 60%);
+$gray-600: hsl(0, 0%, 71%);
+$gray-700: hsl(0, 0%, 78%);
+$gray-800: hsl(0, 0%, 85%);
+$gray-900: hsl(0, 0%, 91%);
+$white: hsl(0, 0%, 100%);
+$red-100: hsl(0, 78%, 42%);
+$green-100: hsl(135, 100%, 26%);
+$yellow-100: hsl(48, 100%, 50%);
 
-$gray-100: hsl(0, 0%, 7.8%);
-$gray-200: hsl(0, 0%, 9%);
-$gray-300: hsl(0, 0%, 11%);
-$gray-400: hsl(0, 0%, 18%);
-$gray-500: hsl(0, 0%, 38%);
-$gray-600: hsl(0, 0%, 60%);
-$gray-700: hsl(0, 0%, 80%);
+// breakpoints
+$breakpoint-mobile: 480px;
+$breakpoint-tablet: 768px;
+$breakpoint-desktop: 1024px;
 
-$red-100: hsl(0, 100%, 50%);
-$red-200: hsl(0, 100%, 35%);
+// font
+$heading-font-family: 'Rubik', sans-serif;
+$default-font-family: 'Open Sans', sans-serif;
 
-$bright-fade-100: hsl(0, 0%, 100%, 0.02);
-$bright-fade-200: hsl(0, 0%, 100%, 0.1);
-$dark-fade-100: hsl(0, 0%, 0%, 0.1);
-$dark-fade-200: hsl(0, 0%, 0%, 0.2);
+$font-size-small: 13px;
+$font-size-smaller: 15px;
+$font-size-default: 16px;
+$font-size-larger: 18px;
+$font-size-large: 21px;
+$font-size-heading-1: 35px;
+$font-size-heading-2: 30px;
+$font-size-heading-3: 24px;
+$font-size-heading-4: 22px;
+
+$icon-size-small: 16px;
+$icon-size-medium: 20px;
+$icon-size-large: 24px;
+
+$gap-tiny: 5px;
+$gap-small: 10px;
+$gap-medium: 20px;
+$gap-semi-large: 30px;
+$gap-large: 40px;
 
 $border-radius-small: 5px;
 $border-radius-medium: 10px;
 $border-radius-large: 15px;
-$border-radius-full: 50%;
+$border-radius-full: 9999px;
+
+$max-z-index: 100;
 
 // nav sizes
-$hnav-height: 60px;
+$hnav-height: 58px;
 $vnav-width: clamp(230px, 70vw, 270px);
+$vnav-width-collapsed: 60px;

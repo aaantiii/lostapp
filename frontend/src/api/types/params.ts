@@ -1,12 +1,14 @@
-export interface PaginationParams {
-  page?: number
-  pageSize?: number
+export type QueryParam = {
+  q?: string
 }
 
-export interface PlayersParams extends PaginationParams {
-  name?: string
-  tag?: string
-  clanName?: string
-  clanTag?: string
-  discordID?: string
+export type PaginationParams = {
+  page: string
+  pageSize: string
 }
+
+export type DiscordIdParam = {
+  discordId?: string
+}
+
+export type PlayersParams = QueryParam & PaginationParams & DiscordIdParam

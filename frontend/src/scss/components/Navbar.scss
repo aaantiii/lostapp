@@ -2,123 +2,145 @@
 @use '../abstracts/mixins';
 
 .Navbar {
-  $toggle-transition: 0.2s ease;
+  $z-index: 10;
 
-  user-select: none;
-  z-index: 10;
-
-  .hnav {
+  & > .hnav {
+    z-index: $z-index;
     height: v.$hnav-height;
     width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
     position: fixed;
-    padding: 5px 1em;
-    background: linear-gradient(90deg, v.$blue-100, v.$blue-400, v.$blue-100);
+    padding: v.$gap-tiny v.$gap-medium;
+    background-color: v.$blue-300;
     top: 0;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
-    z-index: inherit;
 
-    & > .toggle-vnav {
+    & > .vnav-toggler {
       font-size: v.$icon-size-large;
       height: 30px;
       width: 30px;
       display: flex;
       justify-content: center;
       align-items: center;
+      color: white;
     }
   }
 
-  .vnav {
-    top: v.$hnav-height;
-    height: calc(100vh - v.$hnav-height);
-    width: 0;
-    padding-block: 1em;
+  & > .vnav {
+    @include mixins.sizeTransition();
+
+    z-index: $z-index;
+    width: v.$vnav-width-collapsed + 1px; // +1px for border
+    height: calc(100% - v.$hnav-height);
     position: fixed;
-    transition: width $toggle-transition, padding $toggle-transition;
-    background-color: v.$blue-200;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    top: v.$hnav-height;
+    left: 0;
+    background-color: v.$gray-100;
+    border-right: 1px solid v.$gray-300;
     overflow-y: auto;
-    scrollbar-gutter: stable both-edges;
-    z-index: inherit;
+    display: flex;
+    flex-direction: column;
+    gap: v.$gap-medium;
+    padding: v.$gap-tiny;
 
-    &.open {
-      width: v.$vnav-width;
-      padding-inline: 1em;
+    @media screen and (max-width: v.$breakpoint-tablet) {
+      width: 0;
+      padding-inline: 0;
     }
 
-    & > .header {
-      padding: 1em 0.5em;
-      border-bottom: 1px solid v.$blue-100;
-      display: flex;
-      flex-direction: column;
-      gap: 1em;
+    & > :first-child {
+      margin-top: 10vh;
+    }
 
-      & > .top {
+    & > :last-child {
+      margin-bottom: 10vh;
+    }
+
+    & > .group {
+      @include mixins.sizeTransition();
+      background-color: v.$gray-200;
+      border-radius: v.$border-radius-small;
+
+      & > .item {
         display: flex;
-        justify-content: space-between;
+        gap: v.$gap-small;
+        padding: v.$gap-tiny;
         align-items: center;
-        text-transform: uppercase;
-        font-size: 0.9em;
-      }
-
-      & > .login-button {
-        @include mixins.hover(v.$blue-200);
-
-        display: flex;
-        align-items: center;
-        gap: 0.75em;
-        width: 100%;
-        white-space: nowrap;
-        border-radius: 5px;
-        padding: 10px;
-
-        span {
-          color: white;
-          display: block;
-          font-weight: 300;
-          text-overflow: ellipsis;
-          overflow: hidden;
-        }
-      }
-    }
-
-    & > .functions {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    & > .items {
-      margin-block: 1em 10vh;
-
-      .toggle,
-      .item {
-        @include mixins.hover(v.$blue-200);
+        justify-content: center;
         border-radius: v.$border-radius-small;
-      }
+        height: 50px;
+        cursor: default;
 
-      .toggle {
-        padding: 0.5em 0.75em;
-        font-weight: bold;
-      }
-
-      .item {
         &.active {
-          background-color: v.$blue-100;
+          background-color: v.$blue-300;
+          color: white;
         }
 
-        a {
-          padding: 0.75em;
-          text-transform: uppercase;
-
-          span {
-            overflow: hidden;
-            text-overflow: ellipsis;
+        &.link {
+          &:not(.active) {
+            @include mixins.hover(v.$gray-200);
           }
+          cursor: pointer;
         }
+
+        & > .icon {
+          font-size: v.$icon-size-medium;
+          transition: font-size 200ms linear;
+        }
+
+        & > :not(.icon) {
+          display: none;
+        }
+
+        &.hide-collapsed {
+          display: none;
+        }
+      }
+    }
+  }
+}
+
+body[data-nav-open='true'] .Navbar > .vnav {
+  width: v.$vnav-width;
+  padding-inline: v.$gap-small;
+
+  & > .group {
+    & > .item {
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      display: flex;
+      padding: v.$gap-small;
+      justify-content: flex-start;
+
+      & > :not(.icon) {
+        display: flex;
+      }
+
+      &:hover {
+        user-select: none;
+      }
+
+      & > .icon {
+        font-size: v.$icon-size-small;
+        flex-basis: 20px;
+      }
+    }
+  }
+}
+
+body[data-theme='light'] .Navbar {
+  & > .vnav {
+    background-color: v.$gray-700;
+    border-right: 1px solid v.$gray-600;
+    box-shadow: 0 5px 10px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+
+    & > .group {
+      background-color: v.$gray-800;
+
+      & > .item.link:not(.active) {
+        @include mixins.hover(v.$gray-900);
       }
     }
   }

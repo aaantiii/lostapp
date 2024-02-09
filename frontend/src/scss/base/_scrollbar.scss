@@ -1,11 +1,15 @@
 @use '../abstracts/variables' as v;
 @use '../abstracts/mixins';
+@use 'sass:math';
 
-$scrollbar-size-body: 3px;
-$scrollbar-size-rest: 2px;
-
-$scrollbar-thumb-color: v.$blue-600;
+$scrollbar-thumb-color: v.$blue-100;
+$scrollbar-thumb-color--hover: darken($scrollbar-thumb-color, 5%);
 $scrollbar-track-color: transparent;
+
+// webkit only
+$scrollbar-size-body: 8px;
+$scrollbar-size-rest: 2px;
+$scrollbar-size-rest--hover: 6px;
 
 // Gecko based Browsers (Mozilla)
 html {
@@ -18,29 +22,37 @@ html {
 // Webkit based Browsers (Chrome, Safari, ...)
 body {
   &::-webkit-scrollbar {
-    width: $scrollbar-size-body;
-    height: $scrollbar-size-body;
+    width: $scrollbar-size-body; // vertical
+    height: $scrollbar-size-body; // horizontal
   }
 
   &::-webkit-scrollbar-thumb {
-    border-radius: calc($scrollbar-size-body / 2);
+    background-color: $scrollbar-thumb-color;
+
+    &:hover {
+      background-color: $scrollbar-thumb-color--hover;
+    }
   }
 
   ::-webkit-scrollbar {
-    width: $scrollbar-size-rest;
-    height: $scrollbar-size-rest;
+    width: $scrollbar-size-rest--hover;
+    height: $scrollbar-size-rest--hover;
   }
 
   ::-webkit-scrollbar-thumb {
-    border-radius: calc($scrollbar-size-rest / 2);
+    background: $scrollbar-thumb-color;
+    border: math.div($scrollbar-size-rest--hover - $scrollbar-size-rest, 2) solid transparent;
+    border-radius: math.div($scrollbar-size-rest--hover, 2);
+    background-clip: padding-box;
+    transition: border-width 200ms linear;
   }
-}
 
-::-webkit-scrollbar-track {
-  background-color: $scrollbar-track-color;
-}
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: $scrollbar-thumb-color--hover;
+    border-width: 0;
+  }
 
-::-webkit-scrollbar-thumb {
-  @include mixins.hover($scrollbar-thumb-color);
-  background: $scrollbar-thumb-color;
+  ::-webkit-scrollbar-track {
+    background-color: $scrollbar-track-color;
+  }
 }

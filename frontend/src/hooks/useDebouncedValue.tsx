@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-export default function useDebouncedValue<T>(initialValue: T, delay = 300): [T, React.Dispatch<React.SetStateAction<T>>] {
+export default function useDebouncedValue<T>(initialValue: T, delay = 200): [T, React.Dispatch<React.SetStateAction<T>>] {
   const [actualValue, setActualValue] = useState(initialValue)
   const [debounceValue, setDebounceValue] = useState(initialValue)
 

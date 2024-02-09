@@ -1,15 +1,15 @@
 @use '../abstracts/variables' as v;
+@use '../abstracts/mixins';
 
-$z-index: 10;
-
+// source: https://www.radix-ui.com/primitives/docs/components/dialog (modified)
 .DialogOverlay {
-  background: v.$gray-400;
+  background-color: v.$gray-400;
   position: fixed;
   inset: 0;
-  animation: show-dialog 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  z-index: $z-index;
+  animation: showDialogOverlay 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  z-index: 2;
 
-  @keyframes show-dialog {
+  @keyframes showDialogOverlay {
     from {
       opacity: 0;
     }
@@ -20,8 +20,8 @@ $z-index: 10;
 }
 
 .DialogContent {
-  z-index: $z-index + 1;
-  background: v.$gray-300;
+  z-index: 10;
+  background-color: v.$gray-200;
   border-radius: v.$border-radius-medium;
   box-shadow: hsl(0, 0%, 10%, 1) 10px 10px 18px -10px;
   position: fixed;
@@ -30,13 +30,15 @@ $z-index: 10;
   translate: -50% -50%;
   width: 90vw;
   max-width: 450px;
-  max-height: 85vh;
-  padding: 25px;
-  animation: show-content 500ms cubic-bezier(0.16, 1, 0.3, 1);
-  border: 1px solid v.$gray-400;
-  overflow-y: auto;
+  animation: showDialogContent 500ms cubic-bezier(0.16, 1, 0.3, 1);
+  border: 2px solid v.$gray-300;
+  overflow: hidden;
 
-  @keyframes show-content {
+  &:focus {
+    outline: none;
+  }
+
+  @keyframes showDialogContent {
     from {
       opacity: 0;
       translate: -50% -47%;
@@ -49,28 +51,64 @@ $z-index: 10;
     }
   }
 
-  & > .title {
-    margin-block: v.$gap-medium;
-  }
-
-  & > .buttons {
+  & > .wrapper {
+    overflow: hidden;
     display: flex;
-    justify-content: flex-end;
-    margin-top: v.$gap-medium;
-    gap: v.$gap-small;
-    flex-wrap: wrap;
+    flex-direction: column;
+    max-height: 75vh;
 
-    & > button {
-      flex: auto;
+    & > .header {
+      width: 100%;
+      height: fit-content;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: v.$gap-tiny v.$gap-small;
+      background-color: v.$gray-300;
+      box-shadow: hsl(0, 0%, 10%, 1) 0 10px 15px -10px;
+      user-select: none;
+
+      & > .close {
+        display: flex;
+        background: none;
+        color: inherit;
+        font-size: v.$icon-size-large;
+      }
+    }
+
+    & > .scroll-wrapper {
+      padding: v.$gap-medium;
+      overflow-y: auto;
+      scrollbar-gutter: stable;
+
+      & > .title {
+        margin-block: v.$gap-small;
+      }
+
+      & > .description {
+        margin-bottom: v.$gap-large;
+      }
+
+      & > .buttons {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: v.$gap-medium;
+        gap: v.$gap-small;
+        flex-wrap: wrap;
+        flex-basis: 100%;
+      }
     }
   }
+}
 
-  & > .close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: none;
-    color: inherit;
-    font-size: v.$icon-size-medium;
+body[data-theme='light'] .DialogContent {
+  background-color: v.$gray-700;
+  border-color: v.$gray-100;
+
+  & > .wrapper {
+    & > .header {
+      background-color: v.$white;
+      box-shadow: none;
+    }
   }
 }

@@ -4,13 +4,13 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
+	"github.com/aaantiii/lostapp/backend/store/postgres"
 	"github.com/aaantiii/lostapp/backend/store/postgres/models"
 )
 
 type IClanSettingsRepo interface {
-	ClanSettings(clanTag string) (*models.ClanSettings, error)
-	ClanSettingsPreload(clanTag string) (*models.ClanSettings, error)
-	UpdateKickpointSetting(clanTag string, setting models.KickpointSetting, value int) error
+	ClanSettings(clanTag string, preload ...string) (*models.ClanSettings, error)
+	UpdateClanSettings(settings *models.ClanSettings) error
 }
 
 type ClanSettingsRepo struct {
@@ -21,23 +21,15 @@ func NewClanSettingsRepo(db *gorm.DB) IClanSettingsRepo {
 	return &ClanSettingsRepo{db: db}
 }
 
-func (repo *ClanSettingsRepo) ClanSettings(clanTag string) (*models.ClanSettings, error) {
+func (r *ClanSettingsRepo) ClanSettings(clanTag string, preload ...string) (*models.ClanSettings, error) {
 	clanSettings := &models.ClanSettings{ClanTag: clanTag}
-	err := repo.db.Clauses(clause.Returning{}).FirstOrCreate(&clanSettings).Error
-	return clanSettings, err
-}
-
-func (repo *ClanSettingsRepo) ClanSettingsPreload(clanTag string) (*models.ClanSettings, error) {
-	clanSettings := &models.ClanSettings{ClanTag: clanTag}
-	err := repo.db.
-		Preload(clause.Associations).
+	err := r.db.
 		Clauses(clause.Returning{}).
+		Scopes(postgres.WithPreloading(preload...)).
 		FirstOrCreate(&clanSettings).Error
 	return clanSettings, err
 }
 
-func (repo *ClanSettingsRepo) UpdateKickpointSetting(clanTag string, setting models.KickpointSetting, value int) error {
-	return repo.db.
-		Model(&models.ClanSettings{ClanTag: clanTag}).
-		Update(string(setting), value).Error
+func (r *ClanSettingsRepo) UpdateClanSettings(settings *models.ClanSettings) error {
+	return r.db.Save(settings).Error
 }

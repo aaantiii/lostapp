@@ -1,16 +1,16 @@
 .Spacer {
-  width: 100%;
   opacity: 0;
+  pointer-events: none;
 
   &.small {
     height: 5vh;
   }
 
   &.medium {
-    height: 12vh;
+    height: 10vh;
   }
 
   &.large {
-    height: 20vh;
+    height: 16vh;
   }
 }

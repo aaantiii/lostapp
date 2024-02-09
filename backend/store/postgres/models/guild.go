@@ -5,12 +5,12 @@ import (
 )
 
 type Guild struct {
-	GuildID        string `gorm:"primaryKey"`
-	ClanTag        string `gorm:"primaryKey"`
-	LeaderRoleID   string
-	CoLeaderRoleID string
-	ElderRoleID    string
-	MemberRoleID   string
+	GuildID        string `gorm:"primaryKey" json:"guildId"`
+	ClanTag        string `gorm:"primaryKey" json:"clanTag"`
+	LeaderRoleID   string `json:"leaderRoleId"`
+	CoLeaderRoleID string `json:"coLeaderRoleId"`
+	ElderRoleID    string `json:"elderRoleId"`
+	MemberRoleID   string `json:"memberRoleId"`
 }
 
 func (g *Guild) IsLeader(roles []string) bool {

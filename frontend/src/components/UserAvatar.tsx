@@ -1,19 +1,21 @@
 import '@styles/components/UserAvatar.scss'
-import { DiscordUser } from '@api/types/user'
+import { faUser } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { useNavigate } from 'react-router-dom'
+import { User } from '@api/types/user'
 
-interface UserAvatarProps {
-  user: DiscordUser
-  title?: string
-  onClick?: () => void
-  noHover?: boolean
-  nameFirst?: boolean
+type UserAvatarProps = {
+  user: User | undefined
+  to?: string
+  className?: string
 }
 
-export default function UserAvatar({ onClick, title, user, noHover, nameFirst }: UserAvatarProps) {
+export default function UserAvatar({ user, to, className }: UserAvatarProps) {
+  const navigate = useNavigate()
+
   return (
-    <a title={title} onClick={onClick} className={`UserAvatar${nameFirst ? ' reverse' : ''}`} style={noHover ? { pointerEvents: 'none' } : undefined}>
-      <img src={user.avatarUrl} alt="Discord Avatar" />
-      <span>{user.name}</span>
-    </a>
+    <div className={`UserAvatar ${className}`} onClick={to ? () => navigate(to) : undefined}>
+      {user?.avatarUrl ? <img src={user.avatarUrl} alt="User Avatar" loading="lazy" /> : <FontAwesomeIcon icon={faUser} />}
+    </div>
   )
 }

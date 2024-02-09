@@ -1,118 +1,112 @@
 package services
 
 import (
-	"errors"
-
 	"github.com/aaantiii/lostapp/backend/api/repos"
 	"github.com/aaantiii/lostapp/backend/api/types"
 	"github.com/aaantiii/lostapp/backend/store/postgres/models"
 )
 
 type IClansService interface {
-	IsMaintenance() bool
-	Clans() ([]*models.Clan, error)
+	Clans(params types.ClansParams) (*types.PaginatedResponse[*models.Clan], error)
 	ClanByTag(tag string) (*models.Clan, error)
-	ClanMembers(tag string) ([]models.ClanMember, error)
-	ClanSettings(tag string) (*models.LostClanSettings, error)
-	UpdateClanSettings(tag string, payload *types.UpdateClanSettingsPayload) error
-	ClansWhereMemberIsLeader(discordID string) ([]*types.Clan, error)
+	ClanSettings(tag string) (*models.ClanSettings, error)
+	UpdateClanSettings(tag, updatedByID string, payload *types.UpdateClanSettingsPayload) error
+	ActiveClanKickpoints(clanTag string) ([]*types.ClanKickpointsEntry, error)
+	ActiveClanMemberKickpoints(memberTag string, clanTag string) ([]*models.Kickpoint, error)
+	CreateKickpoint(payload *types.CreateKickpointPayload) error
+	UpdateKickpoint(id uint, payload *types.UpdateKickpointPayload) error
+	DeleteKickpoint(id uint) error
 }
 
 type ClansService struct {
-	clansRepo        repos.IClansRepo
-	playersRepo      repos.IPlayersRepo
-	clanSettingsRepo repos.IClanSettingsRepo
+	clans      repos.IClansRepo
+	kickpoints repos.IKickpointsRepo
+	settings   repos.IClanSettingsRepo
 }
 
-func NewClansService(clansRepo repos.IClansRepo, playersRepo repos.IPlayersRepo, clanSettingsRepo repos.IClanSettingsRepo) IClansService
+func NewClansService(clans repos.IClansRepo, kickpoints repos.IKickpointsRepo, settings repos.IClanSettingsRepo) IClansService {
 	return &ClansService{
-		clansRepo:        clansRepo,
-		playersRepo:      playersRepo,
-		clanSettingsRepo: clanSettingsRepo,
+		clans:      clans,
+		kickpoints: kickpoints,
+		settings:   settings,
 	}
 }
 
-func (service *ClansService) IsMaintenance() bool {
-	return service.clansRepo.IsMaintenance()
+func (s *ClansService) Clans(params types.ClansParams) (*types.PaginatedResponse[*models.Clan], error) {
+	return s.clans.Clans(params)
 }
 
-func (service *ClansService) Clans() ([]*types.Clan, error) {
-	clans := service.clansRepo.Clans()
-	if clans == nil {
-		return nil, errors.New("clans is nil")
-	}
-
-	return clans, nil
+func (s *ClansService) ClanByTag(tag string) (*models.Clan, error) {
+	return s.clans.ClanByTag(tag)
 }
 
-func (service *ClansService) ClanByTag(tag string) (*types.Clan, error) {
-	clan, err := service.clansRepo.Clan(tag)
-	if err != nil {
-		return nil, err
-	}
-
-	return clan, nil
+func (s *ClansService) ClanSettings(tag string) (*models.ClanSettings, error) {
+	return s.settings.ClanSettings(tag)
 }
 
-func (service *ClansService) ClanMembers(tag string) ([]types.ClanMember, error) {
-	clan, err := service.clansRepo.Clan(tag)
-	if err != nil {
-		return nil, err
-	}
-
-	return clan.MemberList, nil
-}
-
-func (service *ClansService) ClanSettings(tag string) (*models.LostClanSettings, error) {
-	if _, err := service.clansRepo.Clan(tag); err != nil {
-		return nil, err
-	}
-
-	return service.clanSettingsRepo.ClanSettings(tag)
-}
-
-func (service *ClansService) UpdateClanSettings(tag string, payload *types.UpdateClanSettingsPayload) error {
-	_, err := service.clanSettingsRepo.ClanSettings(tag)
+func (s *ClansService) UpdateClanSettings(tag, updatedByID string, payload *types.UpdateClanSettingsPayload) error {
+	settings, err := s.settings.ClanSettings(tag)
 	if err != nil {
 		return err
 	}
 
-	return service.clanSettingsRepo.UpdateClanSettings(&models.LostClanSettings{
-		ClanTag:                   tag,
-		MaxKickpoints:             payload.MaxKickpoints,
-		MinSeasonWins:             payload.MinSeasonWins,
-		KickpointsExpireAfterDays: payload.KickpointsExpireAfterDays,
-		KickpointsSeasonWins:      payload.KickpointsSeasonWins,
-		KickpointsCWMissed:        payload.KickpointsCWMissed,
-		KickpointsCWFail:          payload.KickpointsCWFail,
-		KickpointsCWLMissed:       payload.KickpointsCWLMissed,
-		KickpointsCWLZeroStars:    payload.KickpointsCWLZeroStars,
-		KickpointsCWLOneStar:      payload.KickpointsCWLOneStar,
-		KickpointsRaidMissed:      payload.KickpointsRaidMissed,
-		KickpointsRaidFail:        payload.KickpointsRaidFail,
-		KickpointsClanGames:       payload.KickpointsClanGames,
-		UpdatedByDiscordID:        &payload.UpdatedByDiscordID,
-	})
+	settings.MaxKickpoints = payload.MaxKickpoints
+	settings.MinSeasonWins = payload.MinSeasonWins
+	settings.KickpointsExpireAfterDays = payload.KickpointsExpireAfterDays
+	settings.KickpointsSeasonWins = payload.KickpointsSeasonWins
+	settings.KickpointsCWMissed = payload.KickpointsCWMissed
+	settings.KickpointsCWFail = payload.KickpointsCWFail
+	settings.KickpointsCWLMissed = payload.KickpointsCWLMissed
+	settings.KickpointsCWLZeroStars = payload.KickpointsCWLZeroStars
+	settings.KickpointsCWLOneStar = payload.KickpointsCWLOneStar
+	settings.KickpointsRaidMissed = payload.KickpointsRaidMissed
+	settings.KickpointsRaidFail = payload.KickpointsRaidFail
+	settings.KickpointsClanGames = payload.KickpointsClanGames
+	settings.UpdatedByDiscordID = &updatedByID
+	return s.settings.UpdateClanSettings(settings)
 }
 
-func (service *ClansService) ClansLedByDiscordID(discordID string) ([]*types.Clan, error) {
-	players, err := service.playersRepo.PlayersByDiscordID(discordID)
+func (s *ClansService) ActiveClanKickpoints(clanTag string) ([]*types.ClanKickpointsEntry, error) {
+	settings, err := s.settings.ClanSettings(clanTag)
 	if err != nil {
 		return nil, err
 	}
+	return s.kickpoints.ActiveClanKickpoints(settings)
+}
 
-	var clans []*types.Clan
-	for _, player := range players {
-		for _, playerClan := range player.Clans {
-			if playerClan.Role.IsLeader() || playerClan.Role.IsCoLeader() {
-				clan, err := service.ClanByTag(playerClan.Tag)
-				if err != nil {
-					continue
-				}
-				clans = append(clans, clan)
-			}
-		}
+func (s *ClansService) ActiveClanMemberKickpoints(memberTag string, clanTag string) ([]*models.Kickpoint, error) {
+	settings, err := s.settings.ClanSettings(clanTag)
+	if err != nil {
+		return nil, err
+	}
+	return s.kickpoints.ActiveMemberKickpoints(memberTag, settings)
+}
+
+func (s *ClansService) CreateKickpoint(payload *types.CreateKickpointPayload) error {
+	return s.kickpoints.CreateKickpoint(&models.Kickpoint{
+		Date:               payload.Date,
+		Amount:             payload.Amount,
+		ClanTag:            payload.ClanTag,
+		PlayerTag:          payload.PlayerTag,
+		CreatedByDiscordID: payload.CreatedByDiscordID,
+		UpdatedByDiscordID: payload.CreatedByDiscordID,
+		Description:        payload.Description,
+	})
+}
+
+func (s *ClansService) UpdateKickpoint(id uint, payload *types.UpdateKickpointPayload) error {
+	kickpoint, err := s.kickpoints.KickpointByID(id)
+	if err != nil {
+		return err
 	}
 
-	return clans, nil
+	kickpoint.Date = payload.Date
+	kickpoint.Amount = payload.Amount
+	kickpoint.UpdatedByDiscordID = payload.UpdatedByDiscordID
+	kickpoint.Description = payload.Description
+	return s.kickpoints.UpdateKickpoint(kickpoint)
+}
+
+func (s *ClansService) DeleteKickpoint(id uint) error {
+	return s.kickpoints.DeleteKickpoint(id)
 }

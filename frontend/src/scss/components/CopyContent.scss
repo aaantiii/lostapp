@@ -1,0 +1,32 @@
+@use '../abstracts/variables' as v;
+
+.CopyContent {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  background-color: v.$gray-100;
+  border: 1px solid v.$gray-300;
+  padding: v.$gap-small;
+  border-radius: v.$border-radius-medium;
+  gap: v.$gap-small;
+  cursor: pointer;
+  height: 3em;
+  overflow-x: auto;
+
+  & > pre {
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  & > .icon {
+    font-size: v.$icon-size-medium;
+  }
+}
+
+body[data-theme='light'] .CopyContent {
+  background-color: v.$gray-700;
+  border-color: v.$gray-500;
+}

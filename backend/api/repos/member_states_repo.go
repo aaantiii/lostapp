@@ -3,7 +3,7 @@ package repos
 import (
 	"gorm.io/gorm"
 
-	"bot/store/postgres/models"
+	"github.com/aaantiii/lostapp/backend/store/postgres/models"
 )
 
 type IMemberStatesRepo interface {
@@ -19,16 +19,16 @@ func NewMemberStatesRepo(db *gorm.DB) IMemberStatesRepo {
 	return &MemberStatesRepo{db: db}
 }
 
-func (repo *MemberStatesRepo) IsKickpointLocked(playerTag, clanTag string) (bool, error) {
+func (r *MemberStatesRepo) IsKickpointLocked(playerTag, clanTag string) (bool, error) {
 	var state models.MemberState
-	err := repo.db.
+	err := r.db.
 		Select("kickpoint_lock").
 		First(&state, "player_tag = ? AND clan_tag = ?", playerTag, clanTag).Error
 	return state.KickpointLock, err
 }
 
-func (repo *MemberStatesRepo) UpdateKickpointLockStatus(playerTag, clanTag string, signOff bool) error {
-	return repo.db.Save(&models.MemberState{
+func (r *MemberStatesRepo) UpdateKickpointLockStatus(playerTag, clanTag string, signOff bool) error {
+	return r.db.Save(&models.MemberState{
 		PlayerTag:     playerTag,
 		ClanTag:       clanTag,
 		KickpointLock: signOff,

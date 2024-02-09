@@ -1,83 +1,161 @@
-import { useLocation, useNavigate } from 'react-router-dom'
 import '@styles/components/Navbar.scss'
 import Logo from './Logo'
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faBars, faUser, faXmark } from '@fortawesome/free-solid-svg-icons'
 import UserAvatar from './UserAvatar'
-import useNavItems from '@hooks/useNavItems'
+import { useEffect, useState } from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useAuth } from '@context/authContext'
-import useDashboardNavigate from '@hooks/useDashboardNavigate'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { IconProp } from '@fortawesome/fontawesome-svg-core'
+import useScreenSize, { ScreenSize } from '@hooks/useScreenSize'
+import { faBars, faDashboard, faRightToBracket, faUserShield, faXmark } from '@fortawesome/free-solid-svg-icons'
+import { AuthRole } from '@api/types/auth'
+
+type VNavItemProps = {
+  children?: any
+  to?: string
+  icon?: JSX.Element | IconProp
+  title?: string
+  hideCollapsed?: boolean
+}
 
 export default function Navbar() {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const dashboardNavigate = useDashboardNavigate()
-  const { discordUser, logout } = useAuth()
-  const [isOpen, setIsOpen] = useState(false)
-  const vNavRef = useRef<HTMLElement>(null)
-  const vNavItemsRef = useRef<HTMLDivElement>(null)
-
-  const navItems = useNavItems()
-
-  const toggleNav = useCallback(() => {
-    if (vNavRef.current) setIsOpen(vNavRef.current.classList.toggle('open'))
-  }, [vNavRef])
-
-  // for extend collapse buttons
-  const setNavItemsExpanded = useCallback(
-    (expanded: boolean) => {
-      if (!vNavItemsRef.current) return
-      for (const item of vNavItemsRef.current.children) {
-        expanded ? item.classList.add('expanded') : item.classList.remove('expanded')
-      }
-    },
-    [vNavItemsRef]
-  )
+  const [vNavOpen, setVNavOpen] = useState(false)
+  const vNavItems = useNavItems()
+  const { pathname } = useLocation()
+  const screenSize = useScreenSize()
 
   useEffect(() => {
-    if (isOpen) toggleNav()
-  }, [location])
+    if (screenSize <= ScreenSize.TabletLandscape) setVNavOpen(false)
+  }, [pathname])
+
+  useEffect(() => {
+    document.body.setAttribute('data-nav-open', vNavOpen.toString())
+  }, [vNavOpen])
+
+  function handleToggleKeyDown(e: React.KeyboardEvent<HTMLAnchorElement>) {
+    if (e.key === 'Enter') setVNavOpen((prev) => !prev)
+  }
 
   return (
     <div className="Navbar">
-      <nav className="hnav">
-        <a onClick={toggleNav} className="toggle-vnav">
-          {isOpen ? <FontAwesomeIcon icon={faXmark} /> : <FontAwesomeIcon icon={faBars} />}
+      <div className="hnav" role="navigation">
+        <a className="vnav-toggler" onClick={() => setVNavOpen((prev) => !prev)} onKeyDown={handleToggleKeyDown} tabIndex={0} title="Toggle Navbar">
+          {vNavOpen ? <FontAwesomeIcon icon={faXmark} /> : <FontAwesomeIcon icon={faBars} />}
         </a>
         <Logo />
-      </nav>
-      <nav className="vnav" ref={vNavRef}>
-        <div className="header">
-          {discordUser && (
-            <div className="top">
-              <a onClick={logout} className="logout">
-                abmelden
-              </a>
-            </div>
-          )}
-          {discordUser ? (
-            <UserAvatar title="Übersicht" user={discordUser} onClick={dashboardNavigate} />
-          ) : (
-            <a title="Anmelden" onClick={() => navigate('/auth/login')} className="login-button">
-              <FontAwesomeIcon icon={faUser} />
-              <span>Login</span>
-            </a>
-          )}
-        </div>
-        <div className="functions">
-          <a onClick={() => setNavItemsExpanded(false)} className="function">
-            einklappen
-          </a>
-          <a onClick={() => setNavItemsExpanded(true)} className="function">
-            ausklappen
-          </a>
-        </div>
-
-        <div className="items" ref={vNavItemsRef}>
-          {navItems}
-        </div>
-      </nav>
+      </div>
+      <nav className="vnav">{vNavItems}</nav>
     </div>
   )
+}
+
+function VNavItem({ children, to, icon, title, hideCollapsed }: VNavItemProps) {
+  const navigate = useNavigate()
+  const { pathname } = useLocation()
+  const iconElement = icon && Object.hasOwn(icon as object, 'icon') ? <FontAwesomeIcon icon={icon as IconProp} /> : (icon as JSX.Element | undefined)
+
+  const isLink = to !== undefined
+  const isActive = to === pathname
+  let className = 'item'
+  if (isLink) className += ' link'
+  if (isActive) className += ' active'
+  if (hideCollapsed) className += ' hide-collapsed'
+
+  function handleClick() {
+    if (isActive || to === undefined) return
+    navigate(to)
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLAnchorElement>) {
+    switch (e.key) {
+      case 'Enter':
+        handleClick()
+        break
+      case 'ArrowUp':
+        const prev = e.currentTarget.previousElementSibling
+        if (prev) (prev as HTMLAnchorElement).focus()
+        break
+      case 'ArrowDown':
+        const next = e.currentTarget.nextElementSibling
+        if (next) (next as HTMLAnchorElement).focus()
+        break
+    }
+  }
+
+  return (
+    <a className={className} title={title} onClick={isLink ? handleClick : undefined} tabIndex={isLink ? 0 : undefined} onKeyDown={handleKeyDown}>
+      {iconElement && <div className="icon">{iconElement}</div>}
+      {children}
+    </a>
+  )
+}
+
+function VNavItemGroup({ children }: { children: JSX.Element | JSX.Element[] }) {
+  return <div className="group">{children}</div>
+}
+
+function useNavItems() {
+  const { user, getAuthRoles } = useAuth()
+  const userRoles = getAuthRoles(undefined)
+
+  function navItems() {
+    const items: JSX.Element[] = []
+
+    if (!user) {
+      items.push(
+        <VNavItemGroup key="auth">
+          <VNavItem to="/auth/login" title="Login" icon={faRightToBracket}>
+            <span>Login</span>
+          </VNavItem>
+        </VNavItemGroup>
+      )
+      return items
+    }
+
+    const content = {
+      admin: { dashboard: 'Admin Dashboard' },
+      user: {
+        account: 'Mein Account',
+      },
+    }
+
+    items.push(
+      <VNavItemGroup key="header">
+        <VNavItem to="/account" icon={<UserAvatar user={user} />} title="Mein Account">
+          <span>{user.name}</span>
+        </VNavItem>
+      </VNavItemGroup>
+    )
+
+    // admin items
+    if (userRoles?.includes(AuthRole.Admin)) {
+      items.push(
+        <VNavItemGroup key="admin">
+          <VNavItem to="/admin/dashboard" icon={faDashboard} title={content.admin.dashboard}>
+            <span>{content.admin.dashboard}</span>
+          </VNavItem>
+        </VNavItemGroup>
+      )
+    }
+
+    items.push(
+      <VNavItemGroup key="member1">
+        <VNavItem to="/members/@me" icon={faUserShield}>
+          <span>Dashboard</span>
+        </VNavItem>
+      </VNavItemGroup>
+    )
+
+    items.push(
+      <VNavItemGroup key="member2">
+        <VNavItem to="/clans">
+          <span>LOST Clans</span>
+        </VNavItem>
+      </VNavItemGroup>
+    )
+
+    return items
+  }
+
+  return navItems()
 }

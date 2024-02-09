@@ -1,9 +1,9 @@
 import '@styles/components/Spacer.scss'
 
-interface SpacerProps {
-  size: 'small' | 'medium' | 'large'
+type SpacerProps = {
+  size?: 'small' | 'medium' | 'large'
 }
 
-export default function Spacer({ size }: SpacerProps) {
+export default function Spacer({ size = 'medium' }: SpacerProps) {
   return <div className={`Spacer ${size}`}></div>
 }

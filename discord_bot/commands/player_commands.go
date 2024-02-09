@@ -23,14 +23,14 @@ func playerInteractionCommands(db *gorm.DB, client *goclash.Client) types.Comman
 			Name:         "verify",
 			Description:  "Verknüpfe deinen Discord Account mit deinem COC-Account.",
 			Type:         discordgo.ChatApplicationCommand,
-			DMPermission: util.OptionalBool(false),
+			DMPermission: util.BoolPtr(false),
 			Options: []*discordgo.ApplicationCommandOption{
 				{
 					Type:        discordgo.ApplicationCommandOptionString,
 					Name:        handlers.PlayerTagOptionName,
 					Description: "Spieler-Tag deines Clash of Clans Accounts.",
 					Required:    true,
-					MinLength:   util.OptionalInt(validation.TagMinLength),
+					MinLength:   util.IntPtr(validation.TagMinLength),
 					MaxLength:   validation.TagMaxLength,
 				},
 				{
@@ -38,7 +38,7 @@ func playerInteractionCommands(db *gorm.DB, client *goclash.Client) types.Comman
 					Name:        handlers.ApiTokenOptionName,
 					Description: "API Token deines Clash of Clans Accounts.",
 					Required:    true,
-					MinLength:   util.OptionalInt(8),
+					MinLength:   util.IntPtr(8),
 					MaxLength:   8,
 				},
 			},
@@ -52,14 +52,14 @@ func playerInteractionCommands(db *gorm.DB, client *goclash.Client) types.Comman
 			Name:         "pingplayer",
 			Description:  "Pingt einen Spieler auf Discord durch seinen Namen oder Spieler Tag.",
 			Type:         discordgo.ChatApplicationCommand,
-			DMPermission: util.OptionalBool(false),
+			DMPermission: util.BoolPtr(false),
 			Options: []*discordgo.ApplicationCommandOption{
 				{
 					Type:         discordgo.ApplicationCommandOptionString,
 					Name:         handlers.PlayerTagOptionName,
 					Description:  "Spieler-Tag des Spielers, der gepingt werden soll.",
 					Required:     true,
-					MinLength:    util.OptionalInt(validation.TagMinLength),
+					MinLength:    util.IntPtr(validation.TagMinLength),
 					MaxLength:    validation.TagMaxLength,
 					Autocomplete: true,
 				},
@@ -68,8 +68,47 @@ func playerInteractionCommands(db *gorm.DB, client *goclash.Client) types.Comman
 					Name:        handlers.MessageOptionName,
 					Description: "Nachricht, die an den Spieler gesendet werden soll.",
 					Required:    true,
-					MinLength:   util.OptionalInt(1),
+					MinLength:   util.IntPtr(1),
 					MaxLength:   200,
+				},
+			},
+		},
+	}, {
+		Handler: types.InteractionHandler{
+			Main: handler.UpdateMe,
+		},
+		ApplicationCommand: &discordgo.ApplicationCommand{
+			Name:         "updateme",
+			Description:  "Aktaulisiert deinen Discord Namen zu deinem aktuellen Clash of Clans Namen.",
+			Type:         discordgo.ChatApplicationCommand,
+			DMPermission: util.BoolPtr(false),
+		},
+	}, {
+		Handler: types.InteractionHandler{
+			Main:         handler.SetNickname,
+			Autocomplete: handler.HandleAutocomplete,
+		},
+		ApplicationCommand: &discordgo.ApplicationCommand{
+			Name:         "setnick",
+			Description:  "Ändert deinen Nicknamen zu deinem in-Game Namen, und optional einem benutzerdefinierten Alias.",
+			Type:         discordgo.ChatApplicationCommand,
+			DMPermission: util.BoolPtr(false),
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Type:         discordgo.ApplicationCommandOptionString,
+					Name:         handlers.MyPlayerTagOptionName,
+					Description:  "Spieler-Tag des Spielers, der gepingt werden soll.",
+					Required:     true,
+					MinLength:    util.IntPtr(validation.TagMinLength),
+					MaxLength:    validation.TagMaxLength,
+					Autocomplete: true,
+				},
+				{
+					Type:        discordgo.ApplicationCommandOptionString,
+					Name:        handlers.AliasOptionName,
+					Description: "Alias, der an deinen Namen angehängt werden soll. (z.B. Anti | [alias]).",
+					MinLength:   util.IntPtr(1),
+					MaxLength:   20,
 				},
 			},
 		},

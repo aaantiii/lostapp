@@ -1,17 +1,17 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { useMessage } from '@context/messageContext'
+import { useMessages } from '@context/messagesContext'
 import '@styles/components/Messages.scss'
 import { useEffect, useRef, useState } from 'react'
 import { faWarning, faXmark } from '@fortawesome/free-solid-svg-icons'
 
-export interface MessageProps {
+export type MessageProps = {
   message: string
   type: 'error' | 'success' | 'warning'
-  id: number
+  id: string
 }
 
 export default function Messages() {
-  const { messages } = useMessage()
+  const { messages } = useMessages()
 
   return (
     <div className="Messages">
@@ -24,27 +24,28 @@ export default function Messages() {
 
 function Message({ message, type, id }: MessageProps) {
   const messageRef = useRef<HTMLDivElement>(null)
+  const indicatorRef = useRef<HTMLDivElement>(null)
   const [open, setOpen] = useState(true)
-  const { removeMessage } = useMessage()
+  const { removeMessage } = useMessages()
 
   useEffect(() => {
-    if (!messageRef.current) return
+    function handleTransitionEnd() {
+      removeMessage(id)
+    }
 
-    messageRef.current.addEventListener('animationend', closeMessage) // indicator animation
+    if (!messageRef.current || !indicatorRef.current) return
+
+    indicatorRef.current.addEventListener('animationend', closeMessage) // indicator animation
     messageRef.current.addEventListener('transitionend', handleTransitionEnd) // opacity transition
 
     return () => {
-      messageRef.current?.removeEventListener('animationend', closeMessage)
+      indicatorRef.current?.removeEventListener('animationend', closeMessage)
       messageRef.current?.removeEventListener('transitionend', handleTransitionEnd)
     }
   }, [])
 
   function closeMessage() {
     setOpen(false)
-  }
-
-  function handleTransitionEnd() {
-    removeMessage(id)
   }
 
   return (
@@ -59,7 +60,7 @@ function Message({ message, type, id }: MessageProps) {
         </a>
       </div>
       <div className="close-indicator">
-        <div className="indicator"></div>
+        <div ref={indicatorRef} className="indicator"></div>
       </div>
     </div>
   )

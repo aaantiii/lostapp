@@ -1,112 +1,112 @@
 package controllers
 
 import (
-	"errors"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 
 	"github.com/aaantiii/lostapp/backend/api/middleware"
 	"github.com/aaantiii/lostapp/backend/api/services"
 	"github.com/aaantiii/lostapp/backend/api/types"
-	"github.com/aaantiii/lostapp/backend/api/util"
-	"github.com/aaantiii/lostapp/backend/store/postgres/models"
+	"github.com/aaantiii/lostapp/backend/api/utils"
 )
 
 type ClansController struct {
-	service           services.IClansService
-	kickpointsService services.IKickpointsService
-	membersService    services.IMembersService
+	service services.IClansService
 }
 
-func NewClansController(service services.IClansService, kickpointsService services.IKickpointsService, membersService services.IMembersService) *ClansController {
-	return &ClansController{service: service, kickpointsService: kickpointsService, membersService: membersService}
+func NewClansController(service services.IClansService) *ClansController {
+	return &ClansController{service: service}
 }
 
 func (controller *ClansController) setupWithRouter(router *gin.Engine) {
 	const rgName = "clans"
 
-	memberRoutes := router.Group(rgName, middleware.AuthMiddleware(types.AuthRoleMember))
-	memberRoutes.GET("", controller.GETClans)
-	memberRoutes.Group(":clanTag").
+	authedRoutes := router.Group(rgName, middleware.AuthMiddleware(false))
+	authedRoutes.
+		GET("", middleware.PaginationMiddleware(true), controller.GETClans).
+		GET(":clanTag/settings", controller.GETClanSettings)
+
+	memberRoutes := authedRoutes.Group(":clanTag", middleware.ClanAuthMiddleware(types.AuthRoleMember))
+	memberRoutes.
 		GET("", controller.GETClanByTag).
-		GET("settings", controller.GETClanSettings).
 		GET("members/kickpoints", controller.GETActiveClanKickpoints).
 		GET("members/:memberTag/kickpoints", controller.GETActiveMemberKickpoints)
 
-	coLeaderRoutes := router.Group(rgName, middleware.AuthMiddleware(types.AuthRoleLeader))
-	coLeaderRoutes.GET("leading", controller.GETLeadingClans)
-
-	coLeaderClanRoutes := coLeaderRoutes.Group(":clanTag", middleware.ClanLeaderMiddleware("clanTag", true))
-	coLeaderClanRoutes.PUT("settings", controller.PUTClanSettings)
-
-	coLeaderClanRoutes.Group("members/:memberTag/kickpoints").
+	coLeaderRoutes := authedRoutes.Group(":clanTag", middleware.ClanAuthMiddleware(types.AuthRoleCoLeader))
+	coLeaderRoutes.
+		PUT("settings", controller.PUTClanSettings)
+	coLeaderRoutes.Group("members/:memberTag/kickpoints").
 		POST("", controller.POSTKickpoint).
 		PUT(":id", controller.PUTKickpoint).
 		DELETE(":id", controller.DELETEKickpoint)
 }
 
 func (controller *ClansController) GETClans(c *gin.Context) {
-	if clans, err := controller.service.Clans(); err == nil {
-		c.JSON(http.StatusOK, clans)
+	var params types.ClansParams
+	if err := c.ShouldBindQuery(&params); err != nil {
+		c.Set(middleware.ErrorKey, err)
+		return
+	}
+	params.PaginationParams = utils.PaginationFromContext(c)
+
+	clans, err := controller.service.Clans(params)
+	if err != nil {
+		c.Set(middleware.ErrorKey, err)
 		return
 	}
 
-	c.AbortWithStatus(http.StatusInternalServerError)
+	c.JSON(http.StatusOK, clans)
 }
 
 func (controller *ClansController) GETClanByTag(c *gin.Context) {
-	clanTag, err := util.TagFromQuery(c, "clanTag")
+	clanTag, err := utils.TagFromParams(c, "clanTag")
 	if err != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
+		c.Set(middleware.ErrorKey, types.ErrBadRequest)
 		return
 	}
 
-	if clan, err := controller.service.ClanByTag(clanTag); err == nil {
-		c.JSON(http.StatusOK, clan)
+	clan, err := controller.service.ClanByTag(clanTag)
+	if err != nil {
+		c.Set(middleware.ErrorKey, err)
 		return
 	}
 
-	c.AbortWithStatus(http.StatusNotFound)
+	c.JSON(http.StatusOK, clan)
 }
 
 func (controller *ClansController) GETActiveClanKickpoints(c *gin.Context) {
-	clanTag, err := util.TagFromQuery(c, "clanTag")
+	clanTag, err := utils.TagFromParams(c, "clanTag")
 	if err != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
+		c.Set(middleware.ErrorKey, types.ErrBadRequest)
 		return
 	}
 
-	if kickpointList, err := controller.kickpointsService.ActiveClanMemberKickpoints(clanTag); err == nil {
-		c.JSON(http.StatusOK, kickpointList)
+	kickpoints, err := controller.service.ActiveClanKickpoints(clanTag)
+	if err != nil {
+		c.Set(middleware.ErrorKey, err)
 		return
 	}
 
-	c.AbortWithStatus(http.StatusNotFound)
+	c.JSON(http.StatusOK, kickpoints)
 }
 
 func (controller *ClansController) GETActiveMemberKickpoints(c *gin.Context) {
-	clanTag, err := util.TagFromQuery(c, "clanTag")
+	clanTag, err := utils.TagFromParams(c, "clanTag")
+	if err != nil {
+		c.Set(middleware.ErrorKey, types.ErrBadRequest)
+		return
+	}
+
+	memberTag, err := utils.TagFromParams(c, "memberTag")
 	if err != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 
-	memberTag, err := util.TagFromQuery(c, "memberTag")
+	kickpointList, err := controller.service.ActiveClanMemberKickpoints(memberTag, clanTag)
 	if err != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
-
-	kickpointList, err := controller.kickpointsService.ActivePlayerKickpoints(memberTag, clanTag)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		c.Status(http.StatusNoContent)
-		return
-	}
-	if err != nil {
-		c.AbortWithStatus(http.StatusNotFound)
+		c.Set(middleware.ErrorKey, err)
 		return
 	}
 
@@ -114,89 +114,69 @@ func (controller *ClansController) GETActiveMemberKickpoints(c *gin.Context) {
 }
 
 func (controller *ClansController) GETClanSettings(c *gin.Context) {
-	clanTag, err := util.TagFromQuery(c, "clanTag")
+	clanTag, err := utils.TagFromParams(c, "clanTag")
 	if err != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
+		c.Set(middleware.ErrorKey, types.ErrBadRequest)
 		return
 	}
 
-	var settings *models.LostClanSettings
-	if settings, err = controller.service.ClanSettings(clanTag); err != nil {
-		c.AbortWithStatus(http.StatusNotFound)
+	settings, err := controller.service.ClanSettings(clanTag)
+	if err != nil {
+		c.Set(middleware.ErrorKey, err)
 		return
 	}
 
 	c.JSON(http.StatusOK, settings)
-	return
 }
 
 func (controller *ClansController) PUTClanSettings(c *gin.Context) {
-	tag, err := util.TagFromQuery(c, "clanTag")
+	tag, err := utils.TagFromParams(c, "clanTag")
 	if err != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
+		c.Set(middleware.ErrorKey, types.ErrBadRequest)
 		return
 	}
 
-	var settings *types.UpdateClanSettingsPayload
-	if err = c.Bind(&settings); err != nil {
+	var payload *types.UpdateClanSettingsPayload
+	if err = c.ShouldBind(&payload); err != nil {
+		c.Set(middleware.ErrorKey, types.ErrValidationFailed)
 		return
 	}
 
-	session := util.SessionFromContext(c)
-	settings.UpdatedByDiscordID = session.User.ID
-	if err = controller.service.UpdateClanSettings(tag, settings); err != nil {
-		c.AbortWithStatus(http.StatusNotFound)
+	session := utils.SessionFromContext(c)
+	if err = controller.service.UpdateClanSettings(tag, session.User.ID, payload); err != nil {
+		c.Set(middleware.ErrorKey, err)
 		return
 	}
 
 	c.Status(http.StatusNoContent)
 }
 
-func (controller *ClansController) GETLeadingClans(c *gin.Context) {
-	session := util.SessionFromContext(c)
-
-	var clans []*types.Clan
-	var err error
-	if session.Role == types.AuthRoleAdmin {
-		clans, err = controller.service.Clans()
-	} else {
-		clans, err = controller.service.ClansWhereMemberIsLeader(session.User.ID)
-	}
-
-	if err != nil {
-		c.AbortWithStatus(http.StatusNotFound)
-		return
-	}
-
-	c.JSON(http.StatusOK, clans)
-}
-
 func (controller *ClansController) POSTKickpoint(c *gin.Context) {
-	clanTag, err := util.TagFromQuery(c, "clanTag")
+	clanTag, err := utils.TagFromParams(c, "clanTag")
 	if err != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
+		c.Set(middleware.ErrorKey, types.ErrBadRequest)
 		return
 	}
 
-	var playerTag string
-	if playerTag, err = util.TagFromQuery(c, "memberTag"); err != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
+	playerTag, err := utils.TagFromParams(c, "memberTag")
+	if err != nil {
+		c.Set(middleware.ErrorKey, types.ErrBadRequest)
 		return
 	}
 
 	var payload *types.CreateKickpointPayload
-	if err := c.Bind(&payload); err != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
+	if err = c.ShouldBind(&payload); err != nil {
+		c.Set(middleware.ErrorKey, types.ErrValidationFailed)
 		return
 	}
 
-	session := util.SessionFromContext(c)
+	session := utils.SessionFromContext(c)
 	payload.PlayerTag = playerTag
 	payload.ClanTag = clanTag
-	payload.AddedByDiscordID = session.User.ID
+	payload.CreatedByDiscordID = session.User.ID
 
-	if err = controller.kickpointsService.CreateKickpoint(payload); err != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
+	if err = controller.service.CreateKickpoint(payload); err != nil {
+		c.Set(middleware.ErrorKey, err)
 		return
 	}
 
@@ -204,28 +184,22 @@ func (controller *ClansController) POSTKickpoint(c *gin.Context) {
 }
 
 func (controller *ClansController) PUTKickpoint(c *gin.Context) {
-	idStr := c.Param("id")
-	if idStr == "" {
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
-
-	id, err := strconv.ParseUint(idStr, 10, 32)
+	id, err := utils.UintFromParams(c, "id")
 	if err != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
+		c.Set(middleware.ErrorKey, types.ErrBadRequest)
 		return
 	}
 
 	var payload *types.UpdateKickpointPayload
-	if err := c.Bind(&payload); err != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
+	if err = c.ShouldBind(&payload); err != nil {
+		c.Set(middleware.ErrorKey, types.ErrValidationFailed)
 		return
 	}
 
-	session := util.SessionFromContext(c)
+	session := utils.SessionFromContext(c)
 	payload.UpdatedByDiscordID = session.User.ID
-	if err := controller.kickpointsService.UpdateKickpoint(uint(id), payload); err != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
+	if err = controller.service.UpdateKickpoint(id, payload); err != nil {
+		c.Set(middleware.ErrorKey, err)
 		return
 	}
 
@@ -233,20 +207,14 @@ func (controller *ClansController) PUTKickpoint(c *gin.Context) {
 }
 
 func (controller *ClansController) DELETEKickpoint(c *gin.Context) {
-	idParam := c.Param("id")
-	if idParam == "" {
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
-
-	id, err := strconv.ParseUint(idParam, 10, 32)
+	id, err := utils.UintFromParams(c, "id")
 	if err != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
+		c.Set(middleware.ErrorKey, types.ErrBadRequest)
 		return
 	}
 
-	if err := controller.kickpointsService.DeleteKickpoint(uint(id)); err != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
+	if err = controller.service.DeleteKickpoint(id); err != nil {
+		c.Set(middleware.ErrorKey, err)
 		return
 	}
 

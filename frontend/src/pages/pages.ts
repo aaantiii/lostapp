@@ -1,21 +1,13 @@
-import Home from './Home'
-import Error from './Error'
-import ReportBug from './ReportBug'
-import RequestFeature from './RequestFeature'
-import Apply from './Apply'
-import member from './member/export'
-import auth from './auth/export'
-import leader from './leader/export'
-import legal from './legal/export'
+import { lazy } from 'react'
 
 export default {
-  Home,
-  Error,
-  ReportBug,
-  RequestFeature,
-  Apply,
-  legal,
-  auth,
-  leader,
-  member,
+  Index: lazy(() => import('./Index')),
+  Error: lazy(() => import('./Error')),
+  Account: lazy(() => import('./Account')),
+  members: {
+    View: lazy(() => import('./members/ViewMember')),
+  },
+  auth: {
+    Login: lazy(() => import('./auth/Login')),
+  },
 }

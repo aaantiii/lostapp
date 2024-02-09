@@ -1,7 +1,6 @@
 package components
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/bwmarrin/discordgo"
@@ -17,8 +16,8 @@ const (
 	KickpointDateID   = "kickpoint_date"
 )
 
-func Tag(label, defaultValue, customId string) discordgo.TextInput {
-	return discordgo.TextInput{
+func Tag(label, defaultValue, customId string) *discordgo.TextInput {
+	return &discordgo.TextInput{
 		CustomID:    customId,
 		Label:       autofillLabel(label, defaultValue),
 		Placeholder: "z.B. #18742069",
@@ -30,11 +29,11 @@ func Tag(label, defaultValue, customId string) discordgo.TextInput {
 	}
 }
 
-func KickpointAmount(defaultValue int) discordgo.TextInput {
-	return discordgo.TextInput{
+func KickpointAmount(defaultValue int) *discordgo.TextInput {
+	return &discordgo.TextInput{
 		CustomID:    KickpointAmountID,
 		Label:       autofillLabel("Anzahl Kickpunkte", defaultValue),
-		Placeholder: fmt.Sprintf("Zahl zwischen %d und %d", validation.MinKickpointAmount, validation.MaxKickpointAmount),
+		Placeholder: "Anzahl Kickpunkte",
 		Style:       discordgo.TextInputShort,
 		Value:       strconv.Itoa(defaultValue),
 		Required:    true,
@@ -43,8 +42,8 @@ func KickpointAmount(defaultValue int) discordgo.TextInput {
 	}
 }
 
-func KickpointReason(defaultValue string) discordgo.TextInput {
-	return discordgo.TextInput{
+func KickpointReason(defaultValue string) *discordgo.TextInput {
+	return &discordgo.TextInput{
 		CustomID:    KickpointReasonID,
 		Label:       autofillLabel("Grund", defaultValue),
 		Placeholder: "z.B. CWL Feb 2. Tag nicht angegriffen",
@@ -56,8 +55,8 @@ func KickpointReason(defaultValue string) discordgo.TextInput {
 	}
 }
 
-func KickpointDate(defaultValue string) discordgo.TextInput {
-	return discordgo.TextInput{
+func KickpointDate(defaultValue string) *discordgo.TextInput {
+	return &discordgo.TextInput{
 		CustomID:    KickpointDateID,
 		Label:       autofillLabel("Datum", defaultValue),
 		Placeholder: "z.B. 31.01.2023",

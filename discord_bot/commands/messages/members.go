@@ -42,7 +42,7 @@ func SendClanMembers(i *discordgo.InteractionCreate, clan *models.Clan) {
 
 func SendClansMembersStatus(i *discordgo.InteractionCreate, dbMembers models.ClanMembers, clan *goclash.Clan) {
 	if len(clan.MemberList) == 0 {
-		SendCocApiErr(i)
+		SendCocApiErr(i, nil)
 		return
 	}
 

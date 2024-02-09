@@ -1,9 +1,32 @@
+@use '../abstracts/variables' as v;
+
 .LoadingScreen {
-  position: fixed;
-  top: 0;
-  left: 0;
-  display: grid;
-  place-items: center;
-  width: 100vw;
-  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 50vh;
+
+  // source: https://cssloaders.github.io/
+  & > .spinner {
+    $size: 48px;
+
+    width: $size;
+    height: $size;
+    border: 5px solid v.$blue-100;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    display: inline-block;
+    box-sizing: border-box;
+    animation: rotateLoadingSpinner 1s linear infinite;
+  }
+
+  @keyframes rotateLoadingSpinner {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
 }

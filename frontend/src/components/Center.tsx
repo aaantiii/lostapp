@@ -1,13 +1,9 @@
 import '@styles/components/Center.scss'
 
-interface CenteredContentProps {
-  children?: any
+type CenterProps = {
+  children: React.ReactNode
 }
 
-export default function Center({ children }: CenteredContentProps) {
-  return (
-    <div className="Center">
-      <div className="content">{children}</div>
-    </div>
-  )
+export default function Center({ children }: CenterProps) {
+  return <div className="Center">{children}</div>
 }

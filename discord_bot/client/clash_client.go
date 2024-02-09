@@ -26,5 +26,6 @@ func NewCocClient() (*goclash.Client, error) {
 		return nil, err
 	}
 	client.UseCache(true)
+
 	return client, nil
 }
