@@ -14,7 +14,7 @@ func SendKickpointInfo(i *discordgo.InteractionCreate, settings *models.ClanSett
 	table.Header = &simpletable.Header{
 		Cells: []*simpletable.Cell{
 			{Align: simpletable.AlignLeft, Text: "Grund"},
-			{Align: simpletable.AlignRight, Text: "Kickpunḱte"},
+			{Align: simpletable.AlignRight, Text: "Kickpunkte"},
 		},
 	}
 
