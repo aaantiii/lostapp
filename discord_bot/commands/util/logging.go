@@ -21,8 +21,8 @@ func getLogLevel() slog.Level {
 	switch env.MODE.Value() {
 	case "PROD":
 		return slog.LevelWarn
-	case "DEBUG":
+	case "DEBUG", "TEST":
 		return slog.LevelDebug
 	}
-	return slog.LevelWarn
+	return slog.LevelInfo
 }
