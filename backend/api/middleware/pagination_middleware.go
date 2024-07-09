@@ -19,10 +19,11 @@ func PaginationMiddleware(optional bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var pagination types.PaginationParams
 		if err := c.ShouldBindQuery(&pagination); err != nil {
-			if optional {
-				return
-			}
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid pagination: " + err.Error()})
+			return
+		}
+		if optional && pagination.Page == 0 {
+			c.Set(utils.PaginationKey, types.PaginationParams{})
 			return
 		}
 
@@ -31,10 +32,10 @@ func PaginationMiddleware(optional bool) gin.HandlerFunc {
 		}
 
 		switch {
-		case pagination.PageSize < minPageSize:
-			pagination.PageSize = minPageSize
-		case pagination.PageSize > maxPageSize:
-			pagination.PageSize = maxPageSize
+		case pagination.Limit < minPageSize:
+			pagination.Limit = minPageSize
+		case pagination.Limit > maxPageSize:
+			pagination.Limit = maxPageSize
 		}
 
 		c.Set(utils.PaginationKey, pagination)

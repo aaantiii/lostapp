@@ -11,13 +11,27 @@ export default function Logo({ className }: LogoProps) {
 
   function handleClick() {
     navigate('/#')
-    scrollTo(0, 0)
   }
 
   return (
-    <a onClick={handleClick} title="Startseite" className={`Logo ${className}`}>
+    <a onClick={handleClick} title="Dashboard" className={`Logo ${className}`}>
       <span className="title">Lost Clans</span>
-      <img src={lostLogo} alt="Lost Clan Logo" loading="eager" />
     </a>
   )
 }
+
+// export default function Logo({ className }: LogoProps) {
+//   const navigate = useNavigate()
+
+//   function handleClick() {
+//     navigate('/#')
+//     scrollTo(0, 0)
+//   }
+
+//   return (
+//     <a onClick={handleClick} title="Startseite" className={`Logo ${className}`}>
+//       <span className="title">Lost Clans</span>
+//       <img src={lostLogo} alt="Lost Clan Logo" loading="eager" />
+//     </a>
+//   )
+// }

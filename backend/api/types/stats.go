@@ -3,10 +3,11 @@ package types
 import "github.com/aaantiii/goclash"
 
 type PlayerStatistic struct {
-	Tag       string
-	Name      string
-	Placement int
-	Value     int
+	Tag       string `json:"tag"`
+	Name      string `json:"name"`
+	ClanName  string `json:"clanName"`
+	Placement int    `json:"placement"`
+	Value     int    `json:"value"`
 }
 
 type PlayerStatistics []*PlayerStatistic

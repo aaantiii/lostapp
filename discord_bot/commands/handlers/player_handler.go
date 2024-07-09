@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"log/slog"
+	"slices"
 	"strings"
 	"time"
 
@@ -24,6 +26,7 @@ type IPlayerHandler interface {
 	HandleAutocomplete(s *discordgo.Session, i *discordgo.InteractionCreate)
 	UpdateMe(s *discordgo.Session, i *discordgo.InteractionCreate)
 	SetNickname(s *discordgo.Session, i *discordgo.InteractionCreate)
+	CheckReactions(s *discordgo.Session, i *discordgo.InteractionCreate)
 }
 
 type PlayerHandler struct {
@@ -251,6 +254,77 @@ func (h *PlayerHandler) SetNickname(s *discordgo.Session, i *discordgo.Interacti
 		fmt.Sprintf("Dein Nickname wurde zu %s geändert.", nick),
 		messages.ColorGreen,
 	))
+}
+
+func (h *PlayerHandler) CheckReactions(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	opts := i.ApplicationCommandData().Options
+	role, roleErr := util.RoleOptionByName(RoleOptionName, i.GuildID, opts) // role to check reactions for
+	messageID := util.StringOptionByName(MessageIDOptionName, opts)         // message to check reactions for
+	emoji, emojiErr := util.EmojiOptionByName(EmojiOptionName, opts)        // emoji to check reactions for
+
+	slog.Debug("data from CheckReactions", slog.Any("role", role), slog.String("messageID", messageID), slog.Any("emoji", emoji))
+
+	if roleErr != nil || messageID == "" || emojiErr != nil {
+		messages.SendInvalidInputErr(i, "Bitte gib eine Rolle, die Nachricht-ID und die Emoji-ID an.")
+		return
+	}
+
+	usersReacted, err := s.MessageReactions(i.ChannelID, messageID, emoji.GlobalID, 100, "", "")
+	if err != nil {
+		slog.Debug("Error while getting reactions for message.", slog.Any("err", err))
+		messages.SendErr(i, "Die Reaktionen auf die Nachricht konnten nicht abgerufen werden. Dies kann daran liegen, dass niemand mit diesem Emoji auf die Nachricht reagiert hat, oder dass die Nachricht in einem anderen Channel geschrieben wurde.")
+		return
+	}
+	var userIDsReacted []string
+	for _, userReacted := range usersReacted {
+		userIDsReacted = append(userIDsReacted, userReacted.ID)
+	}
+
+	members, err := s.GuildMembers(i.GuildID, "", 1000)
+	if err != nil {
+		messages.SendErr(i, "Die Mitglieder des Discord Servers konnten nicht abgerufen werden.")
+		return
+	}
+
+	var missingUserIDs []string
+	for _, member := range members {
+		if !slices.Contains(member.Roles, role.ID) {
+			continue
+		}
+		if !slices.Contains(userIDsReacted, member.User.ID) {
+			missingUserIDs = append(missingUserIDs, member.User.ID)
+		}
+	}
+
+	if len(missingUserIDs) == 0 {
+		messages.SendEmbedResponse(i, messages.NewEmbed(
+			"Alle Mitglieder haben reagiert",
+			fmt.Sprintf(
+				"Alle Mitglieder der Rolle %s haben auf die Nachricht %s reagiert.",
+				util.MentionRole(role.ID),
+				util.CreateMessageURL(i.GuildID, i.ChannelID, messageID),
+			),
+			messages.ColorGreen,
+		))
+		return
+	}
+
+	mentions := make([]string, len(missingUserIDs))
+	for index, userID := range missingUserIDs {
+		mentions[index] = util.MentionUserID(userID)
+	}
+
+	messages.SendEmbedResponse(i, messages.NewEmbed(
+		"Mitglieder ohne Reaktion",
+		fmt.Sprintf(
+			"Folgende Mitglieder der Rolle %s haben noch nicht mit %s auf die Nachricht %s reagiert:",
+			util.MentionRole(role.ID),
+			fmt.Sprintf("<%s>", emoji.GlobalID),
+			util.CreateMessageURL(i.GuildID, i.ChannelID, messageID),
+		),
+		messages.ColorYellow,
+	))
+	messages.SendChannelMessage(i.ChannelID, strings.Join(mentions, " "))
 }
 
 func (h *PlayerHandler) HandleAutocomplete(_ *discordgo.Session, i *discordgo.InteractionCreate) {

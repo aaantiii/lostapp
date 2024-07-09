@@ -4,11 +4,13 @@ export type QueryParam = {
 
 export type PaginationParams = {
   page: string
-  pageSize: string
+  limit: string
 }
 
 export type DiscordIdParam = {
   discordId?: string
 }
 
-export type PlayersParams = QueryParam & PaginationParams & DiscordIdParam
+export type PlayersParams = QueryParam & PaginationParams & DiscordIdParam & { isMember?: 'true' | 'false' }
+
+export type ClansParams = QueryParam & PaginationParams

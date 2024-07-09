@@ -29,6 +29,7 @@ func (repo *ClansRepo) Clans(query string) (models.Clans, error) {
 	err := repo.db.
 		Scopes(postgres.WithSearchQuery(query, "name", "tag")).
 		Limit(types.MaxCommandChoices).
+		Order("index").
 		Find(&clans).Error
 	return clans, err
 }

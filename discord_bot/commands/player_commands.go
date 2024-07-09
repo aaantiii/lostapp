@@ -79,7 +79,7 @@ func playerInteractionCommands(db *gorm.DB, client *goclash.Client) types.Comman
 		},
 		ApplicationCommand: &discordgo.ApplicationCommand{
 			Name:         "updateme",
-			Description:  "Aktaulisiert deinen Discord Namen zu deinem aktuellen Clash of Clans Namen.",
+			Description:  "Aktualisiert deinen Discord Namen zu deinem aktuellen Clash of Clans Namen.",
 			Type:         discordgo.ChatApplicationCommand,
 			DMPermission: util.BoolPtr(false),
 		},
@@ -97,7 +97,7 @@ func playerInteractionCommands(db *gorm.DB, client *goclash.Client) types.Comman
 				{
 					Type:         discordgo.ApplicationCommandOptionString,
 					Name:         handlers.MyPlayerTagOptionName,
-					Description:  "Spieler-Tag des Spielers, der gepingt werden soll.",
+					Description:  "Spieler-Tag des Accounts, dessen Name als Nickname gesetzt werden soll.",
 					Required:     true,
 					MinLength:    util.IntPtr(validation.TagMinLength),
 					MaxLength:    validation.TagMaxLength,
@@ -109,6 +109,42 @@ func playerInteractionCommands(db *gorm.DB, client *goclash.Client) types.Comman
 					Description: "Alias, der an deinen Namen angehängt werden soll. (z.B. Anti | [alias]).",
 					MinLength:   util.IntPtr(1),
 					MaxLength:   20,
+				},
+			},
+		},
+	}, {
+		Handler: types.InteractionHandler{
+			Main: handler.CheckReactions,
+		},
+		ApplicationCommand: &discordgo.ApplicationCommand{
+			Name:         "checkreacts",
+			Description:  "Pingt alle Mitglieder einer Rolle, welche auf eine Nachricht nicht reagiert haben.",
+			Type:         discordgo.ChatApplicationCommand,
+			DMPermission: util.BoolPtr(false),
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Type:        discordgo.ApplicationCommandOptionRole,
+					Name:        handlers.RoleOptionName,
+					Description: "Rolle, welche auf Reaktionen geprüft werden soll.",
+					Required:    true,
+					MinLength:   util.IntPtr(1),
+					MaxLength:   60,
+				},
+				{
+					Type:        discordgo.ApplicationCommandOptionString,
+					Name:        handlers.MessageIDOptionName,
+					Description: "ID der Nachricht, welche auf Reaktionen geprüft werden soll.",
+					MinLength:   util.IntPtr(19),
+					MaxLength:   19,
+					Required:    true,
+				},
+				{
+					Type:        discordgo.ApplicationCommandOptionString,
+					Name:        handlers.EmojiOptionName,
+					Description: "EmojiOptionName, mit welchem reagiert werden muss.",
+					MinLength:   util.IntPtr(1),
+					MaxLength:   50,
+					Required:    true,
 				},
 			},
 		},

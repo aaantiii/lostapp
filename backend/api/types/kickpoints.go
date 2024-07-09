@@ -29,3 +29,10 @@ type UpdateKickpointPayload struct {
 	Description        string    `json:"description" binding:"required"`
 	UpdatedByDiscordID string    `binding:"-"`
 }
+
+type KickpointParams struct {
+	PaginationParams
+	PlayerTagParam
+	ClanTagParam
+	CreatedAtParam
+}

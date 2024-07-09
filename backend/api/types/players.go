@@ -10,6 +10,7 @@ type PlayersParams struct {
 	PaginationParams
 	QueryParam
 	DiscordID string `form:"discordId" binding:"omitempty,len=18"`
+	IsMember  bool   `form:"isMember" binding:"omitempty"`
 }
 
 type Player struct {

@@ -3,6 +3,7 @@ package middleware
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 
 	"github.com/bwmarrin/discordgo"
 	"gorm.io/gorm"
@@ -31,6 +32,7 @@ func NewAuthMiddleware(guilds repos.IGuildsRepo, clans repos.IClansRepo, users r
 func (m *AuthMiddleware) AuthorizeAdminInteraction(i *discordgo.InteractionCreate) error {
 	user, err := m.users.UserByDiscordID(i.Member.User.ID)
 	if err != nil {
+		slog.Error("Error getting user by discord ID.", slog.Any("err", err))
 		messages.SendUnknownErr(i)
 		return err
 	}
@@ -62,6 +64,8 @@ func (m *AuthMiddleware) AuthorizeInteraction(i *discordgo.InteractionCreate, cl
 			m.sendClanNotInGuildError(i, clanTag)
 			return err
 		}
+
+		slog.Error("Error getting guild by clan tag.", slog.Any("err", err))
 		messages.SendUnknownErr(i)
 		return err
 	}

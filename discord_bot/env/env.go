@@ -34,6 +34,7 @@ func (v EnvironmentVariable) Name() string {
 }
 
 func Load() error {
+	// in prod mode the env variables are set by systemd service
 	if MODE.Value() != "PROD" {
 		if err := godotenv.Load("../.env"); err != nil {
 			return err

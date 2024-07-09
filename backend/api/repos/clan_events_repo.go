@@ -6,16 +6,23 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
+	"github.com/aaantiii/lostapp/backend/api/types"
+	"github.com/aaantiii/lostapp/backend/api/utils"
+	"github.com/aaantiii/lostapp/backend/store/postgres"
 	"github.com/aaantiii/lostapp/backend/store/postgres/models"
 )
 
 type IClanEventsRepo interface {
+	// ClanEvents returns paginated clan events.
+	ClanEvents(tag string, params types.PaginationParams) (*types.PaginatedResponse[*models.ClanEvent], error)
 	// ClanEventByID returns the clan event with the given ID.
 	ClanEventByID(id uint) (*models.ClanEvent, error)
 	// CurrentClanEvent returns the currently active clan event for the given clan, or nil if there is none.
 	CurrentClanEvent(clanTag string) (*models.ClanEvent, error)
 	// AllActiveClanEvents returns all currently active clan events.
 	AllActiveClanEvents() ([]*models.ClanEvent, error)
+	// Count returns the number of clan events.
+	Count(tag string) (int64, error)
 	// ClanEventMembers returns all members of the clan event with the given ID and timestamp.
 	ClanEventMembers(eventID uint, timestamp time.Time) ([]*models.ClanEventMember, error)
 	// CreateClanEvent creates a new clan event.
@@ -36,6 +43,34 @@ func NewClanEventsRepo(db *gorm.DB) IClanEventsRepo {
 	return &ClanEventsRepo{
 		db: db,
 	}
+}
+
+func (r *ClanEventsRepo) ClanEvents(tag string, params types.PaginationParams) (*types.PaginatedResponse[*models.ClanEvent], error) {
+	count, err := r.Count(tag)
+	if err != nil {
+		return nil, err
+	}
+	if err = utils.ValidatePagination(params, count); err != nil {
+		return nil, err
+	}
+
+	var events []*models.ClanEvent
+	if err = r.db.
+		Scopes(postgres.WithPagination(params)).
+		Preload(clause.Associations).
+		Order("starts_at desc").
+		Find(&events, "clan_tag = ?", tag).Error; err != nil {
+		return nil, err
+	}
+	return types.NewPaginatedResponse(events, params, count), nil
+}
+
+func (r *ClanEventsRepo) Count(tag string) (int64, error) {
+	var count int64
+	err := r.db.
+		Model(&models.ClanEvent{ClanTag: tag}).
+		Count(&count).Error
+	return count, err
 }
 
 func (r *ClanEventsRepo) ClanEventByID(id uint) (*models.ClanEvent, error) {

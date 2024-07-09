@@ -3,9 +3,9 @@ package types
 import "time"
 
 type Session struct {
-	User  *AuthUser `json:"user"`
-	Token string    `json:"-"`
+	User *AuthUser `json:"user"`
 
+	Token         string    `json:"-"`
 	LastRefreshed time.Time `json:"-"`
 	LastUsed      time.Time `json:"-"`
 }

@@ -14,8 +14,9 @@ export type ComparableStatistic = {
 }
 
 export type PlayerStatistic = {
-  playerName: string
-  playerTag: string
-  clanNames: string
+  name: string
+  tag: string
+  clanName: string
   value: number
+  placement: number
 }

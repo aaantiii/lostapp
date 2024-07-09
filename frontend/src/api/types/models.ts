@@ -15,6 +15,7 @@ export type Member = {
   addedByUser?: User
   player?: Player
   clan?: Clan
+  kickpoints?: Kickpoint[]
 }
 
 export type Clan = {
@@ -50,3 +51,23 @@ export type ClanSettings = ModifiedBy & {
 }
 
 export type UpdateClanSettingsPayload = Omit<ClanSettings, 'clanTag' | keyof ModifiedBy>
+
+export type ClanEvent = {
+  id: number
+  clanTag: string
+  statName: string
+  startsAt: string
+  endsAt: string
+  channelId: string
+  winnerPlayerTag: string
+  clan?: Clan
+}
+
+export type ClanEventMember = {
+  clanEventId: number
+  playerTag: string
+  clanTag: string
+  timestamp: string
+  name: string
+  value: number
+}

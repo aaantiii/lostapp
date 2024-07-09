@@ -13,7 +13,7 @@ export default function Login() {
   }
 
   useEffect(() => {
-    if (user !== undefined) navigate('/members/@me')
+    if (user !== undefined) navigate('/dashboard')
   }, [user])
 
   return (

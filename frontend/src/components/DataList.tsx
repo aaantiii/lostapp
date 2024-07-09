@@ -2,10 +2,10 @@ import '@styles/components/DataList.scss'
 import { ReactNode } from 'react'
 
 type DataListProps = {
-  children: DataListEntry[]
+  children: DataListItem[]
 }
 
-export type DataListEntry = {
+export type DataListItem = {
   label: string
   value: ReactNode
 }

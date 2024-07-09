@@ -12,19 +12,24 @@ export default {
     byTag: '/players/:tag',
     stats: {
       list: '/players/stats/list',
-      leaderboard: '/players/stats/leaderboard/:statName',
     },
     live: {
       index: '/players/live',
       byTag: '/players/:tag/live',
+      leaderboard: '/players/live/stats/leaderboard',
     },
   },
   clans: {
     index: '/clans',
+    list: '/clans/list',
     byTag: '/clans/:clanTag',
-    leading: '/clans/leading',
+    events: '/clans/:clanTag/events',
+    live: {
+      index: '/clans/live',
+    },
     settings: '/clans/:clanTag/settings',
     members: {
+      byTag: '/clans/:clanTag/members/:memberTag',
       kickpoints: {
         byClan: '/clans/:clanTag/members/kickpoints',
         byClanMember: '/clans/:clanTag/members/:memberTag/kickpoints',

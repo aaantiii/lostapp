@@ -25,7 +25,7 @@ export default function QueryState({ loading: isLoading, error, loader }: QueryS
     } else if (error.response.status === HttpStatusCode.NoContent) {
       child = <ErrorMessage message={ERROR_204} />
     } else {
-      child = <ErrorMessage message={error.message ?? DEFAULT_ERROR} />
+      child = <ErrorMessage message={error.response.data.message ?? DEFAULT_ERROR} />
     }
   } else if (!error) {
     child = <ErrorMessage message={ERROR_204} />

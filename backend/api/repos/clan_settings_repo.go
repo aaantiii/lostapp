@@ -9,7 +9,7 @@ import (
 )
 
 type IClanSettingsRepo interface {
-	ClanSettings(clanTag string, preload ...string) (*models.ClanSettings, error)
+	ClanSettings(clanTag string, preload ...postgres.Preloader) (*models.ClanSettings, error)
 	UpdateClanSettings(settings *models.ClanSettings) error
 }
 
@@ -21,7 +21,7 @@ func NewClanSettingsRepo(db *gorm.DB) IClanSettingsRepo {
 	return &ClanSettingsRepo{db: db}
 }
 
-func (r *ClanSettingsRepo) ClanSettings(clanTag string, preload ...string) (*models.ClanSettings, error) {
+func (r *ClanSettingsRepo) ClanSettings(clanTag string, preload ...postgres.Preloader) (*models.ClanSettings, error) {
 	clanSettings := &models.ClanSettings{ClanTag: clanTag}
 	err := r.db.
 		Clauses(clause.Returning{}).

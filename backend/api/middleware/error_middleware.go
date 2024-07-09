@@ -2,13 +2,12 @@ package middleware
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
 	"github.com/aaantiii/lostapp/backend/api/types"
-	"github.com/aaantiii/lostapp/backend/env"
 )
 
 const ErrorKey = "error"
@@ -29,10 +28,7 @@ func ErrorMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		if env.MODE.Value() == "DEV" {
-			log.Println(err.Error())
-		}
-
+		slog.Debug("Error from ErrorMiddleware.", slog.Any("err", err))
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(types.ErrNoResults.Code, types.ErrNoResults)
 			return

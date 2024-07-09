@@ -1,6 +1,6 @@
 export type Pagination = {
   page: number
-  pageSize: number
+  limit: number
   totalPages: number
   totalItems: number
   navigation: number[]

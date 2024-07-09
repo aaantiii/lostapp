@@ -8,15 +8,15 @@ import (
 
 // PaginationParams are the parameters used to fetch paginated data.
 type PaginationParams struct {
-	Page        int `form:"page"`
-	PageSize    int `form:"pageSize"`
+	Page        int `form:"page" binding:"omitempty,min=1"`
+	Limit       int `form:"limit"`
 	ExtraOffset int `form:"extraOffset"` // ExtraOffset is used to offset the pagination by a given amount. E.g. by leaderboard to skip top 3.
 }
 
 // Pagination is the pagination metadata returned by the API.
 type Pagination struct {
 	Page       int   `json:"page"`
-	PageSize   int   `json:"pageSize"`
+	Limit      int   `json:"limit"`
 	TotalItems int64 `json:"totalItems"`
 	TotalPages int   `json:"totalPages"`
 	Navigation []int `json:"navigation,omitempty"`
@@ -30,10 +30,10 @@ type PaginatedResponse[T any] struct {
 
 // NewPaginatedResponse creates a new PaginatedResponse.
 func NewPaginatedResponse[T any](items []T, params PaginationParams, count int64) *PaginatedResponse[T] {
-	totalPages := int(math.Ceil(float64(count) / float64(params.PageSize)))
+	totalPages := int(math.Ceil(float64(count) / float64(params.Limit)))
 	pagination := Pagination{
 		Page:       params.Page,
-		PageSize:   params.PageSize,
+		Limit:      params.Limit,
 		TotalItems: count,
 		TotalPages: totalPages,
 	}

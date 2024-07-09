@@ -15,11 +15,11 @@ export type DeletedAt = {
 }
 
 export type CreatedBy = CreatedAt & {
-  createdBy: User
+  createdByUser: User
 }
 
 export type UpdatedBy = UpdatedAt & {
-  updatedBy?: User
+  updatedByUser?: User
 }
 
 export type ModifiedBy = CreatedBy & UpdatedBy

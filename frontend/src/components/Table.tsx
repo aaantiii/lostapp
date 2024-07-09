@@ -1,34 +1,63 @@
 import '@styles/components/Table.scss'
 import Paginator, { PaginatorProps } from './Paginator'
-import { ReactNode, useEffect, useRef } from 'react'
+import { ReactNode, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons'
 
-type TableProps = Pick<PaginatorProps, 'pagination' | 'onPageChange' | 'showTotalItems'> & {
+type TableProps = Omit<PaginatorProps, 'children'> & {
   header: ReactNode[]
   children: ReactNode
   className?: string
+  rawData?: any
 }
 
 type TableColumnProps = {
   children: ReactNode[]
 }
 
-export default function Table({ children, className = '', header, ...paginatorProps }: TableProps) {
+export default function Table({ children, className = '', header, rawData, ...paginatorProps }: TableProps) {
   const wrapperRef = useRef<HTMLDivElement>(null)
+  const tableRef = useRef<HTMLTableElement>(null)
 
-  useEffect(() => {
-    wrapperRef.current?.scrollIntoView({
-      behavior: 'smooth',
-    })
-  }, [paginatorProps])
+  function downloadCSV() {
+    const table = tableRef.current
+    if (!table) return
+
+    const rows = table.querySelectorAll('tr')
+    const csv = Array.from(rows)
+      .map((row) => {
+        const columns = row.querySelectorAll(':scope > *')
+        return Array.from(columns)
+          .map((column) => column.textContent)
+          .join(';')
+      })
+      .join('\n')
+
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'table.csv'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  function downloadJSON() {
+    const blob = new Blob([JSON.stringify(rawData)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'table.json'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
 
   return (
     <div className={`Table ${className}`}>
       <Paginator {...paginatorProps}>
         <div className="scrollable-wrapper" ref={wrapperRef}>
-          <table>
+          <table ref={tableRef}>
             <thead>
               <tr>
                 {header.map((column, i) => (
@@ -38,6 +67,10 @@ export default function Table({ children, className = '', header, ...paginatorPr
             </thead>
             <tbody>{children}</tbody>
           </table>
+        </div>
+        <div className="download">
+          <a onClick={downloadCSV}>CSV</a>
+          {rawData && <a onClick={downloadJSON}>JSON</a>}
         </div>
       </Paginator>
     </div>

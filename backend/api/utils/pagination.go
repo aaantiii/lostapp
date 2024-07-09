@@ -16,7 +16,7 @@ func ValidatePagination(params types.PaginationParams, count int64) error {
 	if count <= 0 {
 		return types.ErrNoResults
 	}
-	if int64(params.Page*params.PageSize-params.PageSize) > count {
+	if int64(params.Page*params.Limit-params.Limit) > count {
 		return types.ErrPageOutOfBounds
 	}
 
@@ -24,8 +24,8 @@ func ValidatePagination(params types.PaginationParams, count int64) error {
 }
 
 func PaginateSlice[T any](params types.PaginationParams, slice []T) []T {
-	start := params.Page*params.PageSize - params.PageSize
-	end := params.Page * params.PageSize
+	start := params.Page*params.Limit - params.Limit
+	end := params.Page * params.Limit
 	if end > len(slice) {
 		end = len(slice)
 	}

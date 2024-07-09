@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"log"
+	"log/slog"
 	"slices"
 
 	"github.com/aaantiii/goclash"
@@ -43,16 +43,16 @@ func interactionCommandMap(commands types.Commands[types.InteractionHandler]) ma
 func interactionHandler(interactions types.Commands[types.InteractionHandler]) func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	commands := interactionCommandMap(interactions)
 	return func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		defer handleRecovery()
 		if i.GuildID == "" {
 			if i.User != nil {
-				log.Printf("Aborted interaction called by %s in DMs (not supported).", i.User.Username)
+				slog.Info("Aborted interaction executed per DM.", slog.String("username", i.User.Username))
 			}
 			sendDMNotSupported(i)
 			return
 		}
-		defer handleRecovery()
 
-		if env.MODE.Value() == "TEST" || env.MODE.Value() == "DEBUG" {
+		if env.MODE.Value() != "PROD" {
 			if !slices.Contains(i.Member.Roles, "1192095424094408724") {
 				messages.SendEmbedResponse(i, messages.NewEmbed(
 					"Entwicklung",
@@ -67,6 +67,7 @@ func interactionHandler(interactions types.Commands[types.InteractionHandler]) f
 		case discordgo.InteractionApplicationCommandAutocomplete:
 			if command, ok := commands[i.ApplicationCommandData().Name]; ok {
 				if command.Handler.Autocomplete == nil {
+					slog.Error("Tried to run autocomplete handler, but it is nil.", slog.String("command", command.Name), slog.String("username", i.Member.User.Username))
 					return
 				}
 				command.Handler.Autocomplete(s, i)
@@ -76,6 +77,7 @@ func interactionHandler(interactions types.Commands[types.InteractionHandler]) f
 		case discordgo.InteractionApplicationCommand:
 			if command, ok := commands[i.ApplicationCommandData().Name]; ok {
 				command.Handler.Main(s, i)
+				slog.Info("Interaction handler was executed.", slog.String("command", command.Name), slog.String("username", i.Member.User.Username))
 				return
 			}
 
@@ -83,11 +85,11 @@ func interactionHandler(interactions types.Commands[types.InteractionHandler]) f
 			commandName, _, _ := util.ParseCustomID(i.ModalSubmitData().CustomID)
 			if command, ok := commands[commandName]; ok {
 				if command.Handler.ModalSubmit == nil {
-					log.Printf("Tried to run modal submit handler for command '%s', but it is nil.", commandName)
+					slog.Error("Tried to run modal submit handler but it is nil.", slog.String("command", commandName), slog.String("username", i.Member.User.Username))
 					return
 				}
 				command.Handler.ModalSubmit(s, i)
-				log.Printf("Ran modal submit handler for command '%s', called by %s.", commandName, i.Interaction.Member.User.Username)
+				slog.Info("Modal submit handler was executed.", slog.String("command", commandName), slog.String("username", i.Member.User.Username))
 				return
 			}
 		}
@@ -97,6 +99,6 @@ func interactionHandler(interactions types.Commands[types.InteractionHandler]) f
 
 func handleRecovery() {
 	if err := recover(); err != nil {
-		log.Printf("Interaction panicked: %v", err)
+		slog.Error("Recovered from panic after error.", slog.Any("err", err), slog.String("func", "handleRecovery"))
 	}
 }

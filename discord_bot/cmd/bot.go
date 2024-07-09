@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"time"
@@ -14,45 +14,48 @@ import (
 )
 
 func init() {
-	log.SetPrefix("[BOT] ")
-	log.SetFlags(log.Ldate | log.Ltime)
-
 	if err := env.Load(); err != nil {
-		log.Fatalf("Failed to init environment variables: %v", err)
+		slog.Error("Failed to init environment variables.", slog.Any("err", err))
+		os.Exit(1)
 	}
+	slog.SetDefault(util.NewLogger())
 }
 
 func main() {
 	s, err := discordgo.New("Bot " + env.DISCORD_CLIENT_SECRET.Value())
 	if err != nil {
-		log.Fatalf("Failed to create discord session: %v", err)
+		slog.Error("Failed to create discord session.", slog.Any("err", err))
+		os.Exit(1)
 	}
 
 	s.Identify.Intents = discordgo.IntentsAll
 	if err = s.Open(); err != nil {
-		log.Fatalf("Failed to open discord session: %v", err)
+		slog.Error("Failed to open discord session.", slog.Any("err", err))
+		os.Exit(1)
 	}
-	log.Printf("Bot is now logged in as %s and running. Press CTRL-C to exit.", s.State.User.Username)
+	slog.Info("Bot is now logged in and running. Press CTRL-C to exit.", slog.String("username", s.State.User.Username), slog.String("id", s.State.User.ID))
 
 	go autoUpdateStatus(s)
 	util.Session = s
-
 	cmds, err := commands.Setup(s)
 	if err != nil {
-		log.Fatalf("Failed to add commands: %v", err)
+		slog.Error("Failed to add commands. Shutting down...", slog.Any("err", err))
+		s.Close()
+		os.Exit(1)
 	}
-	log.Printf("Successfully added %d commands.", len(cmds))
+	slog.Info("Commands were added successfully.", slog.Int("amount", len(cmds)))
 
 	shutdownSig := make(chan os.Signal, 1)
 	signal.Notify(shutdownSig, os.Interrupt)
 	<-shutdownSig
 
-	log.Println("Gracefully shutting down...")
+	slog.Info("Gracefully shutting down...")
 	if err = removeCommands(s, cmds); err != nil {
-		log.Printf("Failed to remove commands: %v", err)
+		slog.Warn("Failed to remove commands.", slog.Any("err", err))
 	}
 	if err = s.Close(); err != nil {
-		log.Fatalf("Failed to close discord session: %v", err)
+		slog.Error("Failed to close discord session.", slog.Any("err", err))
+		os.Exit(1)
 	}
 }
 
@@ -62,29 +65,28 @@ func removeCommands(s *discordgo.Session, cmds []*discordgo.ApplicationCommand) 
 		return nil
 	}
 
+	slog.Info("Removing all commands, this can take a few minutes...", slog.Int("amount", len(cmds)))
 	errChan := make(chan error)
-	log.Printf("Removing %d commands, this takes about a minute...", len(cmds))
 	for _, cmd := range cmds {
 		go func(cmd *discordgo.ApplicationCommand) {
 			errChan <- s.ApplicationCommandDelete(env.DISCORD_CLIENT_ID.Value(), env.DISCORD_GUILD_ID.Value(), cmd.ID)
 		}(cmd)
 	}
-
 	for range cmds {
 		if err := <-errChan; err != nil {
 			return err
 		}
 	}
 
-	log.Printf("Successfully removed %d commands.", len(cmds))
+	slog.Info("Successfully removed all commands.", slog.Int("amount", len(cmds)))
 	return nil
 }
 
-// autoUpdateStatus updates the game status every hour.
+// autoUpdateStatus updates the bot's game status every hour.
 func autoUpdateStatus(s *discordgo.Session) {
 	for {
 		if err := s.UpdateGameStatus(0, "mit deinen Kickpunkten"); err != nil {
-			log.Printf("Failed to update game status: %v", err)
+			slog.Warn("Failed to update game status.", slog.Any("err", err))
 		}
 		time.Sleep(time.Hour)
 	}

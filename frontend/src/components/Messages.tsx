@@ -2,7 +2,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useMessages } from '@context/messagesContext'
 import '@styles/components/Messages.scss'
 import { useEffect, useRef, useState } from 'react'
-import { faWarning, faXmark } from '@fortawesome/free-solid-svg-icons'
+import { faCheckCircle, faWarning, faXmark } from '@fortawesome/free-solid-svg-icons'
 
 export type MessageProps = {
   message: string
@@ -52,6 +52,7 @@ function Message({ message, type, id }: MessageProps) {
     <div ref={messageRef} className={`Message ${type}${open ? ' open' : ''}`}>
       <div className="body">
         <div className="content">
+          {type === 'success' && <FontAwesomeIcon icon={faCheckCircle} className="icon" />}
           {(type === 'warning' || type === 'error') && <FontAwesomeIcon icon={faWarning} className="icon" />}
           <span>{message}</span>
         </div>

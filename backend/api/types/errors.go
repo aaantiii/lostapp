@@ -25,6 +25,7 @@ var (
 	ErrNotMember        = NewApiError(http.StatusForbidden, "Nur Mitglieder der Lost Family sind berechtigt, auf die Web App zuzugreifen.")
 	ErrNoResults        = NewApiError(http.StatusNotFound, "Es wurden keine Ergebnisse gefunden.")
 	ErrAdminRequired    = NewApiError(http.StatusForbidden, "Um diese Aktion auszuführen, benötigst du Administratorrechte.")
+	ErrNoPermission     = NewApiError(http.StatusForbidden, "Du hast keine Berechtigung, diese Aktion auszuführen.")
 	ErrPageOutOfBounds  = NewApiError(http.StatusBadRequest, "Die angegebene Seite ist nicht vorhanden.")
 	ErrSignOutFailed    = NewApiError(http.StatusInternalServerError, "Beim Abmelden ist ein Fehler aufgetreten.")
 	ErrValidationFailed = NewApiError(http.StatusBadRequest, "Bitte überprüfe deine Eingaben.")

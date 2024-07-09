@@ -16,20 +16,20 @@ func WithPaging(params types.PaginationParams) func(db *gorm.DB) *gorm.DB {
 	}
 }
 
-func WithSearchQuery(value string, fields ...string) func(db *gorm.DB) *gorm.DB {
+// WithSearchQuery returns a scope that filters records based on the given search query. It looks for find in the given dbColumns.
+func WithSearchQuery(find string, dbColumns ...string) func(*gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
-		if value == "" || len(fields) == 0 {
+		if find == "" || len(dbColumns) == 0 {
 			return db
 		}
 
-		strFields := make([]string, len(fields))
-		for i, field := range fields {
-			strFields[i] = fmt.Sprintf("%s::text", field)
+		textCols := make([]string, len(dbColumns))
+		for i, col := range dbColumns {
+			textCols[i] = fmt.Sprintf("%s::text", col)
 		}
 
-		find := strings.Join(strFields, " || ' ' || ")
-		query := fmt.Sprintf("POSITION(? in LOWER(%s)) > 0", find)
-		return db.Where(query, strings.ToLower(value))
+		query := fmt.Sprintf("POSITION(? in LOWER(%s)) > 0", strings.Join(textCols, " || ' ' || "))
+		return db.Where(query, strings.ToLower(find))
 	}
 }
 
@@ -38,7 +38,6 @@ func WithLimit(limit int) func(*gorm.DB) *gorm.DB {
 		if limit <= 0 {
 			return db
 		}
-
 		return db.Limit(limit)
 	}
 }

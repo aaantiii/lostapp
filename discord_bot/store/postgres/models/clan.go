@@ -5,8 +5,9 @@ import (
 )
 
 type Clan struct {
-	Tag  string `gorm:"primaryKey;not null"`
-	Name string
+	Tag   string `gorm:"primaryKey;not null"`
+	Name  string
+	Index int
 
 	Settings    *ClanSettings `gorm:"foreignKey:ClanTag;references:Tag"`
 	ClanMembers ClanMembers   `gorm:"foreignKey:ClanTag;references:Tag"`

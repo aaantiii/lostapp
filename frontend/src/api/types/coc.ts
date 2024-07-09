@@ -51,7 +51,7 @@ export type LiveClan = {
   warTies?: number
   description?: string
   warLosses?: number
-  badgeUrl: string
+  badgeUrls: IconURLs
   tag: string
   name: string
   level: number

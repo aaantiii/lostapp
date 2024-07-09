@@ -27,7 +27,6 @@ func NewClashClient() (*goclash.Client, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create COC-API client: %w", err)
 	}
-	client.UseCache(true)
 	client.SetCacheTime(time.Minute * 3)
 	return client, nil
 }

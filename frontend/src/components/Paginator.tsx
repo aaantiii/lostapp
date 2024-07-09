@@ -1,22 +1,23 @@
 import '@styles/components/Paginator.scss'
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons'
 import { Pagination } from '@api/types/base'
+import Select from './Select'
 
 export type PaginatorProps = {
   pagination?: Pagination
+  limits?: number[]
   showTotalItems?: boolean
   onPageChange?: (page: number) => void
   children: React.ReactNode
 }
 
-type PageSwitcherProps = Required<Omit<PaginatorProps, 'children' | 'showTotalItems'>>
+type PageSwitcherProps = Required<Omit<PaginatorProps, 'children' | 'showTotalItems' | 'limits'>>
 
-export default function Paginator({ pagination, onPageChange, children, showTotalItems = true }: PaginatorProps) {
-  const setSearchParams = useSearchParams()[1]
-  const paginatorRef = useRef<HTMLDivElement>(null)
+export default function Paginator({ pagination, onPageChange, children, showTotalItems = true, limits = [10, 20, 30, 40, 50] }: PaginatorProps) {
+  const [searchParams, setSearchParams] = useSearchParams()
 
   useEffect(() => {
     if (!pagination) return
@@ -24,7 +25,7 @@ export default function Paginator({ pagination, onPageChange, children, showTota
     setSearchParams(
       (prev) => {
         prev.set('page', pagination.page.toString())
-        prev.set('pageSize', pagination.pageSize.toString())
+        prev.set('limit', pagination.limit.toString())
         return prev
       },
       { replace: true }
@@ -43,10 +44,29 @@ export default function Paginator({ pagination, onPageChange, children, showTota
   }
 
   return (
-    <div className="Paginator" ref={paginatorRef}>
+    <div className="Paginator">
       {pagination && (
         <>
-          {showTotalItems && <span className="total-items">{pagination.totalItems} Ergebnisse</span>}
+          <div className="header">
+            {showTotalItems && <span className="total-items">{pagination.totalItems} Ergebnisse</span>}
+            <Select
+              label="Ergebnisse pro Seite"
+              defaultValue={searchParams.get('limit') ?? limits[0].toString()}
+              disableClear
+              onChange={(value) => {
+                setSearchParams(
+                  (prev) => {
+                    prev.set('limit', value!)
+                    prev.set('page', '1')
+                    return prev
+                  },
+                  { replace: true }
+                )
+                onPageChange?.(1)
+              }}
+              options={limits.map((limit) => ({ value: limit.toString(), label: limit.toString() }))}
+            />
+          </div>
           {children}
           <PageSwitcher pagination={pagination} onPageChange={handlePageChange} />
         </>

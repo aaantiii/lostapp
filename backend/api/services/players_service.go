@@ -1,6 +1,8 @@
 package services
 
 import (
+	"errors"
+	"log/slog"
 	"sort"
 
 	"github.com/aaantiii/goclash"
@@ -41,7 +43,7 @@ func (s *PlayersService) PlayersLive(params types.PlayersParams) (*types.Paginat
 	if err != nil {
 		return nil, err
 	}
-
+	slog.Debug("players: ", slog.Any("players", players))
 	tags := make([]string, len(players.Items))
 	for i, player := range players.Items {
 		tags[i] = player.CocTag
@@ -73,21 +75,10 @@ func (s *PlayersService) PlayerByTag(tag string) (*models.Player, error) {
 }
 
 func (s *PlayersService) Leaderboard(params types.LeaderboardParams, stat *types.ComparableStatistic) (*types.PaginatedResponse[*types.PlayerStatistic], error) {
-	var tags []string
-	if params.ClanTag != "" {
-		members, err := s.members.MembersByClanTag(params.ClanTag)
-		if err != nil {
-			return nil, err
-		}
-		tags = members.Tags()
-	} else {
-		memberTags, err := s.members.AllMemberTagsDistinct()
-		if err != nil {
-			return nil, err
-		}
-		tags = memberTags
-	}
-	if err := utils.ValidatePagination(params.PaginationParams, int64(len(tags))); err != nil {
+	mp := types.MembersParams{}
+	mp.ClanTag = params.ClanTag
+	tags, err := s.members.MemberTagsDistinct(mp)
+	if err = utils.ValidatePagination(params.PaginationParams, int64(len(tags))); err != nil {
 		return nil, err
 	}
 
@@ -103,15 +94,29 @@ func (s *PlayersService) Leaderboard(params types.LeaderboardParams, stat *types
 	playerStats := make([]*types.PlayerStatistic, len(players))
 	for i, player := range players {
 		playerStats[i] = &types.PlayerStatistic{
-			Tag:   player.Tag,
-			Name:  player.Name,
-			Value: values[i],
+			Tag:      player.Tag,
+			Name:     player.Name,
+			ClanName: player.Clan.Name,
+			Value:    values[i],
 		}
 	}
 	sort.SliceStable(playerStats, func(i, j int) bool {
-		playerStats[i].Placement = i + 1
 		return playerStats[i].Value > playerStats[j].Value
 	})
 
-	return types.NewPaginatedResponse(playerStats, params.PaginationParams, int64(len(playerStats))), nil
+	for i, player := range playerStats {
+		player.Placement = i + 1
+	}
+
+	start := params.Limit * (params.Page - 1)
+	if start > len(playerStats) {
+		return nil, errors.New("page out of bounds")
+	}
+
+	end := params.Limit * params.Page
+	if end > len(playerStats) {
+		end = len(playerStats)
+	}
+
+	return types.NewPaginatedResponse(playerStats[start:end], params.PaginationParams, int64(len(playerStats))), nil
 }

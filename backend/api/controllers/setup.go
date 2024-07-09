@@ -40,6 +40,9 @@ func SetupWithRouter(router *gin.Engine) error {
 			repos.NewClansRepo(db),
 			repos.NewKickpointsRepo(db),
 			repos.NewClanSettingsRepo(db),
+			repos.NewClanEventsRepo(db),
+			repos.NewMembersRepo(db),
+			clashClient,
 		)),
 		NewPlayersController(services.NewPlayersService(
 			repos.NewPlayersRepo(db),

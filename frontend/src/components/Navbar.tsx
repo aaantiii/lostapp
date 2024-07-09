@@ -7,7 +7,7 @@ import { useAuth } from '@context/authContext'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
 import useScreenSize, { ScreenSize } from '@hooks/useScreenSize'
-import { faBars, faDashboard, faRightToBracket, faUserShield, faXmark } from '@fortawesome/free-solid-svg-icons'
+import { faBars, faDashboard, faRankingStar, faRightToBracket, faShieldHalved, faUserShield, faXmark } from '@fortawesome/free-solid-svg-icons'
 import { AuthRole } from '@api/types/auth'
 
 type VNavItemProps = {
@@ -112,15 +112,8 @@ function useNavItems() {
       return items
     }
 
-    const content = {
-      admin: { dashboard: 'Admin Dashboard' },
-      user: {
-        account: 'Mein Account',
-      },
-    }
-
     items.push(
-      <VNavItemGroup key="header">
+      <VNavItemGroup key="avatar">
         <VNavItem to="/account" icon={<UserAvatar user={user} />} title="Mein Account">
           <span>{user.name}</span>
         </VNavItem>
@@ -129,27 +122,19 @@ function useNavItems() {
 
     // admin items
     if (userRoles?.includes(AuthRole.Admin)) {
-      items.push(
-        <VNavItemGroup key="admin">
-          <VNavItem to="/admin/dashboard" icon={faDashboard} title={content.admin.dashboard}>
-            <span>{content.admin.dashboard}</span>
-          </VNavItem>
-        </VNavItemGroup>
-      )
     }
 
+    // member items
     items.push(
       <VNavItemGroup key="member1">
-        <VNavItem to="/members/@me" icon={faUserShield}>
+        <VNavItem to="/dashboard" icon={faUserShield} title="Dashboard">
           <span>Dashboard</span>
         </VNavItem>
-      </VNavItemGroup>
-    )
-
-    items.push(
-      <VNavItemGroup key="member2">
-        <VNavItem to="/clans">
+        <VNavItem to="/clans" icon={faShieldHalved} title="LOST Clans">
           <span>LOST Clans</span>
+        </VNavItem>
+        <VNavItem to="/leaderboard" icon={faRankingStar} title="Leaderboard">
+          <span>Leaderboard</span>
         </VNavItem>
       </VNavItemGroup>
     )

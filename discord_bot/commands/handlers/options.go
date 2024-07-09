@@ -7,7 +7,6 @@ const (
 	PlayerTagOptionName   = "player"
 	MyPlayerTagOptionName = "my_player"
 	RoleOptionName        = "role"
-	SettingOptionName     = "setting"
 	AmountOptionName      = "amount"
 	LimitOptionName       = "limit"
 	StatisticOptionName   = "statistic"
@@ -17,4 +16,6 @@ const (
 	EndsAtOptionName      = "ends_at"
 	ReasonOptionName      = "reason"
 	AliasOptionName       = "alias"
+	MessageIDOptionName   = "message_id"
+	EmojiOptionName       = "emoji"
 )

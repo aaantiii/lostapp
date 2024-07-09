@@ -35,6 +35,7 @@ export function toIsoString(date: Date) {
   const tzo = -date.getTimezoneOffset()
   const dif = tzo >= 0 ? '+' : '-'
 
+  // show two digits
   function pad(num: number) {
     return (num < 10 ? '0' : '') + num
   }

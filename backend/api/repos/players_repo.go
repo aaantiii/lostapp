@@ -43,13 +43,14 @@ func (r *PlayersRepo) Players(params types.PlayersParams) (*types.PaginatedRespo
 
 	var players models.Players
 	if err = r.db.
-		Scopes(
-			postgres.WithContains(params.Query, playersQueryFields...),
-			postgres.WithPagination(params.PaginationParams),
-		).
 		Where(params.Conds()).
 		Preload(clause.Associations).
 		Preload("Members.Clan").
+		Scopes(
+			postgres.WithContains(params.Query, playersQueryFields...),
+			postgres.WithPagination(params.PaginationParams),
+			r.scopeIsMember(params.IsMember),
+		).
 		Order("name").
 		Find(&players).Error; err != nil {
 		return nil, err
@@ -63,19 +64,31 @@ func (r *PlayersRepo) Count(params types.PlayersParams) (int64, error) {
 	err := r.db.
 		Model(&models.Player{}).
 		Where(params.Conds()).
-		Scopes(postgres.WithContains(params.Query, playersQueryFields...)).
+		Scopes(
+			postgres.WithContains(params.Query, playersQueryFields...),
+			r.scopeIsMember(params.IsMember),
+		).
 		Count(&count).Error
 	return count, err
 }
 
 func (r *PlayersRepo) PlayerByTag(tag string) (*models.Player, error) {
-	var clan *models.Player
-	err := r.db.First(&clan, "coc_tag = ?", tag).Error
-	return clan, err
+	var player *models.Player
+	err := r.db.First(&player, "coc_tag = ?", tag).Error
+	return player, err
 }
 
 func (r *PlayersRepo) PlayerByTagAndDiscordID(tag, discordID string) (*models.Player, error) {
-	var clan *models.Player
-	err := r.db.First(&clan, "coc_tag = ? AND discord_id = ?", tag, discordID).Error
-	return clan, err
+	var player *models.Player
+	err := r.db.First(&player, "coc_tag = ? AND discord_id = ?", tag, discordID).Error
+	return player, err
+}
+
+func (r *PlayersRepo) scopeIsMember(isMember bool) func(*gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		if isMember {
+			return db.Where("players.coc_tag IN (SELECT player_tag FROM clan_members)")
+		}
+		return db
+	}
 }

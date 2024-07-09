@@ -2,7 +2,7 @@ package postgres
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 	"time"
 
 	"gorm.io/driver/postgres"
@@ -32,12 +32,16 @@ func newGormClient() (client *gorm.DB, err error) {
 		if client, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
 			Logger: logger.Default.LogMode(loggerMode),
 		}); err != nil {
-			log.Printf("Failed to connect to database: %v\nRetrying in %s...", err, retryTimeout.String())
+			slog.Info(
+				"Failed to connect to database.",
+				slog.Any("err", err),
+				slog.String("retryingIn", retryTimeout.Round(time.Millisecond).String()),
+			)
 			time.Sleep(retryTimeout)
 			continue
 		}
 
-		log.Println("Connected to postgres database.")
+		slog.Info("Connected to postgres database.")
 		return client, nil
 	}
 

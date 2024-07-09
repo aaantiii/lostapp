@@ -3,7 +3,7 @@ module github.com/aaantiii/lostapp/backend
 go 1.21.5
 
 require (
-	github.com/aaantiii/goclash v1.0.6
+	github.com/aaantiii/goclash v1.0.7
 	github.com/amaanq/coc.go v1.0.2
 	github.com/gin-contrib/cors v1.5.0
 	github.com/gin-gonic/gin v1.9.1

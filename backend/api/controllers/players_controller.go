@@ -22,15 +22,15 @@ func NewPlayersController(service services.IPlayersService) *PlayersController {
 func (controller *PlayersController) setupWithRouter(router *gin.Engine) {
 	const rgName = "players"
 
-	memberRoutes := router.Group(rgName, middleware.AuthMiddleware(false))
-	memberRoutes.
+	authedRoutes := router.Group(rgName, middleware.AuthMiddleware(false))
+	authedRoutes.
 		GET("", middleware.PaginationMiddleware(false), controller.GETPlayers).
 		GET(":tag", controller.GETPlayerByTag).
 		GET("stats/list", controller.GETStatsList)
 
-	memberRoutes.Group("live").
+	authedRoutes.Group("live").
 		GET("", middleware.PaginationMiddleware(false), controller.GETLivePlayers).
-		GET("stats/leaderboard/:statName", middleware.PaginationMiddleware(false), controller.GETLeaderboard)
+		GET("stats/leaderboard", middleware.PaginationMiddleware(false), controller.GETLeaderboard)
 }
 
 func (controller *PlayersController) GETPlayers(c *gin.Context) {
@@ -91,7 +91,7 @@ func (controller *PlayersController) GETLeaderboard(c *gin.Context) {
 	}
 	params.PaginationParams = utils.PaginationFromContext(c)
 
-	compStat, err := utils.ComparableStatisticByName(c.Param("statName"))
+	compStat, err := utils.ComparableStatisticByName(params.StatName)
 	if err != nil {
 		c.Set(middleware.ErrorKey, types.ErrBadRequest)
 		return

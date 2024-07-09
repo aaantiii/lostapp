@@ -1,6 +1,8 @@
 package models
 
 import (
+	"fmt"
+
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -19,7 +21,7 @@ func (players Players) Choices() []*discordgo.ApplicationCommandOptionChoice {
 	choices := make([]*discordgo.ApplicationCommandOptionChoice, len(players))
 	for i, player := range players {
 		choices[i] = &discordgo.ApplicationCommandOptionChoice{
-			Name:  player.Name,
+			Name:  fmt.Sprintf("%s (%s)", player.Name, player.CocTag),
 			Value: player.CocTag,
 		}
 	}

@@ -6,9 +6,10 @@ type ClanMember struct {
 	AddedByDiscordID string   `gorm:"not null" json:"-"`
 	ClanRole         ClanRole `gorm:"not null" json:"clanRole"`
 
-	AddedByUser *User   `gorm:"foreignKey:DiscordID;references:AddedByDiscordID" json:"addedByUser,omitempty"`
-	Player      *Player `gorm:"foreignKey:CocTag;references:PlayerTag" json:"player,omitempty"`
-	Clan        *Clan   `gorm:"foreignKey:Tag;references:ClanTag" json:"clan,omitempty"`
+	AddedByUser *User        `gorm:"foreignKey:DiscordID;references:AddedByDiscordID" json:"addedByUser,omitempty"`
+	Player      *Player      `gorm:"foreignKey:CocTag;references:PlayerTag" json:"player,omitempty"`
+	Clan        *Clan        `gorm:"foreignKey:Tag;references:ClanTag" json:"clan,omitempty"`
+	Kickpoints  []*Kickpoint `gorm:"foreignKey:PlayerTag,ClanTag;references:PlayerTag,ClanTag" json:"kickpoints,omitempty"`
 }
 
 type ClanRole string

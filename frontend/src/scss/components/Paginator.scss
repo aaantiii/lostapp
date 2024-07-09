@@ -6,9 +6,26 @@
   flex-direction: column;
   gap: v.$gap-small;
 
-  & > .total-items {
-    font-size: v.$font-size-larger;
-    font-weight: 600;
+  & > .header {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: v.$gap-medium;
+
+    & > .total-items {
+      font-size: v.$font-size-larger;
+      font-weight: 600;
+      align-self: flex-end;
+    }
+
+    @media screen and (max-width: v.$breakpoint-mobile) {
+      flex-direction: column-reverse;
+
+      & > .total-items {
+        align-self: flex-start;
+      }
+    }
   }
 
   & > .PageSwitcher {

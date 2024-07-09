@@ -1,12 +1,10 @@
 import '@styles/components/Footer.scss'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import imgRedHeart from '@assets/img/emojies/red_heart.svg'
 import Logo from './Logo'
-import Center from './Center'
+import LinkLabel from './LinkLabel'
 
 export default function Footer() {
-  const navigate = useNavigate()
-
   return (
     <footer className="Footer">
       <div className="content">
@@ -29,6 +27,14 @@ export default function Footer() {
         <div>
           Made with <img src={imgRedHeart} alt="Rotes Herz" className="emoji" loading="lazy" /> by Anti
         </div>
+      </div>
+      <div>
+        <p style={{ fontSize: '.75em', maxWidth: '750px' }}>
+          This material is unofficial and is not endorsed by Supercell. For more information see Supercell's Fan Content Policy:{' '}
+          <LinkLabel target="_blank" href="https://www.supercell.com/fan-content-policy">
+            www.supercell.com/fan-content-policy
+          </LinkLabel>
+        </p>
       </div>
     </footer>
   )

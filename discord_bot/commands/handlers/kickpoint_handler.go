@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"log/slog"
 	"strconv"
 	"time"
 
@@ -186,7 +187,7 @@ func (h *KickpointHandler) ClanConfigModal(s *discordgo.Session, i *discordgo.In
 			),
 		},
 	}); err != nil {
-		log.Printf("Error while responding to CreateKickpoint: %v", err)
+		slog.Error("Error while responding to CreateKickpoint.", slog.Any("err", err))
 	}
 }
 
@@ -435,7 +436,7 @@ func (h *KickpointHandler) EditKickpointModal(s *discordgo.Session, i *discordgo
 			),
 		},
 	}); err != nil {
-		log.Printf("Error while handling EditKickpointModal: %v", err)
+		slog.Error("Error while responding to interaction.", slog.Any("err", err))
 	}
 }
 
@@ -674,7 +675,7 @@ func (h *KickpointHandler) DeleteKickpointReason(s *discordgo.Session, i *discor
 		return
 	}
 
-	if err := h.reasons.DeleteKickpointReason(clanTag, reason); err != nil {
+	if err := h.reasons.DeleteKickpointReason(reason, clanTag); err != nil {
 		messages.SendUnknownErr(i)
 		return
 	}

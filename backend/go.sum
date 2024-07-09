@@ -4,6 +4,8 @@ github.com/aaantiii/goclash v1.0.5 h1:b3bmZvIrbDN4O9eSb2G8naIApwCRzanQL3LN0J9QFn
 github.com/aaantiii/goclash v1.0.5/go.mod h1:4kS+eKi/eiMVSjC9aBl5F27Q9Vvpe2IDa1Q57zAuUhI=
 github.com/aaantiii/goclash v1.0.6 h1:ZQe2tyUDjWK7FdPFJndp0FljKohvv1rRBNSsncwPuFU=
 github.com/aaantiii/goclash v1.0.6/go.mod h1:4kS+eKi/eiMVSjC9aBl5F27Q9Vvpe2IDa1Q57zAuUhI=
+github.com/aaantiii/goclash v1.0.7 h1:TJmn+Es6agfs5Ql5psXNJwMPPEZZXZVY3xrHZsbfwQw=
+github.com/aaantiii/goclash v1.0.7/go.mod h1:4kS+eKi/eiMVSjC9aBl5F27Q9Vvpe2IDa1Q57zAuUhI=
 github.com/amaanq/coc.go v1.0.2 h1:cPplnPwvOfn08F3Q/sr5soUa+ByzoWZG2aJSwURU2LU=
 github.com/amaanq/coc.go v1.0.2/go.mod h1:Ym+LZM6QVHFtqMhL/9As7lSauhmeJEYRRRy6i0V4URo=
 github.com/bytedance/sonic v1.5.0/go.mod h1:ED5hyg4y6t3/9Ku1R6dU/4KyJ48DZ4jPhfY1O2AihPM=

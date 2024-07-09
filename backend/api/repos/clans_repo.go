@@ -9,8 +9,9 @@ import (
 )
 
 type IClansRepo interface {
-	Clans(params types.ClansParams, preload ...string) (*types.PaginatedResponse[*models.Clan], error)
-	ClanByTag(tag string, preload ...string) (*models.Clan, error)
+	Clans(params types.ClansParams, preload ...postgres.Preloader) (*types.PaginatedResponse[*models.Clan], error)
+	ClansList(params types.ClansParams) (models.Clans, error)
+	ClanByTag(tag string, preload ...postgres.Preloader) (*models.Clan, error)
 	Count(params types.ClansParams) (int64, error)
 }
 
@@ -24,7 +25,7 @@ func NewClansRepo(db *gorm.DB) IClansRepo {
 	return &ClansRepo{db: db}
 }
 
-func (r *ClansRepo) Clans(params types.ClansParams, preload ...string) (*types.PaginatedResponse[*models.Clan], error) {
+func (r *ClansRepo) Clans(params types.ClansParams, preload ...postgres.Preloader) (*types.PaginatedResponse[*models.Clan], error) {
 	count, err := r.Count(params)
 	if err != nil {
 		return nil, err
@@ -44,7 +45,15 @@ func (r *ClansRepo) Clans(params types.ClansParams, preload ...string) (*types.P
 	return types.NewPaginatedResponse(clans, params.PaginationParams, count), nil
 }
 
-func (r *ClansRepo) ClanByTag(tag string, preload ...string) (*models.Clan, error) {
+func (r *ClansRepo) ClansList(params types.ClansParams) (models.Clans, error) {
+	var clans models.Clans
+	err := r.db.
+		Scopes(postgres.WithContains(params.Query, clansQueryFields...)).
+		Find(&clans).Error
+	return clans, err
+}
+
+func (r *ClansRepo) ClanByTag(tag string, preload ...postgres.Preloader) (*models.Clan, error) {
 	var clan *models.Clan
 	err := r.db.
 		Scopes(postgres.WithPreloading(preload...)).
