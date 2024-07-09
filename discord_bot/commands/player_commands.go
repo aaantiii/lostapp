@@ -75,16 +75,6 @@ func playerInteractionCommands(db *gorm.DB, client *goclash.Client) types.Comman
 		},
 	}, {
 		Handler: types.InteractionHandler{
-			Main: handler.UpdateMe,
-		},
-		ApplicationCommand: &discordgo.ApplicationCommand{
-			Name:         "updateme",
-			Description:  "Aktualisiert deinen Discord Namen zu deinem aktuellen Clash of Clans Namen.",
-			Type:         discordgo.ChatApplicationCommand,
-			DMPermission: util.BoolPtr(false),
-		},
-	}, {
-		Handler: types.InteractionHandler{
 			Main:         handler.SetNickname,
 			Autocomplete: handler.HandleAutocomplete,
 		},

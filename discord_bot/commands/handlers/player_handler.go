@@ -24,7 +24,6 @@ type IPlayerHandler interface {
 	VerifyPlayer(s *discordgo.Session, i *discordgo.InteractionCreate)
 	PingPlayer(s *discordgo.Session, i *discordgo.InteractionCreate)
 	HandleAutocomplete(s *discordgo.Session, i *discordgo.InteractionCreate)
-	UpdateMe(s *discordgo.Session, i *discordgo.InteractionCreate)
 	SetNickname(s *discordgo.Session, i *discordgo.InteractionCreate)
 	CheckReactions(s *discordgo.Session, i *discordgo.InteractionCreate)
 }
@@ -168,51 +167,6 @@ func (h *PlayerHandler) PingPlayer(s *discordgo.Session, i *discordgo.Interactio
 	messages.SendEmptyResponse(i)
 }
 
-func (h *PlayerHandler) UpdateMe(_ *discordgo.Session, i *discordgo.InteractionCreate) {
-	players, err := h.players.PlayersByDiscordID(i.Member.User.ID)
-	if err != nil {
-		messages.SendErr(i, "Dein Discord Account ist mit keinen Clash of Clans Accounts verknüpft.")
-		return
-	}
-
-	livePlayers, err := h.clashClient.GetPlayers(players.Tags()...)
-	if err != nil {
-		messages.SendCocApiErr(i, err)
-		return
-	}
-
-	var changes string
-	for index, p := range livePlayers {
-		if p.Name == players[index].Name {
-			continue
-		}
-		if err = h.players.CreateOrUpdatePlayer(&models.Player{
-			CocTag:    p.Tag,
-			Name:      p.Name,
-			DiscordID: i.Member.User.ID,
-		}); err != nil {
-			messages.SendErr(i, "Beim Aktualisieren deiner Daten ist ein Fehler aufgetreten.")
-			return
-		}
-		changes += fmt.Sprintf("%s: Namens-Änderung von %s auf %s.\n", p.Tag, players[index].Name, p.Name)
-	}
-
-	if len(changes) == 0 {
-		messages.SendEmbedResponse(i, messages.NewEmbed(
-			"Keine Änderungen",
-			"Deine Clash of Clans Namen sind bereits auf dem aktuellsten Stand.",
-			messages.ColorRed,
-		))
-		return
-	}
-
-	messages.SendEmbedResponse(i, messages.NewEmbed(
-		"Erfolgreich aktualisiert",
-		"Deine Clash of Clans Daten wurden erfolgreich aktualisiert.\n"+changes,
-		messages.ColorGreen,
-	))
-}
-
 func (h *PlayerHandler) SetNickname(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	opts := i.ApplicationCommandData().Options
 	playerTag := util.StringOptionByName(MyPlayerTagOptionName, opts)
@@ -222,7 +176,6 @@ func (h *PlayerHandler) SetNickname(s *discordgo.Session, i *discordgo.Interacti
 		messages.SendInvalidInputErr(i, "Bitte gib einen Spieler-Tag an.")
 		return
 	}
-
 	if !strings.HasPrefix(playerTag, "#") {
 		playerTag = "#" + playerTag
 	}
