@@ -1,8 +1,0 @@
-@use '../abstracts/variables' as v;
-
-.LinkLabel {
-  svg {
-    font-size: v.$icon-size-small;
-    margin-left: v.$gap-small;
-  }
-}
