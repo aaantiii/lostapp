@@ -84,7 +84,7 @@ func (h *ClanHandler) ClanStats(_ *discordgo.Session, i *discordgo.InteractionCr
 		return
 	}
 
-	players, err := h.clashClient.GetPlayers(clan.ClanMembers.Tags()...)
+	players, err := h.clashClient.GetPlayersWithError(clan.ClanMembers.Tags()...)
 	if err != nil {
 		messages.SendCocApiErr(i, err)
 		return
@@ -415,7 +415,7 @@ func (h *ClanHandler) fetchEventMembers(event *models.ClanEvent, timestamp time.
 		return nil, errors.New("no tags provided")
 	}
 
-	players, err := h.clashClient.GetPlayers(tags...)
+	players, err := h.clashClient.GetPlayersWithError(tags...)
 	if err != nil {
 		return nil, err
 	}
