@@ -1,9 +1,0 @@
-# Environment Variables
-.env*
-!.env.example
-
-# Builds
-build
-
-# IDEA
-.idea
