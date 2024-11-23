@@ -44,6 +44,63 @@ func PlayerLeaderboardTable(playerStats types.PlayerStatistics) string {
 	return "```\n" + table.String() + "\n```"
 }
 
+type cwMember struct {
+	name      string
+	discordID string
+	warPos    int
+}
+
+func SendCWDonatorPing(s *discordgo.Session, i *discordgo.InteractionCreate, members models.ClanMembers, ClanWarMembers []goclash.ClanWarMember, clanMemberByTag map[string]goclash.Player) {
+	memberByTag := make(map[string]models.ClanMember, len(members))
+	for _, member := range members {
+		memberByTag[member.PlayerTag] = *member
+	}
+
+	cwMembers := []cwMember{}
+	for _, clanWarMember := range ClanWarMembers {
+		clanMember, clanMemberExists := clanMemberByTag[clanWarMember.Tag]
+		if !clanMemberExists {
+			println("Error: clanMember not found for tag", clanWarMember.Tag)
+			continue
+		}
+
+		member, memberExists := memberByTag[clanMember.Tag]
+		if !memberExists {
+			println("Error: member not found for tag", clanMember.Tag)
+			continue
+		}
+
+		// Copy member to avoid pointer error
+		discordID := member.Player.DiscordID
+
+		println(clanMember.WarPreference)
+		if clanMember.WarPreference == "in" {
+			cwMembers = append(cwMembers, cwMember{
+				name:      clanWarMember.Name,
+				discordID: discordID,
+				warPos:    clanWarMember.MapPosition,
+			})
+		}
+	}
+
+	var content string
+	for _, member := range cwMembers {
+		content += fmt.Sprintf("%s (%d)\n", member.name, member.warPos)
+	}
+
+	if content == "" {
+		content = "Es sind keine Mitglieder im Krieg."
+	}
+
+	// Edit the response with the final content
+	_, err := s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
+		Content: &content,
+	})
+	if err != nil {
+		println("Error editing response:", err)
+	}
+}
+
 type raidPingMember struct {
 	name         string
 	discordID    string

@@ -30,6 +30,7 @@ type IClanHandler interface {
 	CreateEvent(s *discordgo.Session, i *discordgo.InteractionCreate)
 	DeleteEvent(s *discordgo.Session, i *discordgo.InteractionCreate)
 	HandleAutocomplete(s *discordgo.Session, i *discordgo.InteractionCreate)
+	CWDonator(s *discordgo.Session, i *discordgo.InteractionCreate)
 }
 
 type ClanHandler struct {
@@ -60,6 +61,51 @@ func NewClanHandler(clans repos.IClansRepo, members repos.IMembersRepo, events r
 	}
 
 	return h
+}
+
+func (h *ClanHandler) CWDonator(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
+	})
+	if err != nil {
+		log.Printf("Failed to send deferred response: %v", err)
+		return
+	}
+
+	opts := i.ApplicationCommandData().Options
+	clanTag := util.StringOptionByName(ClanTagOptionName, opts)
+
+	if clanTag == "" {
+		messages.SendInvalidInputErr(i, "Bitte gib einen Clan und eine Statistik an.")
+		return
+	}
+
+	clan, err := h.clans.ClanByTag(clanTag)
+	if err != nil {
+		messages.SendClanNotFound(i, clanTag)
+		return
+	}
+
+	clanWar, err := h.clashClient.GetCurrentClanWar(clanTag)
+	if err != nil {
+		messages.SendUnknownErr(i)
+		return
+	}
+
+	clanPlayerByTag := make(map[string]goclash.Player, len(clan.ClanMembers))
+	for _, member := range clanWar.Clan.Members {
+		player, err := h.clashClient.GetPlayer(member.Tag)
+		if err != nil {
+			log.Printf("Error while getting player: %v", err)
+			continue
+		}
+		clanPlayerByTag[member.Tag] = *player
+	}
+
+	clanWarMembers := clanWar.Clan.Members
+	members := clan.ClanMembers
+
+	messages.SendCWDonatorPing(s, i, members, clanWarMembers, clanPlayerByTag)
 }
 
 func (h *ClanHandler) ClanStats(_ *discordgo.Session, i *discordgo.InteractionCreate) {
