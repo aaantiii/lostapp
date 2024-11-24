@@ -41,8 +41,20 @@ func NewFieldEmbed(title, desc string, color int, fields []*discordgo.MessageEmb
 	}
 }
 
+func CreateAndEditEmbed(s *discordgo.Session, i *discordgo.InteractionCreate, title, description string, color int) error {
+	embed := NewEmbed(
+		title,
+		description,
+		color,
+	)
+	_, err := s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
+		Embeds: &[]*discordgo.MessageEmbed{embed},
+	})
+	return err
+}
+
 func newDefaultFooter() *discordgo.MessageEmbedFooter {
 	return &discordgo.MessageEmbedFooter{
-		Text: fmt.Sprintf("%s | %s | v%s", util.Session.State.User.Username, "Made by Anti", env.VERSION.Value()),
+		Text: fmt.Sprintf("%s | %s | v%s", util.Session.State.User.Username, "Made by LOST Dev-Team", env.VERSION.Value()),
 	}
 }

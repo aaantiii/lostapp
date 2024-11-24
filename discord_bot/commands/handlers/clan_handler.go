@@ -80,19 +80,41 @@ func (h *ClanHandler) CWDonator(s *discordgo.Session, i *discordgo.InteractionCr
 		return
 	}
 
-	clan, err := h.clans.ClanByTag(clanTag)
+	clanName, err := h.clans.ClanNameByTag(clanTag)
 	if err != nil {
-		messages.SendClanNotFound(i, clanTag)
+		err = messages.CreateAndEditEmbed(s, i, "Clan nicht gefunden", fmt.Sprintf("Der Clan mit dem Tag `%s` konnte nicht gefunden werden. Stelle sicher, dass du den Clan aus der Liste ausgewählt hast, oder direkt einen Clan Tag eingegeben hast.", clanTag), messages.ColorRed)
+		if err != nil {
+			log.Printf("Failed to edit message: %v", err)
+		}
+		return
+	}
+
+	members, err := h.members.MembersByClanTag(clanTag)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			err = messages.CreateAndEditEmbed(s, i, "Clan hat keine Mitglieder", fmt.Sprintf("Der Clan '%s' hat keine Mitglieder.", clanName), messages.ColorRed)
+			if err != nil {
+				log.Printf("Failed to edit message: %v", err)
+			}
+			return
+		}
+		err = messages.CreateAndEditEmbed(s, i, "Unbekannter Fehler", "Es ist ein unbekannter Fehler aufgetreten.", messages.ColorRed)
+		if err != nil {
+			log.Printf("Failed to edit message: %v", err)
+		}
 		return
 	}
 
 	clanWar, err := h.clashClient.GetCurrentClanWar(clanTag)
 	if err != nil {
-		messages.SendUnknownErr(i)
+		err = messages.CreateAndEditEmbed(s, i, "Fehler", "Beim Abrufen der aktuellen Clan Kriegsdaten ist ein Fehler aufgetreten.", messages.ColorRed)
+		if err != nil {
+			log.Printf("Failed to edit message: %v", err)
+		}
 		return
 	}
 
-	clanPlayerByTag := make(map[string]goclash.Player, len(clan.ClanMembers))
+	clanPlayerByTag := make(map[string]goclash.Player, len(members))
 	for _, member := range clanWar.Clan.Members {
 		player, err := h.clashClient.GetPlayer(member.Tag)
 		if err != nil {
@@ -103,7 +125,8 @@ func (h *ClanHandler) CWDonator(s *discordgo.Session, i *discordgo.InteractionCr
 	}
 
 	clanWarMembers := clanWar.Clan.Members
-	members := clan.ClanMembers
+
+	// println("members", members)
 
 	messages.SendCWDonatorPing(s, i, members, clanWarMembers, clanPlayerByTag)
 }

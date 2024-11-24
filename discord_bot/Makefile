@@ -7,9 +7,13 @@ bot:
 build-linux:
 	go build -o bin/$(BOT_BINARY) ./cmd/bot.go
 
-build-windows:
+build-win:
 	go build -o bin/$(BOT_BINARY).exe ./cmd/bot.go
-	
+
+bot-win:
+	go build -o bin/$(BOT_BINARY).exe ./cmd/bot.go
+	cd bin && $(BOT_BINARY).exe
+
 clean:
 	go clean
 	rm -rf bin/$(BOT_BINARY)*
