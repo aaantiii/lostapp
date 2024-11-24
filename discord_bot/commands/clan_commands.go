@@ -49,7 +49,7 @@ func clanInteractionCommands(db *gorm.DB, clashClient *goclash.Client) types.Com
 			},
 			ApplicationCommand: &discordgo.ApplicationCommand{
 				Name:         "cwdonator",
-				Description:  "Teilt automatisch zufällige Spender für den aktuellen Clan War ein. Einteilung basiert auf Clan War größe.",
+				Description:  "Teilt automatisch zufällige Spender für den aktuellen Clan War ein.",
 				Type:         discordgo.ChatApplicationCommand,
 				DMPermission: util.BoolPtr(false),
 				Options: []*discordgo.ApplicationCommandOption{

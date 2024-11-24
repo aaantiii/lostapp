@@ -75,6 +75,10 @@ func (h *ClanHandler) CWDonator(s *discordgo.Session, i *discordgo.InteractionCr
 	opts := i.ApplicationCommandData().Options
 	clanTag := util.StringOptionByName(ClanTagOptionName, opts)
 
+	if err := h.auth.AuthorizeInteractionWithMessageEdit(s, i, clanTag, types.AuthRoleCoLeader); err != nil {
+		return
+	}
+
 	if clanTag == "" {
 		messages.CreateAndEditEmbed(s, i, "Ungültige Eingabe", "Bitte gib einen Clan Tag an.", messages.ColorRed)
 		return
