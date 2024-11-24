@@ -76,7 +76,7 @@ func (h *ClanHandler) CWDonator(s *discordgo.Session, i *discordgo.InteractionCr
 	clanTag := util.StringOptionByName(ClanTagOptionName, opts)
 
 	if clanTag == "" {
-		messages.SendInvalidInputErr(i, "Bitte gib einen Clan und eine Statistik an.")
+		messages.CreateAndEditEmbed(s, i, "Ungültige Eingabe", "Bitte gib einen Clan Tag an.", messages.ColorRed)
 		return
 	}
 
