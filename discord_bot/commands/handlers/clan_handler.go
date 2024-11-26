@@ -30,6 +30,7 @@ type IClanHandler interface {
 	CreateEvent(s *discordgo.Session, i *discordgo.InteractionCreate)
 	DeleteEvent(s *discordgo.Session, i *discordgo.InteractionCreate)
 	HandleAutocomplete(s *discordgo.Session, i *discordgo.InteractionCreate)
+	CWDonator(s *discordgo.Session, i *discordgo.InteractionCreate)
 }
 
 type ClanHandler struct {
@@ -60,6 +61,78 @@ func NewClanHandler(clans repos.IClansRepo, members repos.IMembersRepo, events r
 	}
 
 	return h
+}
+
+func (h *ClanHandler) CWDonator(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
+	})
+	if err != nil {
+		log.Printf("Failed to send deferred response: %v", err)
+		return
+	}
+
+	opts := i.ApplicationCommandData().Options
+	clanTag := util.StringOptionByName(ClanTagOptionName, opts)
+
+	if err := h.auth.AuthorizeInteractionWithMessageEdit(s, i, clanTag, types.AuthRoleCoLeader); err != nil {
+		return
+	}
+
+	if clanTag == "" {
+		messages.CreateAndEditEmbed(s, i, "Ungültige Eingabe", "Bitte gib einen Clan Tag an.", messages.ColorRed)
+		return
+	}
+
+	clanName, err := h.clans.ClanNameByTag(clanTag)
+	if err != nil {
+		err = messages.CreateAndEditEmbed(s, i, "Clan nicht gefunden", fmt.Sprintf("Der Clan mit dem Tag `%s` konnte nicht gefunden werden. Stelle sicher, dass du den Clan aus der Liste ausgewählt hast, oder direkt einen Clan Tag eingegeben hast.", clanTag), messages.ColorRed)
+		if err != nil {
+			log.Printf("Failed to edit message: %v", err)
+		}
+		return
+	}
+
+	members, err := h.members.MembersByClanTag(clanTag)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			err = messages.CreateAndEditEmbed(s, i, "Clan hat keine Mitglieder", fmt.Sprintf("Der Clan '%s' hat keine Mitglieder.", clanName), messages.ColorRed)
+			if err != nil {
+				log.Printf("Failed to edit message: %v", err)
+			}
+			return
+		}
+		err = messages.CreateAndEditEmbed(s, i, "Unbekannter Fehler", "Es ist ein unbekannter Fehler aufgetreten.", messages.ColorRed)
+		if err != nil {
+			log.Printf("Failed to edit message: %v", err)
+		}
+		return
+	}
+
+	clanWar, err := h.clashClient.GetCurrentClanWar(clanTag)
+	if err != nil {
+		err = messages.CreateAndEditEmbed(s, i, "Fehler", "Beim Abrufen der aktuellen Clan Kriegsdaten ist ein Fehler aufgetreten.", messages.ColorRed)
+		if err != nil {
+			log.Printf("Failed to edit message: %v", err)
+		}
+		return
+	}
+
+	clanPlayerByTag := make(map[string]goclash.Player, len(members))
+	for _, member := range clanWar.Clan.Members {
+		player, err := h.clashClient.GetPlayer(member.Tag)
+		if err != nil {
+			log.Printf("Error while getting player: %v", err)
+			continue
+		}
+		clanPlayerByTag[member.Tag] = *player
+	}
+
+	clanWarMembers := clanWar.Clan.Members
+
+	// println("members", members)
+
+	messages.SendCWDonatorPing(s, i, members, clanWarMembers, clanPlayerByTag)
 }
 
 func (h *ClanHandler) ClanStats(_ *discordgo.Session, i *discordgo.InteractionCreate) {
