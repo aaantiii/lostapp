@@ -9,8 +9,7 @@ export default ({ mode }) => {
   return defineConfig({
     plugins: [react()],
     server: {
-      port: parseInt(env.PORT),
-      https: env.HTTPS === 'true',
+      port: parseInt(env.DEV_PORT),
     },
     build: {
       outDir: 'build',

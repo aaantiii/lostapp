@@ -1,7 +1,7 @@
 {
   "name": "lostapp",
   "private": true,
-  "version": "0.9.1",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,30 +9,30 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "^6.5.1",
-    "@fortawesome/free-solid-svg-icons": "^6.5.1",
-    "@fortawesome/react-fontawesome": "^0.2.0",
-    "@radix-ui/react-alert-dialog": "^1.0.5",
-    "@radix-ui/react-dialog": "^1.0.5",
-    "@radix-ui/react-form": "^0.0.3",
-    "@radix-ui/react-switch": "^1.0.3",
-    "@tanstack/react-query": "^4.36.1",
-    "axios": "^1.6.8",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-helmet-async": "^2.0.4",
-    "react-parallax": "^3.5.1",
-    "react-router-dom": "^6.22.3"
+    "@fortawesome/fontawesome-svg-core": "^6.7.2",
+    "@fortawesome/free-solid-svg-icons": "^6.7.2",
+    "@fortawesome/react-fontawesome": "^0.2.2",
+    "@radix-ui/react-alert-dialog": "^1.1.14",
+    "@radix-ui/react-dialog": "^1.1.14",
+    "@radix-ui/react-form": "^0.1.7",
+    "@radix-ui/react-switch": "^1.2.5",
+    "@tanstack/react-query": "^5.80.7",
+    "axios": "^1.9.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-helmet-async": "^2.0.5",
+    "react-parallax": "^3.5.2",
+    "react-router-dom": "^7.6.2"
   },
   "devDependencies": {
-    "@tanstack/react-query-devtools": "^4.36.1",
-    "@types/node": "^20.11.30",
-    "@types/react": "^18.2.70",
-    "@types/react-dom": "^18.2.22",
-    "@vitejs/plugin-react": "^4.2.1",
+    "@tanstack/react-query-devtools": "^5.80.7",
+    "@types/node": "^24.0.1",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "^4.5.2",
     "patch-package": "^8.0.0",
-    "sass": "^1.72.0",
-    "typescript": "^5.4.3",
-    "vite": "^4.5.3"
+    "sass": "^1.89.2",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5"
   }
 }
